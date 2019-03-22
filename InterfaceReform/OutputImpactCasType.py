@@ -73,7 +73,7 @@ def update_output(input1):
 @app.callback(Output(component_id='w-graph',component_property= 'figure'),
               [Input(component_id='input-1-keypress', component_property='value')])
 def update_graph(input1):
-    myres=[int(k) for k in simulate_pop_from_reform.CompareOldNew(int(input1))]#[input1,input1]#
+    myres=[int(k) for k in simulate_pop_from_reform.cas_type(int(input1))]#[input1,input1]#
     print("Moi je suis update_graph et j'ai fini : ",myres)
     return {
             'data': [

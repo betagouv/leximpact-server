@@ -2,6 +2,7 @@
 
 
 from typing import Callable
+from functools import partial
 
 import pandas
 import time
@@ -10,8 +11,6 @@ from openfisca_core.simulation_builder import SimulationBuilder
 from openfisca_france import FranceTaxBenefitSystem
 from openfisca_core import periods
 from openfisca_france.model.base import Reform
-
-TBS = FranceTaxBenefitSystem()
 
 
 def fread(filename: str) -> Callable:
@@ -38,7 +37,7 @@ def load_data(fread: Callable):
     return data
 
 
-def reform_from_bareme(tbs, taux, period):
+def reform_from_bareme(period, tbs, taux):
     class apply_reform(Reform):
         def apply(self):
             self.modify_parameters(modifier_function = reform)
@@ -82,10 +81,10 @@ def reform_from_bareme(tbs, taux, period):
     return apply_reform(tbs)
 
 
-def simulation(tbs, data, timer = None):
+def simulation(period, data, tbs, timer = None):
     if timer:
         starttime = timer.time()
-        print("Elapsed time : {:.2f}".format(time.time() - starttime))
+        print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
     # Traduction des roles attribués au format openfisca
     data["quimenof"] = "enfant"
@@ -167,17 +166,22 @@ def simulation(tbs, data, timer = None):
     return simulation, dictionnaire_datagrouped
 
 
-def compare(taux: int, period: str, simulation_base, simulation_reform):
+def compare(simulation_base, simulation_reform, period: str, taux: int, timer = time):
     res = []
 
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
         for nomvariable in ["irpp", "nbptr"]:
-            st = time.time()
+            if timer:
+                starttime = timer.time()
+                print("Elapsed time : {:.2f}".format(timer.time() - starttime))
+
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable] = simulation.calculate(nomvariable, period, max_nb_cycles = 1)
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable] * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
 
             print("{} sum : {}  mean : {}".format(nomvariable, dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum(), dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum() / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()))
-            print("Elapsed : {:.2f}".format(time.time() - st))
+
+            if timer:
+                print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
             if nomvariable == "irpp":
                 res += [-dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum() / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
@@ -187,20 +191,47 @@ def compare(taux: int, period: str, simulation_base, simulation_reform):
     return res
 
 
+def memoize(fun):
+    cache = {}
 
-data = load_data(fread("UCT-0001.csv"))
-period = "2014"
-simulation_base = simulation(TBS, data, timer = time)
+    def _memoize(x):
+        if x not in cache:
+            cache[x] = fun(x)
 
-def CompareOldNew(taux):
-    reform = reform_from_bareme(TBS, taux, period)
-    simulation_reform = simulation(reform, data, timer = time)
-    return compare(taux, period, simulation_base, simulation_reform)
+        return cache[x]
 
-if __name__ == "__main__":
-    taux = 9500
-    reform = reform_from_bareme(TBS, taux, period)
-    simulation_reform = simulation(reform, data, timer = time)
-    compare(taux, period, simulation_base, simulation_reform)
+    return _memoize
 
 
+TBS = FranceTaxBenefitSystem()
+PERIOD = "2014"
+REFORM = partial(reform_from_bareme, period = PERIOD, tbs = TBS)
+REFORM = memoize(REFORM)
+
+CAS_TYPE = load_data(fread("UCT-0001.csv"))
+SIMCAT = partial(simulation, period = PERIOD, data = CAS_TYPE)
+SIMCAT = memoize(SIMCAT)
+SIMCAT_BASE = SIMCAT(TBS)
+
+DUMMY_DATA = load_data(fread("dummy_data.h5"))
+SIMPOP = partial(simulation, period = PERIOD, data = DUMMY_DATA)
+SIMPOP = memoize(SIMPOP)
+SIMPOP_BASE = SIMPOP(TBS)
+
+
+def cas_type(taux):
+    reform = REFORM(taux)
+    simulation_reform = SIMCAT(reform = reform)
+    return compare(SIMCAT_BASE, simulation_reform, PERIOD, taux)
+
+
+def decile(taux):
+    reform = REFORM(taux)
+    simulation_reform = SIMPOP(reform = reform)
+    return compare(SIMPOP_BASE, simulation_reform, PERIOD, taux)
+
+
+def cout_etat(taux):
+    reform = REFORM(taux)
+    simulation_reform = SIMPOP(reform = reform)
+    return compare(SIMPOP_BASE, simulation_reform, PERIOD, taux)
