@@ -169,8 +169,11 @@ def simulation(tbs, data, timer = None):
 
 def compare(taux: int, period: str, simulation_base, simulation_reform):
     res = []
+    kk=0
 
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
+        if not kk:
+            df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
         for nomvariable in ["irpp", "nbptr"]:
             st = time.time()
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable] = simulation.calculate(nomvariable, period, max_nb_cycles = 1)
@@ -180,15 +183,44 @@ def compare(taux: int, period: str, simulation_base, simulation_reform):
             print("Elapsed : {:.2f}".format(time.time() - st))
 
             if nomvariable == "irpp":
-                res += [-dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum() / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
-
+                res += [-dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum()] # / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
+                if kk:
+                    df["after"]=dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
+                else:
+                    df["before"]=dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
+                    kk+=1
     print("Je suis Wengerboy et j'ai été lancé avec un parametre de {} et oui j'ai fini {}".format(taux, res))
+    print("Computing Deciles")
+    totweight=dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
+    nbd=10
+    decilweights=[i/nbd*totweight for i in range(nbd+1)]
+    numdecile=1
+    df=df.sort_values(by='after') #For now, deciles are organized by level of irpp
+    currw=0
+    currb=0
+    curra=0
+    dfv=df.values
+    decilesres=[(0,0,0)]
+    decdiffres=[]
+    print(decilweights,dfv[0],totweight)
+    eps=0.0001
+    for v in dfv:
+        currw+=v[0]
+        currb+=v[1]*v[0]
+        curra+=v[2]*v[0]
+        if currw>=decilweights[numdecile]-eps:
+            decilesres+=[(currw,currb,curra)]
+            decdiffres+=[[decilesres[numdecile][k] - decilesres[numdecile-1][k] for k in range(3)]]
+            numdecile+=1
+    print("In fine ",currw,currb,curra)
+    print("mes valeurs agreg deciles :",decilesres)
+    print("mes valeurs diff deciles :",decdiffres)
+    #TODO : interpolate quantiles instead of doing the granular approach
+    return res+decdiffres
 
-    return res
 
 
-
-data = load_data(fread("UCT-0001.csv"))
+data = load_data(fread("dummy_data.h5"))
 period = "2014"
 simulation_base = simulation(TBS, data, timer = time)
 

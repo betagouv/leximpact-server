@@ -73,14 +73,16 @@ def update_output(input1):
 @app.callback(Output(component_id='w-graph',component_property= 'figure'),
               [Input(component_id='input-1-keypress', component_property='value')])
 def update_graph(input1):
-    myres=[int(k) for k in simulate_pop_from_reform.CompareOldNew(int(input1))]#[input1,input1]#
+    myres=simulate_pop_from_reform.CompareOldNew(int(input1))#[input1,input1]#
     print("Moi je suis update_graph et j'ai fini : ",myres)
     return {
-            'data': [
-                {'x': ["avant"], 'y': [myres[0]], 'type': 'bar', 'name': u'avant'},
-                {'x': ["après"], 'y': [myres[1]], 'type': 'bar', 'name': 'après'},
-                {'x': ["impact"], 'y': [myres[1]-myres[0]], 'type': 'bar', 'name': 'impact'},
-            ],
+            'data': #[
+#                {'x': ["avant"], 'y': [myres[0]], 'type': 'bar', 'name': u'avant'},
+#                {'x': ["après"], 'y': [myres[1]], 'type': 'bar', 'name': 'après'},
+#                {'x': ["impact"], 'y': [myres[1]-myres[0]], 'type': 'bar', 'name': 'impact'}
+#            ]
+            [{'x' : ["decile {}".format(i)], 'y':[myres[2+i][2]-myres[2+i][1]] , 'type':'bar', 'name' :"decile {}".format(i)} for i in range(10)]
+        ,
             'layout': {
                 'title': 'Impact du changement'
             }
