@@ -166,7 +166,7 @@ def simulation(period, data, tbs, timer = None):
     return simulation, dictionnaire_datagrouped
 
 
-def compare(simulation_base, simulation_reform, period: str, taux: int, timer = None):
+def compare_cas_type(simulation_base, simulation_reform, period: str, taux: int, timer = None):
     res = []
 
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
@@ -191,6 +191,66 @@ def compare(simulation_base, simulation_reform, period: str, taux: int, timer = 
     return res
 
 
+def compare_decile(simulation_base, simulation_reform, period: str, taux: int, timer = None):
+    res = []
+    kk = 0
+
+    for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
+        if not kk:
+            df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
+        for nomvariable in ["irpp", "nbptr"]:
+            st = time.time()
+            dictionnaire_datagrouped["foyer_fiscal"][nomvariable] = simulation.calculate(nomvariable, period, max_nb_cycles = 1)
+            dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable] * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
+
+            print("{} sum : {}  mean : {}".format(nomvariable, dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum(), dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum() / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()))
+            print("Elapsed : {:.2f}".format(time.time() - st))
+
+            if nomvariable == "irpp":
+                res += [-dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum()]  # / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
+
+                if kk:
+                    df["after"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
+                else:
+                    df["before"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
+                    kk += 1
+
+    print("Je suis Wengerboy et j'ai été lancé avec un parametre de {} et oui j'ai fini {}".format(taux, res))
+    print("Computing Deciles")
+
+    totweight = dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
+    nbd = 10
+    decilweights = [i / nbd * totweight for i in range(nbd + 1)]
+    numdecile = 1
+    df = df.sort_values(by = 'after')  # For now, deciles are organized by level of irpp
+    currw = 0
+    currb = 0
+    curra = 0
+    dfv = df.values
+    decilesres = [(0, 0, 0)]
+    decdiffres = []
+
+    print(decilweights, dfv[0], totweight)
+
+    eps = 0.0001
+
+    for v in dfv:
+        currw += v[0]
+        currb += v[1] * v[0]
+        curra += v[2] * v[0]
+
+        if currw >= decilweights[numdecile] - eps:
+            decilesres += [(currw, currb, curra)]
+            decdiffres += [[decilesres[numdecile][k] - decilesres[numdecile - 1][k] for k in range(3)]]
+            numdecile += 1
+
+    print("In fine ", currw, currb, curra)
+    print("mes valeurs agreg deciles :", decilesres)
+    print("mes valeurs diff deciles :", decdiffres)
+    # TODO : interpolate quantiles instead of doing the granular approach
+    return res + decdiffres
+
+
 TBS = FranceTaxBenefitSystem()
 PERIOD = "2014"
 REFORM = partial(reform_from_bareme, period = PERIOD, tbs = TBS)
@@ -207,16 +267,16 @@ SIMPOP_BASE = SIMPOP(tbs = TBS)
 def cas_type(taux):
     reform = REFORM(taux = taux)
     simulation_reform = SIMCAT(tbs = reform)
-    return compare(SIMCAT_BASE, simulation_reform, PERIOD, taux)
+    return compare_cas_type(SIMCAT_BASE, simulation_reform, PERIOD, taux)
 
 
 def decile(taux):
     reform = REFORM(taux = taux)
     simulation_reform = SIMPOP(tbs = reform)
-    return compare(SIMPOP_BASE, simulation_reform, PERIOD, taux)
+    return compare_decile(SIMPOP_BASE, simulation_reform, PERIOD, taux)
 
 
 def cout_etat(taux):
     reform = REFORM(taux = taux)
     simulation_reform = SIMPOP(tbs = reform)
-    return compare(SIMPOP_BASE, simulation_reform, PERIOD, taux)
+    return compare_decile(SIMPOP_BASE, simulation_reform, PERIOD, taux)

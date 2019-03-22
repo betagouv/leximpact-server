@@ -7,7 +7,7 @@ import sys
 try:
     sys.path.insert(0, './Simulation_engine')
     import simulate_pop_from_reform
-except:
+except(Exception):
     sys.path.insert(0, './../Simulation_engine')
     import simulate_pop_from_reform
 
@@ -46,45 +46,69 @@ app.layout = html.Div([html.Div([html.H1("Article 197"),
    # dcc.Input(id='input-1-keypress', type='text', value='1527'),
 
 ],style={'width': '49%', 'display': 'inline-block'}),
-    html.Div([dcc.Graph(
-        id='w-graph'
-    )
-    ], style= {'width': '49%', 'display': 'inline-block', 'vertical-align': 'top'})
+    html.Div([
+        html.Div(
+            [dcc.Graph(id = 'cas-type')],
+            style = {'width': '49%', 'display': 'inline-block', 'vertical-align': 'top'}
+            ),
+        html.Div(
+            [dcc.Graph(id = 'decile')],
+            style = {'width': '49%', 'display': 'inline-block', 'vertical-align': 'top'}
+            ),
+    ])
 ])
 
 
-#Generates reform text from input. Actually should run the simulations...
+# Generates reform text from input. Actually should run the simulations...
 
-@app.callback(Output(component_id='output-keypress', component_property= 'children'),
-              [Input(component_id='input-1-keypress',component_property=  'value')])
+@app.callback(
+    Output(component_id = 'output-keypress', component_property = 'children'),
+    [Input(component_id = 'input-1-keypress', component_property = 'value')],
+    )
 def update_output(input1):
     return str(input1)
-    # return u"""
-    # def reform_from_bareme(seuilsthreshold=None):
-    #     def TheReform(parameters):
-    #         reform_period = periods.period("year:1900:200")
-    #         parameters.impot_revenu.plafond_qf.maries_ou_pacses.update(period=reform_period, value={})
-    #         return parameters
-    # return TheReform""".format(input1)#.replace("\n","\r\n\r\n"))
 
 
-#Generates graph
+# Generates graph
 
-@app.callback(Output(component_id='w-graph',component_property= 'figure'),
-              [Input(component_id='input-1-keypress', component_property='value')])
-def update_graph(input1):
-    myres=[int(k) for k in simulate_pop_from_reform.cas_type(int(input1))]#[input1,input1]#
-    print("Moi je suis update_graph et j'ai fini : ",myres)
+@app.callback(
+    Output(component_id = 'cas-type', component_property = 'figure'),
+    [Input(component_id = 'input-1-keypress', component_property = 'value')],
+    )
+def update_cas_type(input1):
+    myres = [int(k) for k in simulate_pop_from_reform.cas_type(int(input1))]
+
     return {
-            'data': [
-                {'x': ["avant"], 'y': [myres[0]], 'type': 'bar', 'name': u'avant'},
-                {'x': ["après"], 'y': [myres[1]], 'type': 'bar', 'name': 'après'},
-                {'x': ["impact"], 'y': [myres[1]-myres[0]], 'type': 'bar', 'name': 'impact'},
+        'data': [
+            {'x': ["avant"], 'y': [myres[0]], 'type': 'bar', 'name': u'avant'},
+            {'x': ["après"], 'y': [myres[1]], 'type': 'bar', 'name': 'après'},
+            {'x': ["impact"], 'y': [myres[1] - myres[0]], 'type': 'bar', 'name': 'impact'},
             ],
-            'layout': {
-                'title': 'Impact du changement'
+        'layout': {
+            'title': 'Impact du changement',
             }
         }
+
+
+@app.callback(
+    Output(component_id = 'decile', component_property = 'figure'),
+    [Input(component_id = 'input-1-keypress', component_property = 'value')],
+    )
+def update_decile(input1):
+    myres = simulate_pop_from_reform.decile(int(input1))
+
+    return {
+        'data': [{
+            'x': ["decile {}".format(i)],
+            'y': [myres[2 + i][2] - myres[2 + i][1]],
+            'type': 'bar',
+            'name': "decile {}".format(i)
+            } for i in range(10)],
+        'layout': {
+            'title': 'Impact du changement',
+        }
+    }
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
