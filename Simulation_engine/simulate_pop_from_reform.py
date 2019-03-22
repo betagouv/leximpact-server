@@ -166,7 +166,7 @@ def simulation(period, data, tbs, timer = None):
     return simulation, dictionnaire_datagrouped
 
 
-def compare(simulation_base, simulation_reform, period: str, taux: int, timer = time):
+def compare(simulation_base, simulation_reform, period: str, taux: int, timer = None):
     res = []
 
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
