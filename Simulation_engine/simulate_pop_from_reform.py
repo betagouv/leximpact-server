@@ -187,11 +187,20 @@ def compare(taux: int, period: str, simulation_base, simulation_reform):
     return res
 
 
-if __name__ == "__main__":
-    data = load_data(fread("dummy_data.h5"))
-    taux = 9500
-    period = "2014"
+
+data = load_data(fread("UCT-0001.csv"))
+period = "2014"
+simulation_base = simulation(TBS, data, timer = time)
+
+def CompareOldNew(taux):
     reform = reform_from_bareme(TBS, taux, period)
-    simulation_base = simulation(TBS, data, timer = time)
+    simulation_reform = simulation(reform, data, timer = time)
+    return compare(taux, period, simulation_base, simulation_reform)
+
+if __name__ == "__main__":
+    taux = 9500
+    reform = reform_from_bareme(TBS, taux, period)
     simulation_reform = simulation(reform, data, timer = time)
     compare(taux, period, simulation_base, simulation_reform)
+
+
