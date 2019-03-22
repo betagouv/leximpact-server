@@ -35,7 +35,11 @@ def simpop_reform(reform = None,nomfichier=None,period='2014'):
     try:
         data = fread("./{}".format(nomfichier))
     except:
-        data = fread("./Simulation_engine/{}".format(nomfichier))
+        try:
+            data = fread("./Simulation_engine/{}".format(nomfichier))
+        except:
+            data= fread("C:/EIG/Leximpact_git/Simulation_engine/{}".format(nomfichier))
+    print("Elapsed time : {:.2f}".format(time.time() - starttime))
 
     #Traduction des roles attribués au format openfisca
     data["quimenof"]="enfant"
@@ -119,21 +123,29 @@ def checkdata(nomfichier=None):
                     print("for : ",k,wh,lencples,lenormal)
 
 
-def reform_from_bareme(mvt=15000,seuilsthreshold=None):
+def reform_from_bareme(mvt=15000):
     def TheReform(parameters):
-        if seuilsthreshold is None:
-            seuilsthresholds = [(0, 0.0), (mvt, 0.08), (12878, 0.12), (19002, 0.16), (27519, 0.22), (46223, 0.3),
-                                (73779, 0.4), (112990, .45), (156244, 0.5)]
+        #if seuilsthreshold is None:
         # print(parameters.impot_revenu.bareme.brackets[1].threshold)
         myinstant = periods.instant("2014")
         print("bareme avant modif :")
         print(parameters.impot_revenu.bareme.get_at_instant(myinstant))
+        seuilsthreshold=(parameters.impot_revenu.bareme.get_at_instant(myinstant))
+       # if mvt>=seuilsthreshold.thresholds[2]:
+        #    print("on a cappé le seuil")
+        #    mvt=min(seuilsthreshold.thresholds[2]-1,mvt)
         reform_period = periods.period("year:1900:200")  # Pour le moment mes réformes sont sur l'éternité
-        # for i in range(len(seuilsthresholds)):
-        #     parameters.impot_revenu.bareme.brackets[i].threshold.update(period=reform_period,
-        #                                                                 value=seuilsthresholds[i][0])
-        #     parameters.impot_revenu.bareme.brackets[i].rate.update(period=reform_period, value=seuilsthresholds[i][1])
-        #     parameters.impot_revenu.bareme.brackets[i]
+        for i in range(len(seuilsthreshold.rates)):
+             parameters.impot_revenu.bareme.brackets[i].threshold.update(period=reform_period,
+                                                                         value=seuilsthreshold.thresholds[i] if i!=1 else min(mvt,seuilsthreshold.thresholds[i+1]))
+             parameters.impot_revenu.bareme.brackets[i].rate.update(period=reform_period, value=seuilsthreshold.rates[i])
+        for i in range(len(seuilsthreshold.rates),15):
+            try:
+                 parameters.impot_revenu.bareme.brackets[i].threshold.update(period=reform_period,
+                                                                             value=seuilsthreshold.thresholds[-1]+i)
+                 parameters.impot_revenu.bareme.brackets[i].rate.update(period=reform_period, value=seuilsthreshold.rates[-1])
+            except:
+                pass
         # #plafonds sécu :
         # parameters.impot_revenu.plafond_qf.maries_ou_pacses.update(period=reform_period, value=1600)
         parameters.impot_revenu.bareme.brackets[1].threshold.update(period=reform_period,value=mvt)
@@ -155,4 +167,7 @@ def CompareOldNew(Mavaleurtaux):
             print("Elapsed : {:.2f}".format(time.time()-st))
             if nomvariable=="irpp":
                 res+=[-dictionnaire_datagrouped["foyer_fiscal"][nomvariable+"w"].sum()/dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
+    print("Je suis CompareOldNew et j'ai été lancé avec un parametre de {} et oui j'ai fini {}".format(Mavaleurtaux,res))
     return res
+
+
