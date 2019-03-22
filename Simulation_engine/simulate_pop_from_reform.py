@@ -191,47 +191,32 @@ def compare(simulation_base, simulation_reform, period: str, taux: int, timer = 
     return res
 
 
-def memoize(fun):
-    cache = {}
-
-    def _memoize(x):
-        if x not in cache:
-            cache[x] = fun(x)
-
-        return cache[x]
-
-    return _memoize
-
-
 TBS = FranceTaxBenefitSystem()
 PERIOD = "2014"
 REFORM = partial(reform_from_bareme, period = PERIOD, tbs = TBS)
-REFORM = memoize(REFORM)
 
 CAS_TYPE = load_data(fread("UCT-0001.csv"))
 SIMCAT = partial(simulation, period = PERIOD, data = CAS_TYPE)
-SIMCAT = memoize(SIMCAT)
-SIMCAT_BASE = SIMCAT(TBS)
+SIMCAT_BASE = SIMCAT(tbs = TBS)
 
 DUMMY_DATA = load_data(fread("dummy_data.h5"))
 SIMPOP = partial(simulation, period = PERIOD, data = DUMMY_DATA)
-SIMPOP = memoize(SIMPOP)
-SIMPOP_BASE = SIMPOP(TBS)
+SIMPOP_BASE = SIMPOP(tbs = TBS)
 
 
 def cas_type(taux):
-    reform = REFORM(taux)
-    simulation_reform = SIMCAT(reform = reform)
+    reform = REFORM(taux = taux)
+    simulation_reform = SIMCAT(tbs = reform)
     return compare(SIMCAT_BASE, simulation_reform, PERIOD, taux)
 
 
 def decile(taux):
-    reform = REFORM(taux)
-    simulation_reform = SIMPOP(reform = reform)
+    reform = REFORM(taux = taux)
+    simulation_reform = SIMPOP(tbs = reform)
     return compare(SIMPOP_BASE, simulation_reform, PERIOD, taux)
 
 
 def cout_etat(taux):
-    reform = REFORM(taux)
-    simulation_reform = SIMPOP(reform = reform)
+    reform = REFORM(taux = taux)
+    simulation_reform = SIMPOP(tbs = reform)
     return compare(SIMPOP_BASE, simulation_reform, PERIOD, taux)
