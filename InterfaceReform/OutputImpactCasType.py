@@ -2,7 +2,7 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import sys
 try:
     sys.path.insert(0, './Simulation_engine')
@@ -18,7 +18,10 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 basevalue=9964
 
+#app.config['suppress_callback_exceptions']=True
+
 app.layout = html.Div([html.Div([html.H1("Article 197"),
+    html.Button(id='submit-button', n_clicks=0, children='Submit'),
     html.P("""I. – En ce qui concerne les contribuables visés à l'article 4 B, il est fait application des règles suivantes pour le calcul de l'impôt sur le revenu :"""),
     html.P(html.Div(["""1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède """,dcc.Input(id='input-1-keypress', type='text', value=basevalue),"""€ le taux de :"""])),
     html.P(html.Div(["""– 14 % pour la fraction supérieure à """, html.B(id='output-keypress'),""" et inférieure ou égale à 27 519 € ;"""])),
@@ -44,11 +47,15 @@ app.layout = html.Div([html.Div([html.H1("Article 197"),
     html.P("""Les montants de revenus mentionnés au présent b sont révisés chaque année dans la même proportion que la limite supérieure de la première tranche du barème de l'impôt sur le revenu. Les montants obtenus sont arrondis, s'il y a lieu, à l'euro supérieur."""),
     html.P("""5. Les réductions d'impôt mentionnées aux articles 199 quater B à 200 s'imputent sur l'impôt résultant de l'application des dispositions précédentes avant imputation des crédits d'impôt et des prélèvements ou retenues non libératoires ; elles ne peuvent pas donner lieu à remboursement."""),
    # dcc.Input(id='input-1-keypress', type='text', value='1527'),
-
+    html.B(id='result-reform')
 ],style={'width': '49%', 'display': 'inline-block'}),
-    html.Div([dcc.Graph(
-        id='w-graph'
-    )
+    html.Div([html.P(dcc.Graph(
+        id='graphtotal'
+    )),
+        html.P(dcc.Graph(
+        id='graphdecile'
+    ))
+
     ], style= {'width': '49%', 'display': 'inline-block', 'vertical-align': 'top'})
 ])
 
@@ -67,26 +74,56 @@ def update_output(input1):
     #         return parameters
     # return TheReform""".format(input1)#.replace("\n","\r\n\r\n"))
 
+# Gets result from reform
+
+@app.callback([Output(component_id='graphtotal',component_property= 'figure'),
+               Output(component_id='graphdecile',component_property= 'figure')],
+            [Input(component_id='submit-button', component_property='n_clicks')],
+            [State(component_id='input-1-keypress', component_property='value')])
+def get_reform_result(n_clicks,input1):
+    if n_clicks:
+        myres=simulate_pop_from_reform.CompareOldNew(int(input1))#[input1,input1]#
+        print("j'ai fini get_reform_result")
+        return {
+                'data': [
+                    {'x': ["avant"], 'y': [myres[0]], 'type': 'bar', 'name': u'avant'},
+                    {'x': ["après"], 'y': [myres[1]], 'type': 'bar', 'name': 'après'},
+                    {'x': ["impact"], 'y': [myres[1]-myres[0]], 'type': 'bar', 'name': 'impact'}
+                ]
+            ,
+                'layout': {
+                    'title': 'Impact du changement'
+                }
+            },{
+                'data':
+                [{'x' : ["decile {}".format(i)], 'y':[myres[2+i][2]-myres[2+i][1]] , 'type':'bar', 'name' :"decile {}".format(i)} for i in range(10)]
+            ,
+                'layout': {
+                    'title': 'changement par décile'
+                }
+            }
+    else:
+        return None,None
 
 #Generates graph
 
-@app.callback(Output(component_id='w-graph',component_property= 'figure'),
-              [Input(component_id='input-1-keypress', component_property='value')])
-def update_graph(input1):
-    myres=simulate_pop_from_reform.CompareOldNew(int(input1))#[input1,input1]#
-    print("Moi je suis update_graph et j'ai fini : ",myres)
-    return {
-            'data': #[
-#                {'x': ["avant"], 'y': [myres[0]], 'type': 'bar', 'name': u'avant'},
-#                {'x': ["après"], 'y': [myres[1]], 'type': 'bar', 'name': 'après'},
-#                {'x': ["impact"], 'y': [myres[1]-myres[0]], 'type': 'bar', 'name': 'impact'}
-#            ]
-            [{'x' : ["decile {}".format(i)], 'y':[myres[2+i][2]-myres[2+i][1]] , 'type':'bar', 'name' :"decile {}".format(i)} for i in range(10)]
-        ,
-            'layout': {
-                'title': 'Impact du changement'
-            }
-        }
+# @app.callback(Output(component_id='w-graph',component_property= 'figure'),
+#               [Input(component_id='result-reform', component_property='children')])
+# def update_graph(input1):
+#     myres=input1
+#     print("Moi je suis update_graph et j'ai fini : ",myres)
+#     return {
+#             'data': #[
+# #                {'x': ["avant"], 'y': [myres[0]], 'type': 'bar', 'name': u'avant'},
+# #                {'x': ["après"], 'y': [myres[1]], 'type': 'bar', 'name': 'après'},
+# #                {'x': ["impact"], 'y': [myres[1]-myres[0]], 'type': 'bar', 'name': 'impact'}
+# #            ]
+#             [{'x' : ["decile {}".format(i)], 'y':[myres[2+i][2]-myres[2+i][1]] , 'type':'bar', 'name' :"decile {}".format(i)} for i in range(10)]
+#         ,
+#             'layout': {
+#                 'title': 'Impact du changement'
+#             }
+#         }
 
 if __name__ == '__main__':
     app.run_server(debug=True)
