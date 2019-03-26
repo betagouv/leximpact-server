@@ -38,7 +38,7 @@ def load_data(fread: Callable):
     return data
 
 
-def reform_from_bareme(tbs, taux, period):
+def reform_from_bareme(tbs, seuils,taux, period):
     class apply_reform(Reform):
         def apply(self):
             self.modify_parameters(modifier_function = reform)
@@ -48,31 +48,26 @@ def reform_from_bareme(tbs, taux, period):
 
         print("bareme avant modif :")
         print(parameters.impot_revenu.bareme.get_at_instant(instant))
-
-        seuil = parameters.impot_revenu.bareme.get_at_instant(instant)
         reform_period = periods.period("year:1900:200")  # Pour le moment mes réformes sont sur l'éternité
-
-        for i in range(len(seuil.rates)):
+        for i in range(len(seuils)):
             parameters.impot_revenu.bareme.brackets[i].threshold.update(
                 period = reform_period,
-                value = seuil.thresholds[i] if i != 1 else min(taux, seuil.thresholds[i + 1])
+                value = seuils[i]
+                )
+            parameters.impot_revenu.bareme.brackets[i].rate.update(
+                period = reform_period,
+                value = taux[i]*0.01
                 )
 
-            parameters.impot_revenu.bareme.brackets[i].rate.update(period = reform_period, value = seuil.rates[i])
-
-        for i in range(len(seuil.rates), 15):
+        for i in range(len(seuils), 15):
             try:
                 parameters.impot_revenu.bareme.brackets[i].threshold.update(
                     period = reform_period,
-                    value = seuil.thresholds[-1] + i
+                    value = seuils[-1] + i
                     )
-
-                parameters.impot_revenu.bareme.brackets[i].rate.update(period = reform_period, value = seuil.rates[-1])
-
+                parameters.impot_revenu.bareme.brackets[i].rate.update(period = reform_period, value = taux[-1]*0.01)
             except(Exception):
-                pass
-
-        parameters.impot_revenu.bareme.brackets[1].threshold.update(period = reform_period, value = taux)
+                break
 
         print("bareme après modif :")
         print(parameters.impot_revenu.bareme.get_at_instant(instant))
@@ -166,11 +161,11 @@ def simulation(tbs, data, timer = None):
 
     return simulation, dictionnaire_datagrouped
 
-
-def compare(taux: int, period: str, simulation_base, simulation_reform):
+from typing import List
+def compare(bareme: List[int], period: str, simulation_base, simulation_reform):
     res = []
     kk=0
-
+    taux=bareme[0]
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
         if not kk:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
@@ -195,7 +190,8 @@ def compare(taux: int, period: str, simulation_base, simulation_reform):
     nbd=10
     decilweights=[i/nbd*totweight for i in range(nbd+1)]
     numdecile=1
-    df=df.sort_values(by='after') #For now, deciles are organized by level of irpp
+    df["keysort"]=-df["before"]-df["after"]
+    df=df.sort_values(by='keysort') #For now, deciles are organized by level of irpp
     currw=0
     currb=0
     curra=0
@@ -203,6 +199,7 @@ def compare(taux: int, period: str, simulation_base, simulation_reform):
     decilesres=[(0,0,0)]
     decdiffres=[]
     print(decilweights,dfv[0],totweight)
+    print(dfv[1])
     eps=0.0001
     for v in dfv:
         currw+=v[0]
@@ -221,17 +218,20 @@ def compare(taux: int, period: str, simulation_base, simulation_reform):
 
 
 data = load_data(fread("dummy_data.h5"))
+data= data[data["idmen"]<1000]
 period = "2014"
 simulation_base = simulation(TBS, data, timer = time)
 
 def CompareOldNew(taux):
-    reform = reform_from_bareme(TBS, taux, period)
+    print(taux)
+    print(taux[0],len(taux))
+    reform = reform_from_bareme(TBS, [0]+taux[:len(taux)//2],[0]+taux[len(taux)//2:], period)
     simulation_reform = simulation(reform, data, timer = time)
     return compare(taux, period, simulation_base, simulation_reform)
 
 if __name__ == "__main__":
-    taux = 9500
-    reform = reform_from_bareme(TBS, taux, period)
+    taux = [9964,27159,73779,156244,14,30,41,45]
+    reform = reform_from_bareme(TBS, [0]+taux[:len(taux)//2],[0]+taux[len(taux)//2:], period)
     simulation_reform = simulation(reform, data, timer = time)
     compare(taux, period, simulation_base, simulation_reform)
 

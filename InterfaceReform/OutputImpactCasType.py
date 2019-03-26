@@ -20,14 +20,27 @@ basevalue=9964
 
 #app.config['suppress_callback_exceptions']=True
 
-app.layout = html.Div([html.Div([html.H1("Article 197"),
+sizeperc=1
+sizev=3
+
+app.layout = html.Div([html.Link(href="https://fonts.googleapis.com/css?family=Cormorant+Garamond",rel="stylesheet"),
+    html.Div([html.H1("Article 197"),
     html.Button(id='submit-button', n_clicks=0, children='Submit'),
     html.P("""I. – En ce qui concerne les contribuables visés à l'article 4 B, il est fait application des règles suivantes pour le calcul de l'impôt sur le revenu :"""),
-    html.P(html.Div(["""1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède """,dcc.Input(id='input-1-keypress', type='text', value=basevalue),"""€ le taux de :"""])),
-    html.P(html.Div(["""– 14 % pour la fraction supérieure à """, html.B(id='output-keypress'),""" et inférieure ou égale à 27 519 € ;"""])),
-    html.P("""– 30 % pour la fraction supérieure à 27 519 € et inférieure ou égale à 73 779 € ;"""),
-    html.P("""– 41 % pour la fraction supérieure à 73 779 € et inférieure ou égale à 156 244 € ;"""),
-    html.P("""– 45 % pour la fraction supérieure à 156 244 €"""),
+    html.P(html.Div(["""1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède """,
+                     dcc.Input(id='input-seuil0', type='text', value=9964,size=sizev),"""€ le taux de :"""])),
+    html.P(html.Div(["""– """, dcc.Input(id='input-taux0', type='text', value=14,size=sizeperc),"""% pour la fraction supérieure à """,
+                     html.B(id='output-seuil0'),
+                     """ et inférieure ou égale à""", dcc.Input(id='input-seuil1', type='text', value=27519,size=sizev),"""€ ;"""])),
+    html.P(html.Div(["""– """, dcc.Input(id='input-taux1', type='text', value=30,size=sizeperc),"""% pour la fraction supérieure à """,
+                     html.B(id='output-seuil1'),
+                     """ € et inférieure ou égale à""", dcc.Input(id='input-seuil2', type='text', value=73779,size=sizev),"""€ ;"""])),
+    html.P(html.Div(["""– """, dcc.Input(id='input-taux2', type='text', value=41,size=sizeperc),"""% pour la fraction supérieure à """,
+                     html.B(id='output-seuil2'),
+                     """ € et inférieure ou égale à""", dcc.Input(id='input-seuil3', type='text', value=156244,size=sizev),"""€ ;"""])),
+    html.P(html.Div(["""– """, dcc.Input(id='input-taux3', type='text', value=45,size=sizeperc),"""% pour la fraction supérieure à""",
+                     html.B(id='output-seuil3'),
+                     """€"""])),
     html.Div(["""2. La réduction d'impôt résultant de l'application du quotient familial ne peut excéder""",
               """ 1 527 € par demi-part ou la moitié de cette somme par quart de part s'ajoutant à une part pour les contribuables célibataires, divorcés, veufs ou soumis à l'imposition distincte prévue au 4 de l'article 6 et à deux parts pour les contribuables mariés soumis à une imposition commune."""]),
     html.P("""Toutefois, pour les contribuables célibataires, divorcés, ou soumis à l'imposition distincte prévue au 4 de l'article 6 qui répondent aux conditions fixées au II de l'article 194, la réduction d'impôt correspondant à la part accordée au titre du premier enfant à charge est limitée à 3 660 € Lorsque les contribuables entretiennent uniquement des enfants dont la charge est réputée également partagée entre l'un et l'autre des parents, la réduction d'impôt correspondant à la demi-part accordée au titre de chacun des deux premiers enfants est limitée à la moitié de cette somme."""),
@@ -46,7 +59,7 @@ app.layout = html.Div([html.Div([html.H1("Article 197"),
     html.P("""– au dénominateur, 2 000 €, pour les personnes célibataires, veuves ou divorcées, ou 4 000 €, pour les personnes soumises à une imposition commune."""),
     html.P("""Les montants de revenus mentionnés au présent b sont révisés chaque année dans la même proportion que la limite supérieure de la première tranche du barème de l'impôt sur le revenu. Les montants obtenus sont arrondis, s'il y a lieu, à l'euro supérieur."""),
     html.P("""5. Les réductions d'impôt mentionnées aux articles 199 quater B à 200 s'imputent sur l'impôt résultant de l'application des dispositions précédentes avant imputation des crédits d'impôt et des prélèvements ou retenues non libératoires ; elles ne peuvent pas donner lieu à remboursement."""),
-   # dcc.Input(id='input-1-keypress', type='text', value='1527'),
+   # dcc.Input(id='input-seuil0', type='text', value='1527'),
     html.B(id='result-reform')
 ],style={'width': '49%', 'display': 'inline-block'}),
     html.Div([html.P(dcc.Graph(
@@ -62,9 +75,9 @@ app.layout = html.Div([html.Div([html.H1("Article 197"),
 
 #Generates reform text from input. Actually should run the simulations...
 
-@app.callback(Output(component_id='output-keypress', component_property= 'children'),
-              [Input(component_id='input-1-keypress',component_property=  'value')])
-def update_output(input1):
+@app.callback(Output(component_id='output-seuil0', component_property= 'children'),
+              [Input(component_id='input-seuil0',component_property=  'value')])
+def output_seuil0(input1):
     return str(input1)
     # return u"""
     # def reform_from_bareme(seuilsthreshold=None):
@@ -74,15 +87,32 @@ def update_output(input1):
     #         return parameters
     # return TheReform""".format(input1)#.replace("\n","\r\n\r\n"))
 
-# Gets result from reform
+@app.callback(Output(component_id='output-seuil1', component_property= 'children'),
+              [Input(component_id='input-seuil1',component_property=  'value')])
+def output_seuil1(input1):
+    return str(input1)
 
+@app.callback(Output(component_id='output-seuil2', component_property= 'children'),
+              [Input(component_id='input-seuil2',component_property=  'value')])
+def output_seuil2(input1):
+    return str(input1)
+
+@app.callback(Output(component_id='output-seuil3', component_property= 'children'),
+              [Input(component_id='input-seuil3',component_property=  'value')])
+def output_seuil3(input1):
+    return str(input1)
+
+# Gets result from reform
+nbseuil=4
 @app.callback([Output(component_id='graphtotal',component_property= 'figure'),
                Output(component_id='graphdecile',component_property= 'figure')],
             [Input(component_id='submit-button', component_property='n_clicks')],
-            [State(component_id='input-1-keypress', component_property='value')])
-def get_reform_result(n_clicks,input1):
+            [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
+              [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
+def get_reform_result(n_clicks,*args):
     if n_clicks:
-        myres=simulate_pop_from_reform.CompareOldNew(int(input1))#[input1,input1]#
+        print(args)
+        myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args])#[input1,input1]#
         print("j'ai fini get_reform_result")
         return {
                 'data': [
