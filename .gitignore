@@ -105,3 +105,4 @@ venv.bak/
 
 # leximpact
 *.h5
+*.cprof

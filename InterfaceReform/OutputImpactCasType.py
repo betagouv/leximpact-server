@@ -7,7 +7,7 @@ import sys
 try:
     sys.path.insert(0, './Simulation_engine')
     import simulate_pop_from_reform
-except:
+except(Exception):
     sys.path.insert(0, './../Simulation_engine')
     import simulate_pop_from_reform
 
@@ -73,7 +73,7 @@ app.layout = html.Div([html.Link(href="https://fonts.googleapis.com/css?family=C
 ])
 
 
-#Generates reform text from input. Actually should run the simulations...
+# Generates reform text from input. Actually should run the simulations...
 
 @app.callback(Output(component_id='output-seuil0', component_property= 'children'),
               [Input(component_id='input-seuil0',component_property=  'value')])
@@ -154,6 +154,27 @@ def get_reform_result(n_clicks,*args):
 #                 'title': 'Impact du changement'
 #             }
 #         }
+
+
+@app.callback(
+    Output(component_id = 'decile', component_property = 'figure'),
+    [Input(component_id = 'input-1-keypress', component_property = 'value')],
+    )
+def update_decile(input1):
+    myres = simulate_pop_from_reform.decile(int(input1))
+
+    return {
+        'data': [{
+            'x': ["decile {}".format(i)],
+            'y': [myres[2 + i][2] - myres[2 + i][1]],
+            'type': 'bar',
+            'name': "decile {}".format(i)
+            } for i in range(10)],
+        'layout': {
+            'title': 'Impact du changement',
+        }
+    }
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

@@ -2,6 +2,7 @@
 
 
 from typing import Callable
+from functools import partial
 
 import pandas
 import time
@@ -10,8 +11,6 @@ from openfisca_core.simulation_builder import SimulationBuilder
 from openfisca_france import FranceTaxBenefitSystem
 from openfisca_core import periods
 from openfisca_france.model.base import Reform
-
-TBS = FranceTaxBenefitSystem()
 
 
 def fread(filename: str) -> Callable:
@@ -77,10 +76,10 @@ def reform_from_bareme(tbs, seuils,taux, period):
     return apply_reform(tbs)
 
 
-def simulation(tbs, data, timer = None):
+def simulation(period, data, tbs, timer = None):
     if timer:
         starttime = timer.time()
-        print("Elapsed time : {:.2f}".format(time.time() - starttime))
+        print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
     # Traduction des roles attribués au format openfisca
     data["quimenof"] = "enfant"
@@ -170,12 +169,17 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform):
         if not kk:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
         for nomvariable in ["irpp", "nbptr"]:
-            st = time.time()
+            if timer:
+                starttime = timer.time()
+                print("Elapsed time : {:.2f}".format(timer.time() - starttime))
+
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable] = simulation.calculate(nomvariable, period, max_nb_cycles = 1)
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable] * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
 
             print("{} sum : {}  mean : {}".format(nomvariable, dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum(), dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum() / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()))
-            print("Elapsed : {:.2f}".format(time.time() - st))
+
+            if timer:
+                print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
             if nomvariable == "irpp":
                 res += [-dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum()] # / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
@@ -215,10 +219,20 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform):
     #TODO : interpolate quantiles instead of doing the granular approach
     return res+decdiffres
 
+TBS = FranceTaxBenefitSystem()
+REFORM = partial(reform_from_bareme, period = PERIOD, tbs = TBS)
 
+CAS_TYPE = load_data(fread("UCT-0001.csv"))
+SIMCAT = partial(simulation, period = PERIOD, data = CAS_TYPE)
+SIMCAT_BASE = SIMCAT(tbs = TBS)
 
-data = load_data(fread("dummy_data.h5"))
-data= data[data["idmen"]<1000]
+DUMMY_DATA = load_data(fread("dummy_data.h5"))
+SIMPOP = partial(simulation, period = PERIOD, data = DUMMY_DATA)
+SIMPOP_BASE = SIMPOP(tbs = TBS)
+
+DUMMY_DATA = DUMMY_DATA [DUMMY_DATA ["idmen"]<1000]
+
+data = DUMMY_DATA
 period = "2014"
 simulation_base = simulation(TBS, data, timer = time)
 
@@ -236,3 +250,19 @@ if __name__ == "__main__":
     compare(taux, period, simulation_base, simulation_reform)
 
 
+
+def cas_type(taux):
+    reform = REFORM(taux = taux)
+    simulation_reform = SIMCAT(tbs = reform)
+    return compare(PERIOD, taux,SIMCAT_BASE, simulation_reform, )
+
+def decile(taux):
+    reform = REFORM(taux = taux)
+    simulation_reform = SIMPOP(tbs = reform)
+    return compare(PERIOD, taux,SIMPOP_BASE, simulation_reform)
+
+
+def cout_etat(taux):
+    reform = REFORM(taux = taux)
+    simulation_reform = SIMPOP(tbs = reform)
+    return compare_decile(SIMPOP_BASE, simulation_reform, PERIOD, taux)
