@@ -156,25 +156,6 @@ def get_reform_result(n_clicks,*args):
 #         }
 
 
-@app.callback(
-    Output(component_id = 'decile', component_property = 'figure'),
-    [Input(component_id = 'input-1-keypress', component_property = 'value')],
-    )
-def update_decile(input1):
-    myres = simulate_pop_from_reform.decile(int(input1))
-
-    return {
-        'data': [{
-            'x': ["decile {}".format(i)],
-            'y': [myres[2 + i][2] - myres[2 + i][1]],
-            'type': 'bar',
-            'name': "decile {}".format(i)
-            } for i in range(10)],
-        'layout': {
-            'title': 'Impact du changement',
-        }
-    }
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)

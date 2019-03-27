@@ -77,7 +77,7 @@ def reform_from_bareme(tbs, seuils,taux, period):
 
 
 def simulation(period, data, tbs, timer = None):
-    if timer:
+    if timer is not None:
         starttime = timer.time()
         print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
@@ -155,13 +155,13 @@ def simulation(period, data, tbs, timer = None):
                 print("{} failed to be attributed to {}".format(colonne, tbs.get_variable(colonne).entity.key))
                 raise
 
-    if timer:
+    if timer is not None:
         print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
     return simulation, dictionnaire_datagrouped
 
 from typing import List
-def compare(bareme: List[int], period: str, simulation_base, simulation_reform):
+def compare(bareme: List[int], period: str, simulation_base, simulation_reform,timer=None):
     res = []
     kk=0
     taux=bareme[0]
@@ -169,7 +169,7 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform):
         if not kk:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
         for nomvariable in ["irpp", "nbptr"]:
-            if timer:
+            if timer is not None:
                 starttime = timer.time()
                 print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
@@ -178,7 +178,7 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform):
 
             print("{} sum : {}  mean : {}".format(nomvariable, dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum(), dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum() / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()))
 
-            if timer:
+            if timer is not None:
                 print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
             if nomvariable == "irpp":
@@ -219,6 +219,8 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform):
     #TODO : interpolate quantiles instead of doing the granular approach
     return res+decdiffres
 
+
+PERIOD = "2014"
 TBS = FranceTaxBenefitSystem()
 REFORM = partial(reform_from_bareme, period = PERIOD, tbs = TBS)
 
@@ -233,21 +235,20 @@ SIMPOP_BASE = SIMPOP(tbs = TBS)
 DUMMY_DATA = DUMMY_DATA [DUMMY_DATA ["idmen"]<1000]
 
 data = DUMMY_DATA
-period = "2014"
-simulation_base = simulation(TBS, data, timer = time)
+simulation_base = simulation(PERIOD, data,TBS, timer = time)
 
 def CompareOldNew(taux):
     print(taux)
     print(taux[0],len(taux))
-    reform = reform_from_bareme(TBS, [0]+taux[:len(taux)//2],[0]+taux[len(taux)//2:], period)
-    simulation_reform = simulation(reform, data, timer = time)
-    return compare(taux, period, simulation_base, simulation_reform)
+    reform = reform_from_bareme(TBS, [0]+taux[:len(taux)//2],[0]+taux[len(taux)//2:], PERIOD)
+    simulation_reform = simulation(PERIOD,data,reform, timer = time)
+    return compare(taux, PERIOD, simulation_base, simulation_reform, timer = time)
 
 if __name__ == "__main__":
     taux = [9964,27159,73779,156244,14,30,41,45]
-    reform = reform_from_bareme(TBS, [0]+taux[:len(taux)//2],[0]+taux[len(taux)//2:], period)
-    simulation_reform = simulation(reform, data, timer = time)
-    compare(taux, period, simulation_base, simulation_reform)
+    reform = reform_from_bareme(TBS, [0]+taux[:len(taux)//2],[0]+taux[len(taux)//2:], PERIOD)
+    simulation_reform = simulation(PERIOD,data,reform, timer = time)
+    compare(taux, PERIOD, simulation_base, simulation_reform, timer = time)
 
 
 
