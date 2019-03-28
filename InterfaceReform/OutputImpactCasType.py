@@ -24,6 +24,11 @@ sizev=3
 
 LinksCSSToAdd = [html.Link(href="https://fonts.googleapis.com/css?family=Cormorant+Garamond",rel="stylesheet")]
 
+list_cas_types = [0, 1, 2, 3, 4, 5]
+
+graphsCT = [dcc.Graph(id='graph-ct{}'.format(ct),className='six columns') for ct in list_cas_types]
+graphsCTsplit = [html.P(graphsCT[x:x+2]) for x in range(0,len(graphsCT),2)]
+
 app.layout = html.Div(LinksCSSToAdd + [html.Div([html.H1("Article 197"),
     html.Button(id='submit-button', n_clicks=0, children='Submit'),
     html.P("""I. – En ce qui concerne les contribuables visés à l'article 4 B, il est fait application des règles suivantes pour le calcul de l'impôt sur le revenu :"""),
@@ -61,16 +66,18 @@ app.layout = html.Div(LinksCSSToAdd + [html.Div([html.H1("Article 197"),
     html.P("""5. Les réductions d'impôt mentionnées aux articles 199 quater B à 200 s'imputent sur l'impôt résultant de l'application des dispositions précédentes avant imputation des crédits d'impôt et des prélèvements ou retenues non libératoires ; elles ne peuvent pas donner lieu à remboursement."""),
    # dcc.Input(id='input-seuil0', type='text', value='1527'),
     html.B(id='result-reform')
-],style={'width': '49%', 'display': 'inline-block'}),
-    html.Div([html.P(dcc.Graph(
-        id='graphtotal'
-    )),
-        html.P(dcc.Graph(
-        id='graphdecile'
-    ))
-
-    ], style= {'width': '49%', 'display': 'inline-block', 'vertical-align': 'top'})
-])
+],className="four columns"),
+    html.Div(
+    [html.Div(graphsCTsplit+
+    # [html.P(dcc.Graph(
+        #      id='graph-ct0'
+    #  )),
+    #      html.P(dcc.Graph(
+        #      id='graph-ct1'
+    #  )),]+
+        [html.P([dcc.Graph(id='graphtotal',className="six columns"),
+            dcc.Graph(id='graphdecile',className="six columns")])]
+    )],className="seven columns")],className="row")
 
 
 # Generates reform text from input. Actually should run the simulations...
@@ -102,7 +109,7 @@ def output_seuil2(input1):
 def output_seuil3(input1):
     return str(input1)
 
-# Gets result from reform
+# Generates results for the graphs depending on the simulation on the full population
 nbseuil=4
 @app.callback([Output(component_id='graphtotal',component_property= 'figure'),
                Output(component_id='graphdecile',component_property= 'figure')],
@@ -111,9 +118,7 @@ nbseuil=4
               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
 def get_reform_result(n_clicks,*args):
     if n_clicks:
-        print(args)
-        myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args])#[input1,input1]#
-        print("j'ai fini get_reform_result")
+        myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=True)#[input1,input1]#
         return {
                 'data': [
                     {'x': ["avant"], 'y': [myres["total"]["avant"]], 'type': 'bar', 'name': u'avant'},
@@ -132,8 +137,48 @@ def get_reform_result(n_clicks,*args):
                     'title': 'changement par décile'
                 }
             }
-    else:
+    else: #Does not run before the first click
         return None,None
+
+# Generates results for the graphs depending on the simulation on the full population
+nbseuil=4
+@app.callback([Output(component_id='graph-ct0',component_property= 'figure') ,
+                Output(component_id='graph-ct1',component_property= 'figure') ,
+                Output(component_id='graph-ct2',component_property= 'figure') ,
+                Output(component_id='graph-ct3',component_property= 'figure') ,
+                Output(component_id='graph-ct4',component_property= 'figure') ,
+                Output(component_id='graph-ct5',component_property= 'figure')],
+            [Input(component_id='submit-button', component_property='n_clicks')],
+            [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
+              [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
+def get_reform_result_castypes(n_clicks,*args):
+    if n_clicks:
+        print("computing castypes")
+        myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
+        print(myres)
+        df=myres["res_brut"]
+        for ct in list_cas_types:
+            print("alors :")
+            print(ct)
+            print(df[df.index==ct],df["avant"][ct],df["apres"][ct])
+        resforcastypes = [
+            {
+                'data': [
+                    {'x': ["avant"], 'y': [-df["avant"][ct]], 'type': 'bar', 'name': u'avant'},
+                    {'x': ["après"], 'y': [-df["apres"][ct]], 'type': 'bar', 'name': u'après'},
+                    {'x': ["impact"], 'y': [-df["apres"][ct] + df["avant"][ct]], 'type': 'bar',
+                     'name': 'impact'}
+                ]
+                ,
+                'layout': {
+                    'title': simulate_pop_from_reform.foyertotexte(ct)
+                }
+            } for ct in list_cas_types]
+        print(*resforcastypes)
+        return (*resforcastypes,)
+    else: #Does not run before the first click
+        return tuple([None]*len(list_cas_types))#
+
 
 #Generates graph
 

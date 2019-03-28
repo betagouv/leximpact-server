@@ -161,7 +161,7 @@ def simulation(period, data, tbs, timer = None):
     return simulation, dictionnaire_datagrouped
 
 from typing import List
-def compare(bareme: List[int], period: str, simulation_base, simulation_reform,timer=None):
+def compare(bareme: List[int], period: str, simulation_base, simulation_reform,compute_deciles=True,timer=None):
     res = []
     kk=0
     taux=bareme[0]
@@ -171,7 +171,6 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform,t
         for nomvariable in ["irpp", "nbptr"]:
             if timer is not None:
                 starttime = timer.time()
-                print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable] = simulation.calculate(nomvariable, period, max_nb_cycles = 1)
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable] * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
@@ -184,44 +183,46 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform,t
             if nomvariable == "irpp":
                 res += [-dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum()] # / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
                 if kk:
-                    df["after"]=dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
+                    df["apres"]=dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                 else:
-                    df["before"]=dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
+                    df["avant"]=dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                     kk+=1
     print("Je suis Wengerboy et j'ai été lancé avec un parametre de {} et oui j'ai fini {}".format(taux, res))
-    print("Computing Deciles")
-    totweight=dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
-    nbd=10
-    decilweights=[i/nbd*totweight for i in range(nbd+1)]
-    numdecile=1
-    df["keysort"]=-df["before"]-df["after"]
-    df=df.sort_values(by='keysort') #For now, deciles are organized by level of irpp
-    currw=0
-    currb=0
-    curra=0
-    dfv=df.values
-    decilesres=[(0,0,0)]
-    decdiffres=[]
-    print(decilweights,dfv[0],totweight)
-    print(dfv[1])
-    eps=0.0001
-    for v in dfv:
-        currw+=v[0]
-        currb+=v[1]*v[0]
-        curra+=v[2]*v[0]
-        if currw>=decilweights[numdecile]-eps:
-            decilesres+=[(currw,currb,curra)]
-            decdiffres+=[[decilesres[numdecile][k] - decilesres[numdecile-1][k] for k in range(3)]]
-            numdecile+=1
-    print("In fine ",currw,currb,curra)
-    print("mes valeurs agreg deciles :",decilesres)
-    print("mes valeurs diff deciles :",decdiffres)
-    #TODO : interpolate quantiles instead of doing the granular approach
     dic_res={}
     dic_res["total"]={}
     dic_res["total"]["avant"]=res[0]
     dic_res["total"]["apres"]=res[1]
-    dic_res["deciles"]=decdiffres
+    dic_res["res_brut"]=df
+    if compute_deciles:
+        print("Computing Deciles")
+        totweight=dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
+        nbd=10
+        decilweights=[i/nbd*totweight for i in range(nbd+1)]
+        numdecile=1
+        df["keysort"]=-df["avant"]-df["apres"]
+        df=df.sort_values(by='keysort') #For now, deciles are organized by level of irpp
+        currw=0
+        currb=0
+        curra=0
+        dfv=df.values
+        decilesres=[(0,0,0)]
+        decdiffres=[]
+        print(decilweights,dfv[0],totweight)
+        print(dfv[1])
+        eps=0.0001
+        for v in dfv:
+            currw+=v[0]
+            currb+=v[1]*v[0]
+            curra+=v[2]*v[0]
+            if currw>=decilweights[numdecile]-eps:
+                decilesres+=[(currw,currb,curra)]
+                decdiffres+=[[decilesres[numdecile][k] - decilesres[numdecile-1][k] for k in range(3)]]
+                numdecile+=1
+        print("In fine ",currw,currb,curra)
+        print("mes valeurs agreg deciles :",decilesres)
+        print("mes valeurs diff deciles :",decdiffres)
+        #TODO : interpolate quantiles instead of doing the granular approach
+        dic_res["deciles"]=decdiffres
     return dic_res
 
 
@@ -242,14 +243,31 @@ DUMMY_DATA = DUMMY_DATA [DUMMY_DATA ["idmen"]<1000]
 simulation_base_deciles = simulation(PERIOD, DUMMY_DATA,TBS, timer = time)
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE,TBS, timer = time)
 
+def foyertotexte(idfoy,data=None):
+    if data is None:
+        data=CAS_TYPE
+    myct=data[data["idfoy"]==idfoy]
+    print("Je fais un foyer to texte pour le foyer ",idfoy,myct)
+    decl=myct[myct["quifoyof"]=="declarant_principal"]
+    nbdecl=len(decl)
+    nbpacs=len(myct)-nbdecl
+    pacs=myct[myct["quifoyof"]!="declarant_principal"]
+    agedecl=sorted(decl["age"].values,reverse=True)
+    agepacs=sorted(pacs["age"].values,reverse=True)
+    revenu=myct["salaire_de_base"].sum()
+    return "\n".join([u"{} déclarant{}, d'âge {}".format(nbdecl,"s" if nbdecl>1 else ""," et ".join([str(_) for _ in agedecl]))] +
+                     (["{} personne{} à charge, d'âge {}".format(nbpacs,"s" if nbpacs>1 else ""," et ".join([str(_) for _ in agepacs]))] if nbpacs else [])+
+                     ["revenu total du FF : {}".format(revenu)])
+
 def CompareOldNew(taux, isdecile = True):
+    print("comparing old new, isdecile = {} ".format(isdecile))
     #if isdecile, we want the impact on the full population, while just a cas type on the isdecile=False
     data,simulation_base = (DUMMY_DATA,simulation_base_deciles) if isdecile else (CAS_TYPE,simulation_base_castypes)
     print(taux)
     print(taux[0],len(taux))
     reform = reform_from_bareme(TBS, [0]+taux[:len(taux)//2],[0]+taux[len(taux)//2:], PERIOD)
     simulation_reform = simulation(PERIOD,data,reform, timer = time)
-    return compare(taux, PERIOD, simulation_base, simulation_reform, timer = time)
+    return compare(taux, PERIOD, simulation_base, simulation_reform,isdecile, timer = time)
 
 if __name__ == "__main__":
     taux = [9964,27159,73779,156244,14,30,41,45]
