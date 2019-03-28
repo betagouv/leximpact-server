@@ -217,14 +217,19 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform,t
     print("mes valeurs agreg deciles :",decilesres)
     print("mes valeurs diff deciles :",decdiffres)
     #TODO : interpolate quantiles instead of doing the granular approach
-    return res+decdiffres
+    dic_res={}
+    dic_res["total"]={}
+    dic_res["total"]["avant"]=res[0]
+    dic_res["total"]["apres"]=res[1]
+    dic_res["deciles"]=decdiffres
+    return dic_res
 
 
 PERIOD = "2014"
 TBS = FranceTaxBenefitSystem()
 REFORM = partial(reform_from_bareme, period = PERIOD, tbs = TBS)
 
-CAS_TYPE = load_data(fread("UCT-0001.csv"))
+CAS_TYPE = load_data(fread("DCT.csv"))
 SIMCAT = partial(simulation, period = PERIOD, data = CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs = TBS)
 
@@ -234,10 +239,12 @@ SIMPOP_BASE = SIMPOP(tbs = TBS)
 
 DUMMY_DATA = DUMMY_DATA [DUMMY_DATA ["idmen"]<1000]
 
-data = DUMMY_DATA
-simulation_base = simulation(PERIOD, data,TBS, timer = time)
+simulation_base_deciles = simulation(PERIOD, DUMMY_DATA,TBS, timer = time)
+simulation_base_castypes = simulation(PERIOD, CAS_TYPE,TBS, timer = time)
 
-def CompareOldNew(taux):
+def CompareOldNew(taux, isdecile = True):
+    #if isdecile, we want the impact on the full population, while just a cas type on the isdecile=False
+    data,simulation_base = (DUMMY_DATA,simulation_base_deciles) if isdecile else (CAS_TYPE,simulation_base_castypes)
     print(taux)
     print(taux[0],len(taux))
     reform = reform_from_bareme(TBS, [0]+taux[:len(taux)//2],[0]+taux[len(taux)//2:], PERIOD)
@@ -247,10 +254,8 @@ def CompareOldNew(taux):
 if __name__ == "__main__":
     taux = [9964,27159,73779,156244,14,30,41,45]
     reform = reform_from_bareme(TBS, [0]+taux[:len(taux)//2],[0]+taux[len(taux)//2:], PERIOD)
-    simulation_reform = simulation(PERIOD,data,reform, timer = time)
-    compare(taux, PERIOD, simulation_base, simulation_reform, timer = time)
-
-
+    simulation_reform = simulation(PERIOD,DUMMY_DATA,reform, timer = time)
+    compare(taux, PERIOD, simulation_base_deciles, simulation_reform, timer = time)
 
 def cas_type(taux):
     reform = REFORM(taux = taux)
@@ -261,7 +266,6 @@ def decile(taux):
     reform = REFORM(taux = taux)
     simulation_reform = SIMPOP(tbs = reform)
     return compare(PERIOD, taux,SIMPOP_BASE, simulation_reform)
-
 
 def cout_etat(taux):
     reform = REFORM(taux = taux)

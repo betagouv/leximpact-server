@@ -11,7 +11,6 @@ except(Exception):
     sys.path.insert(0, './../Simulation_engine')
     import simulate_pop_from_reform
 
-
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -23,22 +22,23 @@ basevalue=9964
 sizeperc=1
 sizev=3
 
-app.layout = html.Div([html.Link(href="https://fonts.googleapis.com/css?family=Cormorant+Garamond",rel="stylesheet"),
-    html.Div([html.H1("Article 197"),
+LinksCSSToAdd = [html.Link(href="https://fonts.googleapis.com/css?family=Cormorant+Garamond",rel="stylesheet")]
+
+app.layout = html.Div(LinksCSSToAdd + [html.Div([html.H1("Article 197"),
     html.Button(id='submit-button', n_clicks=0, children='Submit'),
     html.P("""I. – En ce qui concerne les contribuables visés à l'article 4 B, il est fait application des règles suivantes pour le calcul de l'impôt sur le revenu :"""),
     html.P(html.Div(["""1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède """,
                      dcc.Input(id='input-seuil0', type='text', value=9964,size=sizev),"""€ le taux de :"""])),
     html.P(html.Div(["""– """, dcc.Input(id='input-taux0', type='text', value=14,size=sizeperc),"""% pour la fraction supérieure à """,
-                     html.B(id='output-seuil0'),
-                     """ et inférieure ou égale à""", dcc.Input(id='input-seuil1', type='text', value=27519,size=sizev),"""€ ;"""])),
+                     html.Nobr(id='output-seuil0'),
+                     """ et inférieure ou égale à """, dcc.Input(id='input-seuil1', type='text', value=27519,size=sizev),"""€ ;"""])),
     html.P(html.Div(["""– """, dcc.Input(id='input-taux1', type='text', value=30,size=sizeperc),"""% pour la fraction supérieure à """,
                      html.B(id='output-seuil1'),
-                     """ € et inférieure ou égale à""", dcc.Input(id='input-seuil2', type='text', value=73779,size=sizev),"""€ ;"""])),
+                     """ € et inférieure ou égale à """, dcc.Input(id='input-seuil2', type='text', value=73779,size=sizev),"""€ ;"""])),
     html.P(html.Div(["""– """, dcc.Input(id='input-taux2', type='text', value=41,size=sizeperc),"""% pour la fraction supérieure à """,
                      html.B(id='output-seuil2'),
-                     """ € et inférieure ou égale à""", dcc.Input(id='input-seuil3', type='text', value=156244,size=sizev),"""€ ;"""])),
-    html.P(html.Div(["""– """, dcc.Input(id='input-taux3', type='text', value=45,size=sizeperc),"""% pour la fraction supérieure à""",
+                     """ € et inférieure ou égale à """, dcc.Input(id='input-seuil3', type='text', value=156244,size=sizev),"""€ ;"""])),
+    html.P(html.Div(["""– """, dcc.Input(id='input-taux3', type='text', value=45,size=sizeperc),"""% pour la fraction supérieure à """,
                      html.B(id='output-seuil3'),
                      """€"""])),
     html.Div(["""2. La réduction d'impôt résultant de l'application du quotient familial ne peut excéder""",
@@ -116,9 +116,9 @@ def get_reform_result(n_clicks,*args):
         print("j'ai fini get_reform_result")
         return {
                 'data': [
-                    {'x': ["avant"], 'y': [myres[0]], 'type': 'bar', 'name': u'avant'},
-                    {'x': ["après"], 'y': [myres[1]], 'type': 'bar', 'name': 'après'},
-                    {'x': ["impact"], 'y': [myres[1]-myres[0]], 'type': 'bar', 'name': 'impact'}
+                    {'x': ["avant"], 'y': [myres["total"]["avant"]], 'type': 'bar', 'name': u'avant'},
+                    {'x': ["après"], 'y': [myres["total"]["apres"]], 'type': 'bar', 'name': u'après'},
+                    {'x': ["impact"], 'y': [myres["total"]["apres"]-myres["total"]["avant"]], 'type': 'bar', 'name': 'impact'}
                 ]
             ,
                 'layout': {
@@ -126,7 +126,7 @@ def get_reform_result(n_clicks,*args):
                 }
             },{
                 'data':
-                [{'x' : ["decile {}".format(i)], 'y':[myres[2+i][2]-myres[2+i][1]] , 'type':'bar', 'name' :"decile {}".format(i)} for i in range(10)]
+                [{'x' : ["decile {}".format(i)], 'y':[myres["deciles"][i][2]-myres["deciles"][i][1]] , 'type':'bar', 'name' :"decile {}".format(i)} for i in range(len(myres["deciles"]))]
             ,
                 'layout': {
                     'title': 'changement par décile'
