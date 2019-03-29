@@ -22,14 +22,18 @@ basevalue=9964
 sizeperc=1
 sizev=3
 
-LinksCSSToAdd = [html.Link(href="https://fonts.googleapis.com/css?family=Cormorant+Garamond",rel="stylesheet")]
+
+url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
+                 "https://fonts.googleapis.com/css?family=Lato"]
+links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_to_add]
 
 list_cas_types = [0, 1, 2, 3, 4, 5]
 
-graphsCT = [dcc.Graph(id='graph-ct{}'.format(ct),className='six columns') for ct in list_cas_types]
+graphsCT = [dcc.Graph(id='graph-ct{}'.format(ct),className='outputstat six columns') for ct in list_cas_types]
 graphsCTsplit = [html.P(graphsCT[x:x+2]) for x in range(0,len(graphsCT),2)]
 
-app.layout = html.Div(LinksCSSToAdd + [html.Div([html.H1("Article 197"),
+app.layout = html.Div(links_css_stylesheets + [html.Div([html.H2("Article 197"),
+    html.H3("code général des impôts"),
     html.Button(id='submit-button', n_clicks=0, children='Submit'),
     html.P("""I. – En ce qui concerne les contribuables visés à l'article 4 B, il est fait application des règles suivantes pour le calcul de l'impôt sur le revenu :"""),
     html.P(html.Div(["""1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède """,
@@ -38,13 +42,13 @@ app.layout = html.Div(LinksCSSToAdd + [html.Div([html.H1("Article 197"),
                      html.Nobr(id='output-seuil0'),
                      """ et inférieure ou égale à """, dcc.Input(id='input-seuil1', type='text', value=27519,size=sizev),"""€ ;"""])),
     html.P(html.Div(["""– """, dcc.Input(id='input-taux1', type='text', value=30,size=sizeperc),"""% pour la fraction supérieure à """,
-                     html.B(id='output-seuil1'),
+                     html.Nobr(id='output-seuil1'),
                      """ € et inférieure ou égale à """, dcc.Input(id='input-seuil2', type='text', value=73779,size=sizev),"""€ ;"""])),
     html.P(html.Div(["""– """, dcc.Input(id='input-taux2', type='text', value=41,size=sizeperc),"""% pour la fraction supérieure à """,
-                     html.B(id='output-seuil2'),
+                     html.Nobr(id='output-seuil2'),
                      """ € et inférieure ou égale à """, dcc.Input(id='input-seuil3', type='text', value=156244,size=sizev),"""€ ;"""])),
     html.P(html.Div(["""– """, dcc.Input(id='input-taux3', type='text', value=45,size=sizeperc),"""% pour la fraction supérieure à """,
-                     html.B(id='output-seuil3'),
+                     html.Nobr(id='output-seuil3'),
                      """€"""])),
     html.Div(["""2. La réduction d'impôt résultant de l'application du quotient familial ne peut excéder""",
               """ 1 527 € par demi-part ou la moitié de cette somme par quart de part s'ajoutant à une part pour les contribuables célibataires, divorcés, veufs ou soumis à l'imposition distincte prévue au 4 de l'article 6 et à deux parts pour les contribuables mariés soumis à une imposition commune."""]),
@@ -66,7 +70,7 @@ app.layout = html.Div(LinksCSSToAdd + [html.Div([html.H1("Article 197"),
     html.P("""5. Les réductions d'impôt mentionnées aux articles 199 quater B à 200 s'imputent sur l'impôt résultant de l'application des dispositions précédentes avant imputation des crédits d'impôt et des prélèvements ou retenues non libératoires ; elles ne peuvent pas donner lieu à remboursement."""),
    # dcc.Input(id='input-seuil0', type='text', value='1527'),
     html.B(id='result-reform')
-],className="four columns"),
+],className="inputarticle six columns"),
     html.Div(
     [html.Div(graphsCTsplit+
     # [html.P(dcc.Graph(
@@ -77,7 +81,7 @@ app.layout = html.Div(LinksCSSToAdd + [html.Div([html.H1("Article 197"),
     #  )),]+
         [html.P([dcc.Graph(id='graphtotal',className="six columns"),
             dcc.Graph(id='graphdecile',className="six columns")])]
-    )],className="seven columns")],className="row")
+    )],className="five columns")],className="row")
 
 
 # Generates reform text from input. Actually should run the simulations...
