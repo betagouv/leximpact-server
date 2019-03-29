@@ -243,6 +243,7 @@ DUMMY_DATA = DUMMY_DATA [DUMMY_DATA ["idmen"]<1000]
 simulation_base_deciles = simulation(PERIOD, DUMMY_DATA,TBS, timer = time)
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE,TBS, timer = time)
 
+
 def foyertotexte(idfoy,data=None):
     if data is None:
         data=CAS_TYPE
@@ -258,6 +259,14 @@ def foyertotexte(idfoy,data=None):
     return "\n".join([u"{} déclarant{}, d'âge {}".format(nbdecl,"s" if nbdecl>1 else ""," et ".join([str(_) for _ in agedecl]))] +
                      (["{} personne{} à charge, d'âge {}".format(nbpacs,"s" if nbpacs>1 else ""," et ".join([str(_) for _ in agepacs]))] if nbpacs else [])+
                      ["revenu total du FF : {}".format(revenu)])
+
+def texte_cas_types(data=None):
+    if data is None:
+        data=CAS_TYPE
+    dic_res={}
+    for k in data["idfoy"].values:
+        dic_res[k]=foyertotexte(k,data)
+    return dic_res
 
 def CompareOldNew(taux, isdecile = True):
     print("comparing old new, isdecile = {} ".format(isdecile))

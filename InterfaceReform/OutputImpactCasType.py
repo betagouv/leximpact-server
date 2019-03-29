@@ -28,11 +28,18 @@ url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700
 links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_to_add]
 
 list_cas_types = [0, 1, 2, 3, 4, 5]
+Family_names=["Martin","Bernard","Thomas","Petit","Robert","Richard","Durand","Dubois","Moreau","Laurent","Simon"]
+
 
 graphsCT = [dcc.Graph(id='graph-ct{}'.format(ct),className='outputstat six columns') for ct in list_cas_types]
 graphsCTsplit = [html.P(graphsCT[x:x+2]) for x in range(0,len(graphsCT),2)]
 
-app.layout = html.Div(links_css_stylesheets + [html.Div([html.H2("Article 197"),
+texte_cas_types=simulate_pop_from_reform.texte_cas_types()
+
+desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
+
+app.layout = html.Div([html.Header("Oui oui c'est mon header blabla"),html.Div([
+    html.H2("Article 197"),
     html.H3("code général des impôts"),
     html.Button(id='submit-button', n_clicks=0, children='Submit'),
     html.P("""I. – En ce qui concerne les contribuables visés à l'article 4 B, il est fait application des règles suivantes pour le calcul de l'impôt sur le revenu :"""),
@@ -72,7 +79,7 @@ app.layout = html.Div(links_css_stylesheets + [html.Div([html.H2("Article 197"),
     html.B(id='result-reform')
 ],className="inputarticle six columns"),
     html.Div(
-    [html.Div(graphsCTsplit+
+    graphsCTsplit+
     # [html.P(dcc.Graph(
         #      id='graph-ct0'
     #  )),
@@ -80,8 +87,8 @@ app.layout = html.Div(links_css_stylesheets + [html.Div([html.H2("Article 197"),
         #      id='graph-ct1'
     #  )),]+
         [html.P([dcc.Graph(id='graphtotal',className="six columns"),
-            dcc.Graph(id='graphdecile',className="six columns")])]
-    )],className="five columns")],className="row")
+            dcc.Graph(id='graphdecile',className="six columns")]
+        ),html.Br(),html.P(desc_cas_types)],className="five columns")],className="row")
 
 
 # Generates reform text from input. Actually should run the simulations...
