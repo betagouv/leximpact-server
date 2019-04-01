@@ -20,7 +20,7 @@ basevalue=9964
 #app.config['suppress_callback_exceptions']=True
 
 sizeperc=1
-sizev=3
+sizev=1
 
 
 url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
@@ -43,18 +43,18 @@ app.layout = html.Div([html.Header("Oui oui c'est mon header blabla"),html.Div([
     html.H3("code général des impôts"),
     html.Button(id='submit-button', n_clicks=0, children='Submit'),
     html.P("""I. – En ce qui concerne les contribuables visés à l'article 4 B, il est fait application des règles suivantes pour le calcul de l'impôt sur le revenu :"""),
-    html.P(html.Div(["""1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède """,
-                     dcc.Input(id='input-seuil0', type='text', value=9964,size=sizev),"""€ le taux de :"""])),
-    html.P(html.Div(["""– """, dcc.Input(id='input-taux0', type='text', value=14,size=sizeperc),"""% pour la fraction supérieure à """,
+    html.P(html.Div(["""1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède """,html.S("9 690"),
+                     dcc.Input(id='input-seuil0', type='number', value=9964,size=sizev),"""€ le taux de :"""])),
+    html.P(html.Div(["""– """, dcc.Input(id='input-taux0', type='number', value=14,size=sizeperc),"""% pour la fraction supérieure à """,
                      html.Nobr(id='output-seuil0'),
-                     """ et inférieure ou égale à """, dcc.Input(id='input-seuil1', type='text', value=27519,size=sizev),"""€ ;"""])),
-    html.P(html.Div(["""– """, dcc.Input(id='input-taux1', type='text', value=30,size=sizeperc),"""% pour la fraction supérieure à """,
+                     """ et inférieure ou égale à """,html.S("26 764"), dcc.Input(id='input-seuil1', type='number', value=27519,size=sizev),"""€ ;"""])),
+    html.P(html.Div(["""– """, dcc.Input(id='input-taux1', type='number', value=30,size=sizeperc),"""% pour la fraction supérieure à """,
                      html.Nobr(id='output-seuil1'),
-                     """ € et inférieure ou égale à """, dcc.Input(id='input-seuil2', type='text', value=73779,size=sizev),"""€ ;"""])),
-    html.P(html.Div(["""– """, dcc.Input(id='input-taux2', type='text', value=41,size=sizeperc),"""% pour la fraction supérieure à """,
+                     """ € et inférieure ou égale à """,html.S("71 754"), dcc.Input(id='input-seuil2', type='number', value=73779,size=sizev),"""€ ;"""])),
+    html.P(html.Div(["""– """, dcc.Input(id='input-taux2', type='number', value=41,size=sizeperc),"""% pour la fraction supérieure à """,
                      html.Nobr(id='output-seuil2'),
-                     """ € et inférieure ou égale à """, dcc.Input(id='input-seuil3', type='text', value=156244,size=sizev),"""€ ;"""])),
-    html.P(html.Div(["""– """, dcc.Input(id='input-taux3', type='text', value=45,size=sizeperc),"""% pour la fraction supérieure à """,
+                     """ € et inférieure ou égale à """,html.S("151 956"), dcc.Input(id='input-seuil3', type='number', value=156244,size=sizev),"""€ ;"""])),
+    html.P(html.Div(["""– """, dcc.Input(id='input-taux3', type='number', value=45,size=sizeperc),"""% pour la fraction supérieure à """,
                      html.Nobr(id='output-seuil3'),
                      """€"""])),
     html.Div(["""2. La réduction d'impôt résultant de l'application du quotient familial ne peut excéder""",

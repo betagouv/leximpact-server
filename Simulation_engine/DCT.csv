@@ -1,0 +1,18 @@
+level_0,index,activite,age,categorie_salarie,chomage_brut,chomage_imposable,contrat_de_travail,date_naissance,effectif_entreprise,heures_remunerees_volume,idfam,idfoy,idmen,pensions_alimentaires_percues,quifam,quifoy,quimen,rag,retraite_brute,retraite_imposable,ric,rnc,statut_marital,salaire_de_base,taux_csg_remplacement,f4ba,loyer,statut_occupation_logement,taxe_habitation,wprm,zone_apl,quimenof
+0,0,0,62,7,0,0,6,1951-05-24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,15000,taux plein,1873,0,0,0,715.3020784,2,personne_de_reference
+1,1,0,28,7,0,0,6,1985-09-01,0,0,1,1,1,0,0,0,0,0,0,0,0,0,2,45000,taux plein,,0,0,0,767.5495775,2,personne_de_reference
+2,2,0,45,2,0,0,0,1968-10-30,0,0,2,2,2,0,0,0,0,0,0,0,0,0,3,50000,taux plein,,0,0,0,542.97068,2,personne_de_reference
+3,3,2,16,7,0,0,6,1997-06-13,0,0,2,2,2,0,2,2,2,0,0,0,0,0,2,0,taux plein,,0,0,0,542.97068,2,enfant
+4,4,2,13,7,0,0,6,2000-05-21,0,0,2,2,2,0,3,3,3,0,0,0,0,0,2,0,taux plein,,0,0,0,542.97068,2,enfant
+5,5,2,9,7,0,0,6,2004-05-09,0,0,2,2,2,0,4,4,4,0,0,0,0,0,2,0,taux plein,,0,0,0,542.97068,2,enfant
+6,6,0,40,0,0,0,0,1973-08-30,0,0,3,3,3,0,0,0,0,0,0,0,0,0,2,240000,taux plein,,0,0,0,837.3611758,2,personne_de_reference
+7,7,4,23,0,0,0,1,1990-06-03,0,151.1,4,4,4,0,0,0,0,0,0,0,0,0,2,30000,taux plein,,0,0,0,932.3883223,2,personne_de_reference
+8,8,3,67,7,0,0,6,1946-11-26,0,0,5,5,5,0,0,0,0,0,0,0,0,0,2,54546,taux plein,,0,0,0,955.0544926,2,personne_de_reference
+9,9,1,36,7,0,0,6,1977-12-30,0,0,6,6,6,0,0,0,0,0,0,0,0,0,2,66296,taux plein,,0,0,0,1521.184777,2,personne_de_reference
+10,10,0,27,0,0,0,0,1986-04-28,0,0,7,7,7,0,1,1,1,0,0,0,0,0,2,22147,taux plein,,0,0,0,970.8329476,2,conjoint
+11,11,0,26,0,0,0,1,1987-10-15,0,951.2,7,7,7,1751,0,0,0,0,0,0,0,0,2,93874,taux plein,,0,0,0,970.8329476,2,personne_de_reference
+12,12,0,35,0,0,0,1,1978-10-18,0,421.1,8,8,8,0,1,1,1,0,0,0,0,0,2,93956,taux plein,,0,0,0,808.9800016,2,conjoint
+13,13,0,39,2,0,0,0,1974-08-11,0,0,8,8,8,0,0,0,0,0,0,0,0,0,2,82181,taux plein,,0,0,0,808.9800016,2,personne_de_reference
+14,14,2,1,7,0,0,6,2012-06-28,0,0,8,8,8,0,2,5,5,0,0,0,0,0,2,0,taux plein,,0,0,0,808.9800016,2,enfant
+15,15,3,86,7,0,0,6,1927-08-20,0,0,9,9,9,0,0,0,0,0,0,0,0,0,4,66414,taux plein,14500,0,0,0,690.6429784,2,personne_de_reference
+16,16,2,21,7,0,0,6,1991-12-14,0,0,10,10,9,0,0,0,6,0,0,0,0,0,2,79612,taux plein,,0,0,0,690.6429784,2,personne_de_reference
