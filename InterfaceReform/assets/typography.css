@@ -2,9 +2,33 @@
 
 header
 {
-		background-color: #E5DC07;
-		padding: 3px 3px;
-  		margin: 3px 3px;
+	background-color: #E5DC07;
+	padding: 3px 3px;
+  	margin: 3px 3px;
+  	background-size: cover;
+    color: white;
+}
+
+h1 {
+	font-family: Lato;
+	font-style: normal;
+	font-weight: 900;
+	font-size: 36px;
+	line-height: 48px;
+
+	color: #00101;
+}
+
+ul {
+	padding:0px;
+	background-size: cover;
+    background: #E5DC07;
+}
+
+li {
+      display:inline;
+      padding: 0px 10px 0px 10px;
+      /*padding: ne pas oublier lespace après les points*/
 }
 
 .outputstat {
@@ -44,27 +68,6 @@ body {
 
 }
 
-ul {
-	padding:10px;
-    background: #E5DC07;
-}
-
-li {
-      display:inline;
-      padding: 0px 10px 0px 10px;
-      /*padding: ne pas oublier lespace après les points*/
-}
-
-
-h1 {
-	font-family: Lora;
-	font-style: normal;
-	font-weight: bold;
-	font-size: 32px;
-	line-height: 48px;
-
-	color: #00101;
-}
 
 h2 {
 	font-family: Lora;
@@ -88,11 +91,27 @@ h3 {
 	color: #00101;
 }
 
-input[type=text] {
-  padding: 0px 0px;
-  margin: 0px 0;
+/* couleur de la réforme*/
+s {
+	color: #A6A00C;
+	font-weight: bold;
 }
 
+input {
+	color: #00A3FF;
+	font-weight: bold;
+	max-width: 100px;
+	margin: 3px 10px 3px 10px; 
+	border: 7px;
+}
+
+
+/*input[type=text] {
+  padding: 0px 0px;
+  margin: 0px 0;
+  color: white;
+}
+*/
 .typovaleur {
  	font-family: 'Lora', serif;
  	font-weight: bold;
