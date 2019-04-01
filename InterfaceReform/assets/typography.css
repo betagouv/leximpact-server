@@ -1,11 +1,10 @@
 
 
-div.header
+header
 {
-		background-color:red;
+		background-color: #E5DC07;
 		padding: 3px 3px;
   		margin: 3px 3px;
-  		box-shadow: 12px 12px 2px 1px rgba(211, 211, 211, .5);
 }
 
 .outputstat {
@@ -44,6 +43,29 @@ body {
 	background-size: cover; /* l'image couvre toute la page */
 
 }
+
+ul {
+	padding:10px;
+    background: #E5DC07;
+}
+
+li {
+      display:inline;
+      padding: 0px 10px 0px 10px;
+      /*padding: ne pas oublier lespace après les points*/
+}
+
+
+h1 {
+	font-family: Lora;
+	font-style: normal;
+	font-weight: bold;
+	font-size: 32px;
+	line-height: 48px;
+
+	color: #00101;
+}
+
 h2 {
 	font-family: Lora;
 	font-style: normal;
