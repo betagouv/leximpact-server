@@ -22,7 +22,6 @@ basevalue=9964
 sizeperc=1
 sizev=1
 
-
 url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
                  "https://fonts.googleapis.com/css?family=Lato"]
 links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_to_add]
@@ -39,8 +38,8 @@ texte_cas_types=simulate_pop_from_reform.texte_cas_types()
 desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
 
 app.layout = html.Div([html.Header([
-    html.H1("Oui oui c'est mon header blabla"),
-    html.Ul([html.Li("About me"),html.Li("Stuff"),html.Li("Poems")])
+    html.H1("LEXIMPACT"),
+    html.Ul([html.Li("About me"),html.Li("Stuff"),html.Li("Mes amendements")])
     ]),
 #DÉBUT DU BLOC ARTICLE   
     html.Div([
