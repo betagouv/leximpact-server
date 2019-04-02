@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import sys
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import sys
+
+from components.header import Header
+
 try:
     sys.path.insert(0, './Simulation_engine')
     import simulate_pop_from_reform
@@ -38,10 +42,8 @@ texte_cas_types=simulate_pop_from_reform.texte_cas_types()
 
 desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
 
-app.layout = html.Div([html.Header([
-    html.H1("LEXIMPACT"),
-    html.Ul([html.Li("About me"),html.Li("Stuff"),html.Li("Mes amendements")])
-    ]),
+app.layout = html.Div([
+    Header.render(),
 #DÉBUT DU BLOC ARTICLE
     html.Div([
     html.H2("Article 197"),
