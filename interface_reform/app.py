@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -41,7 +42,7 @@ app.layout = html.Div([html.Header([
     html.H1("LEXIMPACT"),
     html.Ul([html.Li("About me"),html.Li("Stuff"),html.Li("Mes amendements")])
     ]),
-#DÉBUT DU BLOC ARTICLE   
+#DÉBUT DU BLOC ARTICLE
     html.Div([
     html.H2("Article 197"),
     html.H3("code général des impôts"),

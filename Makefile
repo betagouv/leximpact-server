@@ -9,7 +9,7 @@ install:
 	pip install -r requirements.txt
 
 run:
-	python ./InterfaceReform/OutputImpactCasType.py
+	python ./interface_reform/app.py
 
 simpop:
 	python ./Simulation_engine/simulate_pop_from_reform.py
