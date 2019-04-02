@@ -18,3 +18,9 @@ make install
 ```sh
 make run
 ```
+
+## Test
+
+```sh
+make test
+```

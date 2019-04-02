@@ -6,10 +6,14 @@ uninstall:
 install:
 	@# Install libraries as described in the requirements.txt file.
 	pip install --upgrade pip
-	pip install -r requirements.txt
+	pip install --editable .[dev] --upgrade
+
 
 run:
 	python ./interface_reform/app.py
+
+test:
+	pytest
 
 simpop:
 	python ./Simulation_engine/simulate_pop_from_reform.py
