@@ -7,7 +7,11 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 
-from components import Article, Header
+from components import (
+    Article,
+    GraphCasType,
+    Header,
+)
 
 try:
     sys.path.insert(0, './Simulation_engine')
@@ -45,7 +49,7 @@ list_cas_types = [0, 1, 2, 3, 4, 5]
 Family_names=["Martin","Bernard","Thomas","Petit","Robert","Richard","Durand","Dubois","Moreau","Laurent","Simon"]
 
 
-graphsCT = [dcc.Graph(id='graph-ct{}'.format(ct),className='outputstat six columns') for ct in list_cas_types]
+graphsCT = [GraphCasType.render(ct) for ct in list_cas_types]
 graphsCTsplit = [html.P(graphsCT[x:x+2]) for x in range(0,len(graphsCT),2)]
 
 texte_cas_types=simulate_pop_from_reform.texte_cas_types()
