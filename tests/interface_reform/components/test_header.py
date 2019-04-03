@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from interface_reform.components.header import Header
+from interface_reform.components import Header
 
 
 def test_render():
-    assert Header.render()
+    assert "LEXIMPACT" in str(Header.render())
