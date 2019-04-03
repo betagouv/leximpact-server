@@ -260,6 +260,22 @@ def foyertotexte(idfoy,data=None):
                      (["{} personne{} à charge, d'âge {}".format(nbpacs,"s" if nbpacs>1 else ""," et ".join([str(_) for _ in agepacs]))] if nbpacs else [])+
                      ["revenu total du FF : {}".format(revenu)])
 
+def foyertorevenu(idfoy,data=None):
+    if data is None:
+        data=CAS_TYPE
+    revenu=data[data["idfoy"]==idfoy]["salaire_de_base"].sum()
+    print(idfoy,"est mon idfoy et mon rev ",revenu)
+    return revenu
+
+def revenus_cas_types(data=None):
+    if data is None:
+        data=CAS_TYPE
+    dic_res={}
+    for k in data["idfoy"].values:
+        dic_res[k]=foyertorevenu(k,data)
+    print("dic_res ",dic_res)
+    return dic_res
+
 def texte_cas_types(data=None):
     if data is None:
         data=CAS_TYPE

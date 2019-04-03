@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys
+import sys,os
 
 import dash
 import dash_core_components as dcc
@@ -46,10 +46,13 @@ url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700
 links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_to_add]
 
 names=["Martin","Bernard","Thomas","Petit","Robert","Richard"]
+revenusCT= simulate_pop_from_reform.revenus_cas_types()
+imgstarts=["./assets/ImagesCasTypes/"+namefile for namefile in sorted(os.listdir("./assets/ImagesCasTypes"))]
 
-
-graphsCT = [GraphCasType.render(index) for index, _name in enumerate(names)]
-graphsCTsplit = [html.P(graphsCT[x:x+2]) for x in range(0,len(graphsCT),2)]
+halfwidthgraphs=False
+graphsCT = [GraphCasType.render(index,imgstarts[index],halfwidth=halfwidthgraphs,name=names[index],revenu=revenusCT[index]) for index, _name in enumerate(names)]
+nbsplit=2 if halfwidthgraphs else 1
+graphsCTsplit = [html.P(graphsCT[x:x+nbsplit]) for x in range(0,len(graphsCT),nbsplit)]
 
 texte_cas_types=simulate_pop_from_reform.texte_cas_types()
 
@@ -67,9 +70,9 @@ app.layout = html.Div([
     #      html.P(dcc.Graph(
         #      id='graph-ct1'
     #  )),]+
-        [html.P([html.Button(id='submit-button', n_clicks=0, children='population française'),dcc.Graph(id='graphtotal',className="six columns"),
-            dcc.Graph(id='graphdecile',className="six columns")]
-        ),html.Br(),html.P(desc_cas_types)],className="five columns")],className="row")
+        [html.P([html.Button(id='submit-button', n_clicks=0, children='population française'),dcc.Graph(id='graphtotal'),
+            dcc.Graph(id='graphdecile')]
+        )],className="five columns")],className="row")
 
 
 # Generates reform text from input. Actually should run the simulations...
@@ -161,10 +164,10 @@ def get_reform_result_castypes(n_clicks,*args):
                     {'x': ["impact"], 'y': [-df["apres"][index] + df["avant"][index]], 'type': 'bar',
                      'name': 'impact'}
                 ]
-                ,
-                'layout': {
-                    'title': simulate_pop_from_reform.foyertotexte(index)
-                }
+                #,
+                #'layout': {
+                #    'title': simulate_pop_from_reform.foyertotexte(index)
+                #}
             } for index, _name in enumerate(names)]
         print(*resforcastypes)
         return (*resforcastypes,)
