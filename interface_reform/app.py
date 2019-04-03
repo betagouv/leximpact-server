@@ -45,11 +45,10 @@ url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700
                  "https://fonts.googleapis.com/css?family=Lato"]
 links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_to_add]
 
-list_cas_types = [0, 1, 2, 3, 4, 5]
-Family_names=["Martin","Bernard","Thomas","Petit","Robert","Richard","Durand","Dubois","Moreau","Laurent","Simon"]
+names=["Martin","Bernard","Thomas","Petit","Robert","Richard"]
 
 
-graphsCT = [GraphCasType.render(ct) for ct in list_cas_types]
+graphsCT = [GraphCasType.render(index) for index, _name in enumerate(names)]
 graphsCTsplit = [html.P(graphsCT[x:x+2]) for x in range(0,len(graphsCT),2)]
 
 texte_cas_types=simulate_pop_from_reform.texte_cas_types()
@@ -150,27 +149,27 @@ def get_reform_result_castypes(n_clicks,*args):
         myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
         print(myres)
         df=myres["res_brut"]
-        for ct in list_cas_types:
+        for index, _name in enumerate(names):
             print("alors :")
-            print(ct)
-            print(df[df.index==ct],df["avant"][ct],df["apres"][ct])
+            print(index)
+            print(df[df.index==index],df["avant"][index],df["apres"][index])
         resforcastypes = [
             {
                 'data': [
-                    {'x': ["avant"], 'y': [-df["avant"][ct]], 'type': 'bar', 'name': u'avant'},
-                    {'x': ["après"], 'y': [-df["apres"][ct]], 'type': 'bar', 'name': u'après'},
-                    {'x': ["impact"], 'y': [-df["apres"][ct] + df["avant"][ct]], 'type': 'bar',
+                    {'x': ["avant"], 'y': [-df["avant"][index]], 'type': 'bar', 'name': u'avant'},
+                    {'x': ["après"], 'y': [-df["apres"][index]], 'type': 'bar', 'name': u'après'},
+                    {'x': ["impact"], 'y': [-df["apres"][index] + df["avant"][index]], 'type': 'bar',
                      'name': 'impact'}
                 ]
                 ,
                 'layout': {
-                    'title': simulate_pop_from_reform.foyertotexte(ct)
+                    'title': simulate_pop_from_reform.foyertotexte(index)
                 }
-            } for ct in list_cas_types]
+            } for index, _name in enumerate(names)]
         print(*resforcastypes)
         return (*resforcastypes,)
     else: #Does not run before the first click
-        return tuple([None]*len(list_cas_types))#
+        return tuple([None]*len(names))#
 
 
 #Generates graph
