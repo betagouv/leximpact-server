@@ -47,7 +47,12 @@ links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_
 
 names=["Martin","Bernard","Thomas","Petit","Robert","Richard"]
 revenusCT= simulate_pop_from_reform.revenus_cas_types()
-imgstarts=["./assets/ImagesCasTypes/"+namefile for namefile in sorted(os.listdir("./assets/ImagesCasTypes"))]
+
+try:
+    imgstarts=["./assets/ImagesCasTypes/"+namefile for namefile in sorted(os.listdir("./assets/ImagesCasTypes"))]
+except:
+    print("images not found in ./assets/ImagesCasTypes, trying in ./interface_reform/assets/ImagesCasTypes")
+    imgstarts=["./interface_reform/assets/ImagesCasTypes/"+namefile for namefile in sorted(os.listdir("./interface_reform/assets/ImagesCasTypes"))]
 
 halfwidthgraphs=False
 graphsCT = [GraphCasType.render(index,imgstarts[index],halfwidth=halfwidthgraphs,name=names[index],revenu=revenusCT[index]) for index, _name in enumerate(names)]
