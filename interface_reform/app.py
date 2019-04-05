@@ -20,7 +20,7 @@ except(Exception):
     sys.path.insert(0, './../Simulation_engine')
     import simulate_pop_from_reform
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = []#['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -63,19 +63,14 @@ texte_cas_types=simulate_pop_from_reform.texte_cas_types()
 
 desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
 
-app.layout = html.Div([
+app.layout = html.Div(links_css_stylesheets+ [
     Header.render(),
+    html.P([html.Button(id='submit-button', n_clicks=0, children='calculer impact')]),
     Article.render(**article_values),
 
     html.Div(
     graphsCTsplit+
-    # [html.P(dcc.Graph(
-        #      id='graph-ct0'
-    #  )),
-    #      html.P(dcc.Graph(
-        #      id='graph-ct1'
-    #  )),]+
-        [html.P([html.Button(id='submit-button', n_clicks=0, children='population française'),dcc.Graph(id='graphtotal'),
+        [html.P([dcc.Graph(id='graphtotal'),
             dcc.Graph(id='graphdecile')]
         )],className="five columns")],className="row")
 
