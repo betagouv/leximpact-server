@@ -4,7 +4,7 @@ import connexion
 
 
 def create_app() -> connexion.apps.flask_app.FlaskApp:
-    app = connexion.App(__name__, specification_dir=".")
+    app = connexion.App("server", specification_dir=".")
     app.add_api("api.yaml")
     return app
 

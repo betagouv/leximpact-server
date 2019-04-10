@@ -1,3 +1,5 @@
+.PHONY: server
+
 uninstall:
 	@# Uninstall all installed libraries of your current Python workspace.
 	@# Handy when testing the instructions described in the README.md file.
@@ -11,6 +13,9 @@ install:
 
 run:
 	python ./interface_reform/app.py
+
+server:
+	FLASK_ENV=development python ./server/app.py
 
 test:
 	pytest
