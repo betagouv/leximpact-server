@@ -112,7 +112,7 @@ nbseuil=4
             [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
 def get_reform_result(n_clicks,*args):
-    if n_clicks:
+    if True or n_clicks:
         myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=True)#[input1,input1]#
         return {
                 'data': [
@@ -147,7 +147,7 @@ nbseuil=4
             [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
 def get_reform_result_castypes(n_clicks,*args):
-    if n_clicks:
+    if True or n_clicks:
         print("computing castypes")
         myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
         print(myres)
