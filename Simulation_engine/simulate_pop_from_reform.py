@@ -132,6 +132,8 @@ def simulation(period, data, tbs, timer = None):
         "quifam",
         "quifoy",
         "quimen",
+        "idmen_x",
+        "idmen_y",
         "wprm",
         "index",
         "idmen_original",
@@ -152,7 +154,10 @@ def simulation(period, data, tbs, timer = None):
                 print("{} was attributed to {}".format(colonne, tbs.get_variable(colonne).entity.key))
 
             except(Exception):
-                print("{} failed to be attributed to {}".format(colonne, tbs.get_variable(colonne).entity.key))
+                try:
+                    print("{} failed to be attributed to {}".format(colonne, tbs.get_variable(colonne).entity.key))
+                except:
+                    print('{} was attributed to NOUGHT'.format(colonne))
                 raise
 
     if timer is not None:
@@ -230,7 +235,7 @@ PERIOD = "2014"
 TBS = FranceTaxBenefitSystem()
 REFORM = partial(reform_from_bareme, period = PERIOD, tbs = TBS)
 
-CAS_TYPE = load_data(fread("DCT.csv"))
+CAS_TYPE = load_data(fread("DCT_old.csv"))
 SIMCAT = partial(simulation, period = PERIOD, data = CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs = TBS)
 
@@ -238,7 +243,7 @@ DUMMY_DATA = load_data(fread("dummy_data.h5"))
 SIMPOP = partial(simulation, period = PERIOD, data = DUMMY_DATA)
 SIMPOP_BASE = SIMPOP(tbs = TBS)
 
-DUMMY_DATA = DUMMY_DATA [DUMMY_DATA ["idmen"]<1000]
+#DUMMY_DATA = DUMMY_DATA [DUMMY_DATA ["idmen"]<1000]
 
 simulation_base_deciles = simulation(PERIOD, DUMMY_DATA,TBS, timer = time)
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE,TBS, timer = time)
@@ -248,7 +253,7 @@ def foyertotexte(idfoy,data=None):
     if data is None:
         data=CAS_TYPE
     myct=data[data["idfoy"]==idfoy]
-    print("Je fais un foyer to texte pour le foyer ",idfoy,myct)
+    #print("Je fais un foyer to texte pour le foyer ",idfoy,myct)
     decl=myct[myct["quifoyof"]=="declarant_principal"]
     nbdecl=len(decl)
     nbpacs=len(myct)-nbdecl
