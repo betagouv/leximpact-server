@@ -1,0 +1,30 @@
+openapi: "3.0.0"
+
+info:
+  title: blabla
+  version: 1.0.0
+
+paths:
+  /calculate/cas_types:
+    post:
+      summary: Calcule l'impact par cas types
+      operationId: server.handlers.CasTypes.calculate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculateCasTypes'
+      responses:
+          '201':
+            description: Cool !
+
+components:
+  schemas:
+    CalculateCasTypes:
+      type: object
+      properties:
+        reform:
+          type: object
+        cas_types:
+          type: array

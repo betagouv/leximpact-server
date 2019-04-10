@@ -21,6 +21,7 @@ setup(
         "Topic :: Scientific/Engineering :: Information Analysis",
     ],
     install_requires=[
+        "connexion[swagger-ui] >= 2.2.0, < 3.0.0",
         "dash >= 0.39.0, < 0.40.0",
         "dash-daq >= 0.1.0, < 0.2.0",
         "openfisca-core >= 29.0.0, < 30.0.0",
