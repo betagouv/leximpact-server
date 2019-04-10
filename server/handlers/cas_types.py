@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from server.services import OpenFiscaTest
-from Simulation_engine.simulate_pop_from_reform import foyertosomethingelse,CompareOldNew
+from Simulation_engine.simulate_pop_from_reform import foyertosomethingelse,CompareOldNew,revenus_cas_types
 
 class CasTypes(object):
     def calculate(**params: dict) -> tuple:
         """Pour gérer les requêtes et envoyer de résultats"""
         return OpenFiscaTest.cas_types(**params["body"]), 201
-    def totext(**params: dict) -> tuple:
-        return [{"surlefoyer":foyertosomethingelse(**params["body"])}],201
+    def revenus(**params: dict) -> tuple:
+        rct=revenus_cas_types()
+        return {int(k):int(v) for k,v in rct.items()},201
 
 class SimulationRunner(object):
     def compare(**params: dict) -> tuple:

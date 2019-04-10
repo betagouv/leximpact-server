@@ -18,16 +18,16 @@ paths:
       responses:
           '201':
             description: Cool !
-  /calculate/totext:
+  /calculate/revenus:
     post:
       summary: Calcule l'impact par cas types
-      operationId: server.handlers.CasTypes.totext
+      operationId: server.handlers.CasTypes.revenus
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/totext'
+              $ref: '#/components/schemas/revenus'
       responses:
           '201':
             description: Encore plus Cool
@@ -54,11 +54,8 @@ components:
           type: object
         cas_types:
           type: array
-    totext:
+    revenus:
       type: object
-      properties:
-        idfoy:
-          type: string
     compareoldnew:
       type: object
       properties:

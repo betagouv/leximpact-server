@@ -199,7 +199,6 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform,c
     dic_res["total"]["apres"]=res[1]
     if not compute_deciles: #On ne fait aps figurer le full output quand ce ne sont pas les cas types car OSEF
         dic_res["res_brut"]=df.to_dict()
-        dic_res["res_brut"]["revenus"]=revenus_cas_types()
     if compute_deciles:
         print("Computing Deciles")
         totweight=dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
@@ -212,7 +211,7 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform,c
         currb=0
         curra=0
         dfv=df.values
-        decilesres=[(0,0,0)]
+        decilesres=[[0,0,0]]
         decdiffres=[]
         print(decilweights,dfv[0],totweight)
         print(dfv[1])
@@ -222,7 +221,7 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform,c
             currb+=v[1]*v[0]
             curra+=v[2]*v[0]
             if currw>=decilweights[numdecile]-eps:
-                decilesres+=[(currw,currb,curra)]
+                decilesres+=[[currw,currb,curra]]
                 decdiffres+=[[decilesres[numdecile][k] - decilesres[numdecile-1][k] for k in range(3)]]
                 numdecile+=1
         print("In fine ",currw,currb,curra)
