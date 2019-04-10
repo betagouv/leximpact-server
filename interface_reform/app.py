@@ -70,8 +70,14 @@ desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
 
 app.layout = html.Div(links_css_stylesheets+ [
     Header.render(),
-    html.P([html.Button(id='submit-button', n_clicks=0, children='calculer impact')]),
-    Article.render(**article_values),
+    html.Div(
+        [
+            Article.render(**article_values),
+            html.Div("Placeholder", className="eight wide column"),
+        ],
+        className="ui grid",
+        style={"margin": "2em"}
+    )
 
     # html.Div(
     # graphsCTsplit+
@@ -84,6 +90,7 @@ app.layout = html.Div(links_css_stylesheets+ [
     #     [html.P([html.Button(id='submit-button', n_clicks=0, children='population française'),dcc.Graph(id='graphtotal'),
     #         dcc.Graph(id='graphdecile')]
     #     )],className="five columns")],className="row")
+
 ])
 
 

@@ -19,117 +19,150 @@ class Article(object):
     ) -> html:
         return html.Div(
             [
-                html.H2("Article 197"),
-                html.H3("code général des impôts"),
+                html.H1(
+                    [
+                        "Article 197",
+                        html.Div("Code Général des Impôts", className="sub header"),
+                    ],
+                    className="ui header dividing",
+                ),
                 html.P(
                     """I. – En ce qui concerne les contribuables visés à l'article 4 B, il est fait application des règles suivantes pour le calcul de l'impôt sur le revenu :"""
                 ),
                 html.P(
-                    html.Div(
-                        [
-                            """1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède """,
-                            html.S(seuil0),
+                    [
+                        """1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède """,
+                        html.S(f"{seuil0} €"),
+                        html.Div(
                             dcc.Input(
                                 id="input-seuil0",
                                 type="number",
                                 value=seuil0,
-                                size=sizev,
+                                style={"border-radius": 0, "height": "2em"},
                             ),
-                            """€ le taux de :""",
-                        ]
-                    )
+                            className="ui mini input",
+                        ),
+                        """ € """,
+                        """le taux de : """
+                    ],
                 ),
-                html.P(
-                    html.Div(
-                        [
-                            """– """,
-                            html.S(taux0),
-                            dcc.Input(
-                                id="input-taux0",
-                                type="number",
-                                value=taux0,
-                                size=sizeperc,
-                            ),
-                            """% pour la fraction supérieure à """,
-                            html.Nobr(id="output-seuil0"),
-                            """ et inférieure ou égale à """,
-                            html.S(seuil1),
-                            dcc.Input(
-                                id="input-seuil1",
-                                type="number",
-                                value=seuil1,
-                                size=sizev,
-                            ),
-                            """€ ;""",
-                        ]
-                    )
-                ),
-                html.P(
-                    html.Div(
-                        [
-                            """– """,
-                            html.S(taux1),
-                            dcc.Input(
-                                id="input-taux1",
-                                type="number",
-                                value=taux1,
-                                size=sizeperc,
-                            ),
-                            """% pour la fraction supérieure à """,
-                            html.Nobr(id="output-seuil1"),
-                            """ € et inférieure ou égale à """,
-                            html.S(seuil2),
-                            dcc.Input(
-                                id="input-seuil2",
-                                type="number",
-                                value=seuil2,
-                                size=sizev,
-                            ),
-                            """€ ;""",
-                        ]
-                    )
-                ),
-                html.P(
-                    html.Div(
-                        [
-                            """– """,
-                            html.S(taux2),
-                            dcc.Input(
-                                id="input-taux2",
-                                type="number",
-                                value=taux2,
-                                size=sizeperc,
-                            ),
-                            """% pour la fraction supérieure à """,
-                            html.Nobr(id="output-seuil2"),
-                            """ € et inférieure ou égale à """,
-                            html.S(seuil3),
-                            dcc.Input(
-                                id="input-seuil3",
-                                type="number",
-                                value=seuil3,
-                                size=sizev,
-                            ),
-                            """€ ;""",
-                        ]
-                    )
-                ),
-                html.P(
-                    html.Div(
-                        [
-                            """– """,
-                            html.S(taux3),
-                            dcc.Input(
-                                id="input-taux3",
-                                type="number",
-                                value=taux3,
-                                size=sizeperc,
-                            ),
-                            """% pour la fraction supérieure à """,
-                            html.Nobr(id="output-seuil3"),
-                            """€""",
-                        ]
-                    )
+                html.Ol(
+                    [
+                        html.Li(
+                            [
+                                html.S(f"{taux0} %"),
+                                """ """,
+                                html.Div(
+                                    dcc.Input(
+                                        id="input-taux0",
+                                        type="number",
+                                        value=taux0,
+                                        style={"border-radius": 0, "height": "2em"},
+                                    ),
+                                    className="ui mini input",
+                                ),
+                                """ % """,
+                                """pour la fraction supérieure à """,
+                                html.Nobr(id="output-seuil0"),
+                                """ € et inférieure ou égale à """,
+                                html.S(f"{seuil1} €"),
+                                html.Div(
+                                    dcc.Input(
+                                        id="input-seuil1",
+                                        type="number",
+                                        value=seuil1,
+                                        style={"border-radius": 0, "height": "2em"},
+                                    ),
+                                    className="ui mini input",
+                                ),
+                                """ € ; """,
+                            ],
+                            value="—",
+                        ),
+                        html.Li(
+                            [
+                                html.S(f"{taux1} %"),
+                                """ """,
+                                html.Div(
+                                    dcc.Input(
+                                        id="input-taux1",
+                                        type="number",
+                                        value=taux1,
+                                        style={"border-radius": 0, "height": "2em"},
+                                    ),
+                                    className="ui mini input",
+                                ),
+                                """ % """,
+                                """pour la fraction supérieure à """,
+                                html.Nobr(id="output-seuil1"),
+                                """ € et inférieure ou égale à """,
+                                html.S(f"{seuil2} €"),
+                                html.Div(
+                                    dcc.Input(
+                                        id="input-seuil2",
+                                        type="number",
+                                        value=seuil2,
+                                        style={"border-radius": 0, "height": "2em"},
+                                    ),
+                                    className="ui mini input",
+                                ),
+                                """ € ; """,
+                            ],
+                            value="—",
+                        ),
+                        html.Li(
+                            [
+                                html.S(f"{taux2} %"),
+                                """ """,
+                                html.Div(
+                                    dcc.Input(
+                                        id="input-taux2",
+                                        type="number",
+                                        value=taux2,
+                                        style={"border-radius": 0, "height": "2em"},
+                                    ),
+                                    className="ui mini input",
+                                ),
+                                """ % """,
+                                """pour la fraction supérieure à """,
+                                html.Nobr(id="output-seuil2"),
+                                """ € et inférieure ou égale à """,
+                                html.S(f"{seuil3} €"),
+                                html.Div(
+                                    dcc.Input(
+                                        id="input-seuil3",
+                                        type="number",
+                                        value=seuil3,
+                                        style={"border-radius": 0, "height": "2em"},
+                                    ),
+                                    className="ui mini input",
+                                ),
+                                """ € ; """,
+                            ],
+                            value="—",
+                        ),
+                        html.Li(
+                            [
+                                html.S(f"{taux3} %"),
+                                """ """,
+                                html.Div(
+                                    dcc.Input(
+                                        id="input-taux3",
+                                        type="number",
+                                        value=taux3,
+                                        style={"border-radius": 0, "height": "2em"},
+                                    ),
+                                    className="ui mini input",
+                                ),
+                                """ % """,
+                                """pour la fraction supérieure à """,
+                                html.Nobr(id="output-seuil3"),
+                                """ € """,
+                            ],
+                            value="—",
+                        ),
+                    ],
+                    className="ui list",
                 ),
                 html.Div(
                     [
@@ -187,5 +220,5 @@ class Article(object):
                 ),
                 html.B(id="result-reform"),
             ],
-            className="inputarticle six columns",
+            className="eight wide column",
         )
