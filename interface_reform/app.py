@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+API_mode = True #If true, the app will attempt to retrieve data through an API call rather than through Openfisca.
+
 import sys,os
 
 import dash
@@ -13,12 +15,23 @@ from components import (
     Header,
 )
 
-try:
-    sys.path.insert(0, './Simulation_engine')
-    import simulate_pop_from_reform
-except(Exception):
-    sys.path.insert(0, './../Simulation_engine')
-    import simulate_pop_from_reform
+if not API_mode:
+    try:
+        sys.path.insert(0, './Simulation_engine')
+        import simulate_pop_from_reform
+    except(Exception):
+        sys.path.insert(0, './../Simulation_engine')
+        import simulate_pop_from_reform
+else:
+    import requests
+    endpoint="http://127.0.0.1:5000/"
+    def api_revenus_ct():
+        r = requests.post("http://127.0.0.1:5000/calculate/revenus", json={})
+        return {int(k):int(v) for k,v in r.json().items()}
+    def api_resultat_simulation(seuils,taux,compute_deciles):
+        d={"bareme_ir":{"taux":taux,"seuils":seuils},"deciles":compute_deciles}
+        r = requests.post("http://127.0.0.1:5000/calculate/compare", json=d)
+        return r.json()[0]
 
 external_stylesheets = []#['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -46,7 +59,11 @@ url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700
 links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_to_add]
 
 names=["Martin","Bernard","Thomas","Petit","Robert","Richard"]
-revenusCT= simulate_pop_from_reform.revenus_cas_types()
+
+if not API_mode:
+    revenusCT= simulate_pop_from_reform.revenus_cas_types()
+else:
+    revenusCT=api_revenus_ct()
 
 try:
     imgstarts=["./assets/ImagesCasTypes/"+namefile for namefile in sorted(os.listdir("./assets/ImagesCasTypes"))]
@@ -59,9 +76,9 @@ graphsCT = [GraphCasType.render(index,imgstarts[index],halfwidth=halfwidthgraphs
 nbsplit=2 if halfwidthgraphs else 1
 graphsCTsplit = [html.P(graphsCT[x:x+nbsplit]) for x in range(0,len(graphsCT),nbsplit)]
 
-texte_cas_types=simulate_pop_from_reform.texte_cas_types()
+#texte_cas_types=simulate_pop_from_reform.texte_cas_types()
 
-desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
+#desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
 
 app.layout = html.Div(links_css_stylesheets+ [
     Header.render(),
@@ -113,7 +130,11 @@ nbseuil=4
               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
 def get_reform_result(n_clicks,*args):
     if True or n_clicks:
-        myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=True)#[input1,input1]#
+        if not API_mode:
+            myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=True)#[input1,input1]#
+        else:
+            myres=api_resultat_simulation(args[:len(args)//2],args[len(args)//2:],True)
+        print(myres)
         return {
                 'data': [
                     {'x': ["avant"], 'y': [myres["total"]["avant"]], 'type': 'bar', 'name': u'avant'},
@@ -149,17 +170,26 @@ nbseuil=4
 def get_reform_result_castypes(n_clicks,*args):
     if True or n_clicks:
         print("computing castypes")
-        myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
+        if not API_mode:
+            myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
+        else:
+            myres=api_resultat_simulation(args[:len(args)//2],args[len(args)//2:],False)
         print(myres)
         df=myres["res_brut"]
+        indextotake=[]
         for index, _name in enumerate(names):
-            print("alors :",index,df["avant"][index],df["apres"][index])
+            try:
+                print("alors :",index,df["avant"][index],df["apres"][index])
+            except KeyError:
+                index=str(index)
+                print("alors (les index sont foireux, j ai du les stringer):",index,df["avant"][index],df["apres"][index])
+            indextotake+=[index]
         resforcastypes = [
             {
                 'data': [
-                    {'x': ["avant"], 'y': [-df["avant"][index]], 'type': 'bar', 'name': u'avant'},
-                    {'x': ["après"], 'y': [-df["apres"][index]], 'type': 'bar', 'name': u'après'},
-                    {'x': ["impact"], 'y': [-df["apres"][index] + df["avant"][index]], 'type': 'bar',
+                    {'x': ["avant"], 'y': [-df["avant"][indextotake[index]]], 'type': 'bar', 'name': u'avant'},
+                    {'x': ["après"], 'y': [-df["apres"][indextotake[index]]], 'type': 'bar', 'name': u'après'},
+                    {'x': ["impact"], 'y': [-df["apres"][indextotake[index]] + df["avant"][indextotake[index]]], 'type': 'bar',
                      'name': 'impact'}
                 ]
                 #,
