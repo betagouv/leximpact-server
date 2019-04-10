@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from server.services import OpenFiscaTest
-from Simulation_engine.simulate_pop_from_reform import foyertosomethingelse
+from Simulation_engine.simulate_pop_from_reform import foyertosomethingelse,CompareOldNew
 
 class CasTypes(object):
     def calculate(**params: dict) -> tuple:
@@ -10,3 +10,7 @@ class CasTypes(object):
     def totext(**params: dict) -> tuple:
         return [{"surlefoyer":foyertosomethingelse(**params["body"])}],201
 
+class SimulationRunner(object):
+    def compare(**params: dict) -> tuple:
+        dbod=params["body"]
+        return [CompareOldNew(dbod["bareme_ir"]["seuils"]+dbod["bareme_ir"]["taux"],dbod["deciles"])],201

@@ -153,9 +153,7 @@ def get_reform_result_castypes(n_clicks,*args):
         print(myres)
         df=myres["res_brut"]
         for index, _name in enumerate(names):
-            print("alors :")
-            print(index)
-            print(df[df.index==index],df["avant"][index],df["apres"][index])
+            print("alors :",index,df["avant"][index],df["apres"][index])
         resforcastypes = [
             {
                 'data': [

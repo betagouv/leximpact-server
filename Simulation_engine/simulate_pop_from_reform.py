@@ -197,7 +197,9 @@ def compare(bareme: List[int], period: str, simulation_base, simulation_reform,c
     dic_res["total"]={}
     dic_res["total"]["avant"]=res[0]
     dic_res["total"]["apres"]=res[1]
-    dic_res["res_brut"]=df
+    if not compute_deciles: #On ne fait aps figurer le full output quand ce ne sont pas les cas types car OSEF
+        dic_res["res_brut"]=df.to_dict()
+        dic_res["res_brut"]["revenus"]=revenus_cas_types()
     if compute_deciles:
         print("Computing Deciles")
         totweight=dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
