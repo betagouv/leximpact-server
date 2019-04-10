@@ -18,6 +18,19 @@ paths:
       responses:
           '201':
             description: Cool !
+  /calculate/totext:
+    post:
+      summary: Calcule l'impact par cas types
+      operationId: server.handlers.CasTypes.totext
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/totext'
+      responses:
+          '201':
+            description: Encore plus Cool
 
 components:
   schemas:
@@ -28,3 +41,20 @@ components:
           type: object
         cas_types:
           type: array
+    totext:
+      type: object
+      properties:
+        idfoy:
+          type: string
+    compareoldnew:
+      type: object
+      properties:
+        isdecile:
+          type: boolean
+        bareme_ir:
+          type: object
+          properties:
+            seuils:
+              type: array
+            taux:
+              type: array
