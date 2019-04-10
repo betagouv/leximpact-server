@@ -43,8 +43,8 @@ class Article(object):
                             className="ui mini input",
                         ),
                         """ € """,
-                        """le taux de : """
-                    ],
+                        """le taux de : """,
+                    ]
                 ),
                 html.Ol(
                     [
