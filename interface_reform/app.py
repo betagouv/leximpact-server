@@ -20,7 +20,11 @@ except(Exception):
     sys.path.insert(0, './../Simulation_engine')
     import simulate_pop_from_reform
 
-external_scripts = ["https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"]
+external_scripts = [
+    "https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js",
+    "https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js",
+]
+
 external_stylesheets = ["https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"]
 
 app = dash.Dash(
@@ -69,11 +73,18 @@ app.layout = html.Div(links_css_stylesheets+ [
     html.P([html.Button(id='submit-button', n_clicks=0, children='calculer impact')]),
     Article.render(**article_values),
 
-    html.Div(
-    graphsCTsplit+
-        [html.P([dcc.Graph(id='graphtotal'),
-            dcc.Graph(id='graphdecile')]
-        )],className="five columns")],className="row")
+    # html.Div(
+    # graphsCTsplit+
+    # # [html.P(dcc.Graph(
+    #     #      id='graph-ct0'
+    # #  )),
+    # #      html.P(dcc.Graph(
+    #     #      id='graph-ct1'
+    # #  )),]+
+    #     [html.P([html.Button(id='submit-button', n_clicks=0, children='population française'),dcc.Graph(id='graphtotal'),
+    #         dcc.Graph(id='graphdecile')]
+    #     )],className="five columns")],className="row")
+])
 
 
 # Generates reform text from input. Actually should run the simulations...
@@ -106,74 +117,75 @@ def output_seuil3(input1):
     return str(input1)
 
 # Generates results for the graphs depending on the simulation on the full population
-nbseuil=4
-@app.callback([Output(component_id='graphtotal',component_property= 'figure'),
-               Output(component_id='graphdecile',component_property= 'figure')],
-            [Input(component_id='submit-button', component_property='n_clicks')],
-            [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
-              [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
-def get_reform_result(n_clicks,*args):
-    if True or n_clicks:
-        myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=True)#[input1,input1]#
-        return {
-                'data': [
-                    {'x': ["avant"], 'y': [myres["total"]["avant"]], 'type': 'bar', 'name': u'avant'},
-                    {'x': ["après"], 'y': [myres["total"]["apres"]], 'type': 'bar', 'name': u'après'},
-                    {'x': ["impact"], 'y': [myres["total"]["apres"]-myres["total"]["avant"]], 'type': 'bar', 'name': 'impact'}
-                ]
-            ,
-                'layout': {
-                    'title': 'Impact du changement'
-                }
-            },{
-                'data':
-                [{'x' : ["decile {}".format(i)], 'y':[myres["deciles"][i][2]-myres["deciles"][i][1]] , 'type':'bar', 'name' :"decile {}".format(i)} for i in range(len(myres["deciles"]))]
-            ,
-                'layout': {
-                    'title': 'changement par décile'
-                }
-            }
-    else: #Does not run before the first click
-        return None,None
+# nbseuil=4
+# @app.callback([Output(component_id='graphtotal',component_property= 'figure'),
+#                Output(component_id='graphdecile',component_property= 'figure')],
+#             [Input(component_id='submit-button', component_property='n_clicks')],
+#             [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
+#               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
+# def get_reform_result(n_clicks,*args):
+#     if n_clicks:
+#         myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=True)#[input1,input1]#
+#         return {
+#                 'data': [
+#                     {'x': ["avant"], 'y': [myres["total"]["avant"]], 'type': 'bar', 'name': u'avant'},
+#                     {'x': ["après"], 'y': [myres["total"]["apres"]], 'type': 'bar', 'name': u'après'},
+#                     {'x': ["impact"], 'y': [myres["total"]["apres"]-myres["total"]["avant"]], 'type': 'bar', 'name': 'impact'}
+#                 ]
+#             ,
+#                 'layout': {
+#                     'title': 'Impact du changement'
+#                 }
+#             },{
+#                 'data':
+#                 [{'x' : ["decile {}".format(i)], 'y':[myres["deciles"][i][2]-myres["deciles"][i][1]] , 'type':'bar', 'name' :"decile {}".format(i)} for i in range(len(myres["deciles"]))]
+#             ,
+#                 'layout': {
+#                     'title': 'changement par décile'
+#                 }
+#             }
+#     else: #Does not run before the first click
+#         return None,None
 
 # Generates results for the graphs depending on the simulation on the full population
-nbseuil=4
-@app.callback([Output(component_id='graph-ct0',component_property= 'figure') ,
-                Output(component_id='graph-ct1',component_property= 'figure') ,
-                Output(component_id='graph-ct2',component_property= 'figure') ,
-                Output(component_id='graph-ct3',component_property= 'figure') ,
-                Output(component_id='graph-ct4',component_property= 'figure') ,
-                Output(component_id='graph-ct5',component_property= 'figure')],
-            [Input(component_id='submit-button', component_property='n_clicks')],
-            [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
-              [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
-def get_reform_result_castypes(n_clicks,*args):
-    if True or n_clicks:
-        print("computing castypes")
-        myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
-        print(myres)
-        df=myres["res_brut"]
-        for index, _name in enumerate(names):
-            print("alors :")
-            print(index)
-            print(df[df.index==index],df["avant"][index],df["apres"][index])
-        resforcastypes = [
-            {
-                'data': [
-                    {'x': ["avant"], 'y': [-df["avant"][index]], 'type': 'bar', 'name': u'avant'},
-                    {'x': ["après"], 'y': [-df["apres"][index]], 'type': 'bar', 'name': u'après'},
-                    {'x': ["impact"], 'y': [-df["apres"][index] + df["avant"][index]], 'type': 'bar',
-                     'name': 'impact'}
-                ]
-                #,
-                #'layout': {
-                #    'title': simulate_pop_from_reform.foyertotexte(index)
-                #}
-            } for index, _name in enumerate(names)]
-        print(*resforcastypes)
-        return (*resforcastypes,)
-    else: #Does not run before the first click
-        return tuple([None]*len(names))#
+# nbseuil=4
+# @app.callback([Output(component_id='graph-ct0',component_property= 'figure') ,
+#                 Output(component_id='graph-ct1',component_property= 'figure') ,
+#                 Output(component_id='graph-ct2',component_property= 'figure') ,
+#                 Output(component_id='graph-ct3',component_property= 'figure') ,
+#                 Output(component_id='graph-ct4',component_property= 'figure') ,
+#                 Output(component_id='graph-ct5',component_property= 'figure')],
+#             [Input(component_id='submit-button', component_property='n_clicks')],
+#             [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
+#               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
+# def get_reform_result_castypes(n_clicks,*args):
+#     if n_clicks:
+#         print("computing castypes")
+#         myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
+#         print(myres)
+#         df=myres["res_brut"]
+#         for index, _name in enumerate(names):
+#             print("alors :")
+#             print(index)
+#             print(df[df.index==index],df["avant"][index],df["apres"][index])
+#         resforcastypes = [
+#             {
+#                 'data': [
+#                     {'x': ["avant"], 'y': [-df["avant"][index]], 'type': 'bar', 'name': u'avant'},
+#                     {'x': ["après"], 'y': [-df["apres"][index]], 'type': 'bar', 'name': u'après'},
+#                     {'x': ["impact"], 'y': [-df["apres"][index] + df["avant"][index]], 'type': 'bar',
+#                      'name': 'impact'}
+#                 ]
+#                 #,
+#                 #'layout': {
+#                 #    'title': simulate_pop_from_reform.foyertotexte(index)
+#                 #}
+#             } for index, _name in enumerate(names)]
+#         print(*resforcastypes)
+#         return (*resforcastypes,)
+#     else: #Does not run before the first click
+#         return tuple([None]*len(names))#
+>>>>>>> Style header
 
 
 #Generates graph
