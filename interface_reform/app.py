@@ -20,9 +20,14 @@ except(Exception):
     sys.path.insert(0, './../Simulation_engine')
     import simulate_pop_from_reform
 
-external_stylesheets = []#['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_scripts = ["https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"]
+external_stylesheets = ["https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"]
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(
+    __name__,
+    external_scripts=external_scripts,
+    external_stylesheets=external_stylesheets,
+)
 
 basevalue=9964
 
@@ -40,10 +45,6 @@ article_values = {
     "seuil3": 156244,
     "taux3": 45,
 }
-
-url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
-                 "https://fonts.googleapis.com/css?family=Lato"]
-links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_to_add]
 
 names=["Martin","Bernard","Thomas","Petit","Robert","Richard"]
 revenusCT= simulate_pop_from_reform.revenus_cas_types()
