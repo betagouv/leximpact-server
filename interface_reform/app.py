@@ -68,8 +68,9 @@ texte_cas_types=simulate_pop_from_reform.texte_cas_types()
 
 desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
 
-app.layout = html.Div(links_css_stylesheets+ [
+app.layout = html.Div([
     Header.render(),
+    html.P([html.Button(id='submit-button', n_clicks=0, children='calculer impact')]),
     html.Div(
         [
             Article.render(**article_values),
@@ -77,7 +78,6 @@ app.layout = html.Div(links_css_stylesheets+ [
                 graphsCTsplit + [
                     html.P(
                         [
-                            html.Button(id='submit-button', n_clicks=0, children='population française'),
                             dcc.Graph(id='graphtotal'),
                             dcc.Graph(id='graphdecile'),
                         ],
@@ -129,7 +129,7 @@ nbseuil=4
             [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
 def get_reform_result(n_clicks,*args):
-    if n_clicks:
+    if True or n_clicks:
         myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=True)#[input1,input1]#
         return {
                 'data': [
@@ -164,7 +164,7 @@ nbseuil=4
             [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
 def get_reform_result_castypes(n_clicks,*args):
-    if n_clicks:
+    if True or n_clicks:
         print("computing castypes")
         myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
         print(myres)
