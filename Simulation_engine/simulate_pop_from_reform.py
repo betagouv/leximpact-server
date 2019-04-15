@@ -235,7 +235,7 @@ PERIOD = "2014"
 TBS = FranceTaxBenefitSystem()
 REFORM = partial(reform_from_bareme, period = PERIOD, tbs = TBS)
 
-CAS_TYPE = load_data(fread("DCT_old.csv"))
+CAS_TYPE = load_data(fread("DCT.csv"))
 SIMCAT = partial(simulation, period = PERIOD, data = CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs = TBS)
 
