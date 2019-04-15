@@ -4,4 +4,4 @@ from interface_reform.components import Header
 
 
 def test_render():
-    assert "LEXIMPACT" in str(Header.render())
+    assert "LexImpact" in str(Header.render())

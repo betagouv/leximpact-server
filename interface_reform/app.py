@@ -20,9 +20,18 @@ except(Exception):
     sys.path.insert(0, './../Simulation_engine')
     import simulate_pop_from_reform
 
-external_stylesheets = []#['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_scripts = [
+    "https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js",
+    "https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js",
+]
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+external_stylesheets = ["https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"]
+
+app = dash.Dash(
+    __name__,
+    external_scripts=external_scripts,
+    external_stylesheets=external_stylesheets,
+)
 
 basevalue=9964
 
@@ -41,18 +50,14 @@ article_values = {
     "taux3": 45,
 }
 
-url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
-                 "https://fonts.googleapis.com/css?family=Lato"]
-links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_to_add]
-
 names=["Martin","Bernard","Thomas","Petit","Robert","Richard"]
 revenusCT= simulate_pop_from_reform.revenus_cas_types()
 
 try:
-    imgstarts=["./assets/ImagesCasTypes/"+namefile for namefile in sorted(os.listdir("./assets/ImagesCasTypes"))]
+    imgstarts=["/assets/ImagesCasTypes/"+namefile for namefile in sorted(os.listdir("./assets/ImagesCasTypes"))]
 except:
     print("images not found in ./assets/ImagesCasTypes, trying in ./interface_reform/assets/ImagesCasTypes")
-    imgstarts=["./interface_reform/assets/ImagesCasTypes/"+namefile for namefile in sorted(os.listdir("./interface_reform/assets/ImagesCasTypes"))]
+    imgstarts=["/assets/ImagesCasTypes/"+namefile for namefile in sorted(os.listdir("./interface_reform/assets/ImagesCasTypes"))]
 
 halfwidthgraphs=False
 graphsCT = [GraphCasType.render(index,imgstarts[index],halfwidth=halfwidthgraphs,name=names[index],revenu=revenusCT[index]) for index, _name in enumerate(names)]
@@ -65,14 +70,26 @@ desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
 
 app.layout = html.Div(links_css_stylesheets+ [
     Header.render(),
-    html.P([html.Button(id='submit-button', n_clicks=0, children='calculer impact')]),
-    Article.render(**article_values),
-
     html.Div(
-    graphsCTsplit+
-        [html.P([dcc.Graph(id='graphtotal'),
-            dcc.Graph(id='graphdecile')]
-        )],className="five columns")],className="row")
+        [
+            Article.render(**article_values),
+            html.Div(
+                graphsCTsplit + [
+                    html.P(
+                        [
+                            html.Button(id='submit-button', n_clicks=0, children='population française'),
+                            dcc.Graph(id='graphtotal'),
+                            dcc.Graph(id='graphdecile'),
+                        ],
+                    ),
+                ],
+                className="eight wide column",
+            ),
+        ],
+        className="ui grid",
+        style={"margin": "2em"}
+    )
+])
 
 
 # Generates reform text from input. Actually should run the simulations...
@@ -112,7 +129,7 @@ nbseuil=4
             [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
 def get_reform_result(n_clicks,*args):
-    if True or n_clicks:
+    if n_clicks:
         myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=True)#[input1,input1]#
         return {
                 'data': [
@@ -147,7 +164,7 @@ nbseuil=4
             [State(component_id='input-seuil{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)] +
               [State(component_id='input-taux{}'.format(numseuil), component_property='value') for numseuil in range(nbseuil)])
 def get_reform_result_castypes(n_clicks,*args):
-    if True or n_clicks:
+    if n_clicks:
         print("computing castypes")
         myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
         print(myres)
