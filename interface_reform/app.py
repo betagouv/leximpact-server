@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys, os
+import sys
+import os
 
 import dash
 import dash_core_components as dcc
@@ -56,7 +57,7 @@ try:
         "/assets/ImagesCasTypes/" + namefile
         for namefile in sorted(os.listdir("./assets/ImagesCasTypes"))
     ]
-except:
+except (Exception):
     print(
         "images not found in ./assets/ImagesCasTypes, trying in ./interface_reform/assets/ImagesCasTypes"
     )
@@ -276,7 +277,7 @@ def get_reform_result_castypes(n_clicks, *args):
                     },
                 ]
                 # ,
-                #'layout': {
+                # 'layout': {
                 #    'title': simulate_pop_from_reform.foyertotexte(index)
                 # }
             }

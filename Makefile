@@ -10,6 +10,11 @@ install:
 	pip install --upgrade pip
 	pip install --editable .[dev] --upgrade
 
+format-style:
+	@# Do not analyse .gitignored files.
+	@# `make` needs `$$` to output `$`. Ref: http://stackoverflow.com/questions/2382764.
+	autopep8 `git ls-files | grep "\.py$$"`
+	black `git ls-files | grep "\.py$$"`
 
 run:
 	python ./interface_reform/app.py
@@ -18,6 +23,7 @@ server:
 	FLASK_ENV=development python ./server/app.py
 
 test:
+	flake8 `git ls-files | grep "\.py$$"`
 	pytest
 
 simpop:
