@@ -37,13 +37,7 @@ class Article(object):
         )
 
     def _header() -> html:
-        return html.H1(
-            [
-                "Article 197",
-                html.Div("Code Général des Impôts", className="sub header"),
-            ],
-            className="ui header dividing",
-        )
+        return html.H1("Article 197", className="ui header")
 
     def _section() -> html:
         return html.P(
