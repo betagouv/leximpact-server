@@ -48,7 +48,7 @@ class Article(object):
         return html.P(
             [
                 "1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède ",
-                html.S(f"{seuil} €"),
+                html.Span(f"{seuil} ", style={"color": "#3B83C0"}),
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index}",
@@ -66,7 +66,7 @@ class Article(object):
     def _list_item(index: int, taux: int, seuil: int) -> html:
         return html.Li(
             [
-                html.S(f"{taux} %"),
+                html.Span(f"{taux} ", style={"color": "#3B83C0"}),
                 """ """,
                 html.Div(
                     dcc.Input(
@@ -81,7 +81,7 @@ class Article(object):
                 """pour la fraction supérieure à """,
                 html.Nobr(id=f"output-seuil{index}"),
                 """ € et inférieure ou égale à """,
-                html.S(f"{seuil} €"),
+                html.Span(f"{seuil} ", style={"color": "#3B83C0"}),
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index + 1}",
@@ -99,7 +99,7 @@ class Article(object):
     def _list_item_last(index: int, taux: int) -> html:
         return html.Li(
             [
-                html.S(f"{taux} %"),
+                html.Span(f"{taux} ", style={"color": "#3B83C0"}),
                 """ """,
                 html.Div(
                     dcc.Input(
