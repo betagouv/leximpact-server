@@ -77,6 +77,7 @@ graphsCT = [
     )
     for index, _name in enumerate(names)
 ]
+
 nbsplit = 2 if halfwidthgraphs else 1
 graphsCTsplit = [
     html.P(graphsCT[x : x + nbsplit]) for x in range(0, len(graphsCT), nbsplit)
@@ -94,7 +95,9 @@ app.layout = html.Div(
         ),
         html.Div(
             [
-                Article.render(**article_values),
+                html.Div(
+                    Article.render(**article_values), className="seven wide column"
+                ),
                 html.Div(
                     graphsCTsplit
                     + [

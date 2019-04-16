@@ -16,7 +16,9 @@ class Header(object):
                 Header._item("LexImpact"),
                 Header._item("Simulateur de l'impôt sur le revenu", className="active"),
                 Header._item(
-                    "Vos retours !", href="mailto:leximpact@openfisca.org", className="right"
+                    "Vos retours !",
+                    href="mailto:leximpact@openfisca.org",
+                    className="right",
                 ),
             ],
             className="ui secondary pointing menu inverted",

@@ -32,7 +32,8 @@ class Article(object):
                     className="ui list",
                 ),
             ],
-            className="eight wide column",
+            className="ui segment",
+            style={"padding": "2em"},
         )
 
     def _header() -> html:
