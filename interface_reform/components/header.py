@@ -14,9 +14,9 @@ class Header(object):
         return html.Div(
             [
                 Header._item("LexImpact"),
-                Header._item("Article 157 du CGI", className="active"),
+                Header._item("Simulateur de l'impôt sur le revenu", className="active"),
                 Header._item(
-                    "Feedback", href="mailto:leximpact@openfisca.org", className="right"
+                    "Vos retours !", href="mailto:leximpact@openfisca.org", className="right"
                 ),
             ],
             className="ui secondary pointing menu inverted",
