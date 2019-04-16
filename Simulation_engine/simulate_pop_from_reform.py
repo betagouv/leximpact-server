@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+from typing import List
 from typing import Callable
 from functools import partial
 
@@ -171,7 +172,7 @@ def simulation(period, data, tbs, timer=None):
                             colonne, tbs.get_variable(colonne).entity.key
                         )
                     )
-                except:
+                except (Exception):
                     print("{} was attributed to NOUGHT".format(colonne))
                 raise
 
@@ -179,9 +180,6 @@ def simulation(period, data, tbs, timer=None):
         print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
     return simulation, dictionnaire_datagrouped
-
-
-from typing import List
 
 
 def compare(
@@ -404,4 +402,4 @@ def decile(taux):
 def cout_etat(taux):
     reform = REFORM(taux=taux)
     simulation_reform = SIMPOP(tbs=reform)
-    return compare_decile(SIMPOP_BASE, simulation_reform, PERIOD, taux)
+    return compare(SIMPOP_BASE, simulation_reform, PERIOD, taux, compute_deciles=True)
