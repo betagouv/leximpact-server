@@ -96,7 +96,15 @@ app.layout = html.Div(
         html.Div(
             [
                 html.Div(Article.render(**article_values), className="six wide column"),
-                html.Div(graphsCTsplit, className="eight wide column"),
+                html.Div(
+                    graphsCTsplit
+                    + [
+                        html.P(
+                            [dcc.Graph(id="graphtotal"), dcc.Graph(id="graphdecile")]
+                        )
+                    ],
+                    className="eight wide column",
+                ),
             ],
             className="ui grid",
             style={"margin": "2em"},
