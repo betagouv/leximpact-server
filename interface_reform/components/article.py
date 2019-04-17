@@ -31,13 +31,27 @@ class Article(object):
                     ],
                     className="ui list",
                 ),
+                html.Div(
+                    [
+                        html.Button("Ajouter", className="ui button"),
+                        html.Div(className="or"),
+                        html.Button("Enlever une tranche", className="ui button"),
+                    ],
+                    className="ui small buttons",
+                ),
             ],
             className="ui segment",
             style={"padding": "2em", "font-size": "16px"},
         )
 
     def _header() -> html:
-        return html.H1("Article 197", className="ui header")
+        return html.H1(
+            [
+                "Article 197",
+                html.Div("Code général des impôts", className="sub header"),
+            ],
+            className="ui header",
+        )
 
     def _section() -> html:
         return html.P(
