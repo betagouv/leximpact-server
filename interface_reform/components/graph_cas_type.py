@@ -27,13 +27,13 @@ class GraphCasType(object):
                         "data": [
                             {
                                 "x": ["avant"],
-                                "y": [avant],
+                                "y": [-avant],
                                 "type": "bar",
                                 "name": u"avant",
                             },
                             {
                                 "x": ["après"],
-                                "y": [apres],
+                                "y": [-apres],
                                 "type": "bar",
                                 "name": u"après",
                             },
