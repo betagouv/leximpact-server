@@ -2,9 +2,11 @@
 
 version_beta_sans_graph_pop = True
 
-API_mode = False #If true, the app will attempt to retrieve data through an API call rather than through Openfisca.
+API_mode = (
+    False
+)  # If true, the app will attempt to retrieve data through an API call rather than through Openfisca.
 
-import sys,os
+import sys, os
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -14,22 +16,26 @@ from components import Article, GraphCasType, Header
 
 if not API_mode:
     try:
-        sys.path.insert(0, './Simulation_engine')
+        sys.path.insert(0, "./Simulation_engine")
         import simulate_pop_from_reform
-    except(Exception):
-        sys.path.insert(0, './../Simulation_engine')
+    except (Exception):
+        sys.path.insert(0, "./../Simulation_engine")
         import simulate_pop_from_reform
 else:
     import requests
-    endpoint="http://127.0.0.1:5000/"
+
+    endpoint = "http://127.0.0.1:5000/"
+
     def api_revenus_ct():
         r = requests.post("http://127.0.0.1:5000/calculate/revenus", json={})
-        return {int(k):int(v) for k,v in r.json().items()}
-    def api_resultat_simulation(seuils,taux,compute_deciles):
-        d={"bareme_ir":{"taux":taux,"seuils":seuils},"deciles":compute_deciles}
+        return {int(k): int(v) for k, v in r.json().items()}
+
+    def api_resultat_simulation(seuils, taux, compute_deciles):
+        d = {"bareme_ir": {"taux": taux, "seuils": seuils}, "deciles": compute_deciles}
         r = requests.post("http://127.0.0.1:5000/calculate/compare", json=d)
         return r.json()[0]
-        
+
+
 external_scripts = [
     "https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js",
     "https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js",
@@ -62,16 +68,20 @@ article_values = {
     "taux3": 45,
 }
 
-url_css_to_add = ["https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
-                 "https://fonts.googleapis.com/css?family=Lato"]
-links_css_stylesheets =[html.Link(href=url,rel="stylesheet") for url in url_css_to_add]
+url_css_to_add = [
+    "https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
+    "https://fonts.googleapis.com/css?family=Lato",
+]
+links_css_stylesheets = [
+    html.Link(href=url, rel="stylesheet") for url in url_css_to_add
+]
 
-names=["Martin","Bernard","Thomas","Petit","Robert","Richard"]
+names = ["Martin", "Bernard", "Thomas", "Petit", "Robert", "Richard"]
 
 if not API_mode:
-    revenusCT= simulate_pop_from_reform.revenus_cas_types()
+    revenusCT = simulate_pop_from_reform.revenus_cas_types()
 else:
-    revenusCT=api_revenus_ct()
+    revenusCT = api_revenus_ct()
 
 try:
     imgstarts = [
@@ -87,7 +97,7 @@ except (Exception):
         for namefile in sorted(os.listdir("./interface_reform/assets/ImagesCasTypes"))
     ]
 
-halfwidthgraphs = False
+halfwidthgraphs = True
 graphsCT = [
     GraphCasType.render(
         index,
@@ -105,28 +115,36 @@ graphsCTsplit = [
 ]
 
 
-#texte_cas_types=simulate_pop_from_reform.texte_cas_types()
+# texte_cas_types=simulate_pop_from_reform.texte_cas_types()
 
-#desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
+# desc_cas_types=[html.P([k," : ",v]) for k,v in texte_cas_types.items()]
 
 app.layout = html.Div(
     [
         Header.render(),
-
         html.P(
             [html.Button(id="submit-button", n_clicks=0, children="calculer impact")]
-        ) if not version_beta_sans_graph_pop else html.B(""),
+        )
+        if not version_beta_sans_graph_pop
+        else html.B(""),
         html.Div(
             [
                 html.Div(Article.render(**article_values), className="six wide column"),
                 html.Div(
                     graphsCTsplit
-                    + ([
-                        html.P(
-                            [dcc.Graph(id="graphtotal"), dcc.Graph(id="graphdecile")]
-                        )
-                    ] if not version_beta_sans_graph_pop else []),
-                    className="eight wide column",
+                    + (
+                        [
+                            html.P(
+                                [
+                                    dcc.Graph(id="graphtotal"),
+                                    dcc.Graph(id="graphdecile"),
+                                ]
+                            )
+                        ]
+                        if not version_beta_sans_graph_pop
+                        else []
+                    ),
+                    className="six wide column",
                 ),
             ],
             className="ui grid",
@@ -175,6 +193,8 @@ def output_seuil2(input1):
 )
 def output_seuil3(input1):
     return str(input1)
+
+
 nbseuil = 4
 
 # Maybe I can do that ? (i.e. the if is gonna work properly with the callback
@@ -187,43 +207,72 @@ if not version_beta_sans_graph_pop:
         ],
         [Input(component_id="submit-button", component_property="n_clicks")],
         [
-            State(component_id="input-seuil{}".format(numseuil), component_property="value")
+            State(
+                component_id="input-seuil{}".format(numseuil),
+                component_property="value",
+            )
             for numseuil in range(nbseuil)
         ]
         + [
-            State(component_id="input-taux{}".format(numseuil), component_property="value")
+            State(
+                component_id="input-taux{}".format(numseuil), component_property="value"
+            )
             for numseuil in range(nbseuil)
         ],
     )
     def get_reform_result(n_clicks, *args):
         if not API_mode:
-            myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=True)#[input1,input1]#
+            myres = simulate_pop_from_reform.CompareOldNew(
+                [int(k) for k in args], isdecile=True
+            )  # [input1,input1]#
         else:
-            myres=api_resultat_simulation(args[:len(args)//2],args[len(args)//2:],True)
+            myres = api_resultat_simulation(
+                args[: len(args) // 2], args[len(args) // 2 :], True
+            )
         print(myres)
-        return {
-                'data': [
-                    {'x': ["avant"], 'y': [myres["total"]["avant"]], 'type': 'bar', 'name': u'avant'},
-                    {'x': ["après"], 'y': [myres["total"]["apres"]], 'type': 'bar', 'name': u'après'},
-                    {'x': ["impact"], 'y': [myres["total"]["apres"]-myres["total"]["avant"]], 'type': 'bar', 'name': 'impact'}
-                ]
-            ,
-                'layout': {
-                    'title': 'Impact du changement'
-                }
-            },{
-                'data':
-                [{'x' : ["decile {}".format(i)], 'y':[myres["deciles"][i][2]-myres["deciles"][i][1]] , 'type':'bar', 'name' :"decile {}".format(i)} for i in range(len(myres["deciles"]))]
-            ,
-                'layout': {
-                    'title': 'changement par décile'
-                }
-            }
-
+        return (
+            {
+                "data": [
+                    {
+                        "x": ["avant"],
+                        "y": [myres["total"]["avant"]],
+                        "type": "bar",
+                        "name": u"avant",
+                    },
+                    {
+                        "x": ["après"],
+                        "y": [myres["total"]["apres"]],
+                        "type": "bar",
+                        "name": u"après",
+                    },
+                    {
+                        "x": ["impact"],
+                        "y": [myres["total"]["apres"] - myres["total"]["avant"]],
+                        "type": "bar",
+                        "name": "impact",
+                    },
+                ],
+                "layout": {"title": "Impact du changement"},
+            },
+            {
+                "data": [
+                    {
+                        "x": ["decile {}".format(i)],
+                        "y": [myres["deciles"][i][2] - myres["deciles"][i][1]],
+                        "type": "bar",
+                        "name": "decile {}".format(i),
+                    }
+                    for i in range(len(myres["deciles"]))
+                ],
+                "layout": {"title": "changement par décile"},
+            },
+        )
 
 
 # Generates results for the graphs depending on the simulation on the full population
 nbseuil = 4
+
+
 @app.callback(
     [
         Output(component_id="graph-ct0", component_property="figure"),
@@ -233,7 +282,7 @@ nbseuil = 4
         Output(component_id="graph-ct4", component_property="figure"),
         Output(component_id="graph-ct5", component_property="figure"),
     ],
-    #[Input(component_id="submit-button", component_property="n_clicks")],
+    # [Input(component_id="submit-button", component_property="n_clicks")],
     [
         Input(component_id="input-seuil{}".format(numseuil), component_property="value")
         for numseuil in range(nbseuil)
@@ -246,26 +295,45 @@ nbseuil = 4
 def get_reform_result_castypes(*args):
     print("computing castypes")
     if not API_mode:
-        myres=simulate_pop_from_reform.CompareOldNew([int(k) for k in args],isdecile=False)#[input1,input1]#
+        myres = simulate_pop_from_reform.CompareOldNew(
+            [int(k) for k in args], isdecile=False
+        )  # [input1,input1]#
     else:
-        myres=api_resultat_simulation(args[:len(args)//2],args[len(args)//2:],False)
+        myres = api_resultat_simulation(
+            args[: len(args) // 2], args[len(args) // 2 :], False
+        )
     print(myres)
-    df=myres["res_brut"]
-    indextotake=[]
+    df = myres["res_brut"]
+    indextotake = []
     for index, _name in enumerate(names):
         try:
-            print("alors :",index,df["avant"][index],df["apres"][index])
+            print("alors :", index, df["avant"][index], df["apres"][index])
         except KeyError:
-            index=str(index)
-            print("alors (les index sont foireux, j ai du les stringer):",index,df["avant"][index],df["apres"][index])
-        indextotake+=[index]
+            index = str(index)
+            print(
+                "alors (les index sont foireux, j ai du les stringer):",
+                index,
+                df["avant"][index],
+                df["apres"][index],
+            )
+        indextotake += [index]
     resforcastypes = [
         {
-            'data': [
-                {'x': ["avant"], 'y': [-df["avant"][indextotake[index]]], 'type': 'bar', 'name': u'avant'},
-                {'x': ["après"], 'y': [-df["apres"][indextotake[index]]], 'type': 'bar', 'name': u'après'},
-                {'x': ["impact"], 'y': [-df["apres"][indextotake[index]] + df["avant"][indextotake[index]]], 'type': 'bar',
-                 'name': 'impact'}
+            "data": [
+                {
+                    "x": ["avant"],
+                    "y": [-df["avant"][indextotake[index]]],
+                    "type": "bar",
+                    "name": u"avant",
+                },
+                {
+                    "x": ["après"],
+                    "y": [-df["apres"][indextotake[index]]],
+                    "type": "bar",
+                    "name": u"après",
+                },
+                #     {'x': ["impact"], 'y': [-df["apres"][indextotake[index]] + df["avant"][indextotake[index]]], 'type': 'bar',
+                #     'name': 'impact'}
             ]
             # ,
             # 'layout': {
