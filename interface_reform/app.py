@@ -99,7 +99,7 @@ except (Exception):
         for namefile in sorted(os.listdir("./interface_reform/assets/ImagesCasTypes"))
     ]
 
-halfwidthgraphs = False
+halfwidthgraphs = True
 graphsCT = [
     GraphCasType.render(
         index,
@@ -146,7 +146,7 @@ app.layout = html.Div(
                         if not version_beta_sans_graph_pop
                         else []
                     ),
-                    className="eight wide column",
+                    className="six wide column",
                 ),
             ],
             className="ui grid",
@@ -334,15 +334,8 @@ def get_reform_result_castypes(*args):
                     "type": "bar",
                     "name": u"après",
                 },
-                {
-                    "x": ["impact"],
-                    "y": [
-                        -df["apres"][indextotake[index]]
-                        + df["avant"][indextotake[index]]
-                    ],
-                    "type": "bar",
-                    "name": "impact",
-                },
+                #     {'x': ["impact"], 'y': [-df["apres"][indextotake[index]] + df["avant"][indextotake[index]]], 'type': 'bar',
+                #     'name': 'impact'}
             ]
             # ,
             # 'layout': {
