@@ -100,16 +100,22 @@ except (Exception):
     ]
 
 halfwidthgraphs = True
-graphsCT = [
-    GraphCasType.render(
-        index,
-        imgstarts[index],
-        halfwidth=halfwidthgraphs,
-        name=names[index],
-        revenu=revenusCT[index],
-    )
-    for index, _name in enumerate(names)
-]
+if False:
+    graphsCT = [
+        GraphCasType.render(
+            index,
+            imgstarts[index],
+            halfwidth=halfwidthgraphs,
+            name=names[index],
+            revenu=revenusCT[index],
+        )
+        for index, _name in enumerate(names)
+    ]
+else:
+    graphsCT = [
+        html.Div(id="graphtot-ct{}".format(index), className="ui card")
+        for index, _name in enumerate(names)
+    ]
 
 nbsplit = 1
 graphsCTsplit = [graphsCT[x : x + nbsplit] for x in range(0, len(graphsCT), nbsplit)]
@@ -277,82 +283,147 @@ nbseuil = 4
 
 nbgraphs = 6
 
+if False:
 
-@app.callback(
-    [
-        Output(component_id="graph-ct{}".format(k), component_property="figure")
-        for k in range(nbgraphs)
-    ]
-    + [
-        Output(component_id="impact-ct{}".format(k), component_property="children")
-        for k in range(nbgraphs)
-    ],
-    # [Input(component_id="submit-button", component_property="n_clicks")],
-    [
-        Input(component_id="input-seuil{}".format(numseuil), component_property="value")
-        for numseuil in range(nbseuil)
-    ]
-    + [
-        Input(component_id="input-taux{}".format(numseuil), component_property="value")
-        for numseuil in range(nbseuil)
-    ],
-)
-def get_reform_result_castypes(*args):
-    print("computing castypes")
-    if not API_mode:
-        myres = simulate_pop_from_reform.CompareOldNew(
-            [int(k) for k in args], isdecile=False
-        )  # [input1,input1]#
-    else:
-        myres = api_resultat_simulation(
-            args[: len(args) // 2], args[len(args) // 2 :], False
-        )
-    print(myres)
-    df = myres["res_brut"]
-    indextotake = []
-    for index, _name in enumerate(names):
-        try:
-            print("alors :", index, df["avant"][index], df["apres"][index])
-        except KeyError:
-            index = str(index)
-            print(
-                "alors (les index sont foireux, j ai du les stringer):",
-                index,
-                df["avant"][index],
-                df["apres"][index],
+    @app.callback(
+        [
+            Output(component_id="graph-ct{}".format(k), component_property="figure")
+            for k in range(nbgraphs)
+        ]
+        + [
+            Output(component_id="impact-ct{}".format(k), component_property="children")
+            for k in range(nbgraphs)
+        ],
+        # [Input(component_id="submit-button", component_property="n_clicks")],
+        [
+            Input(
+                component_id="input-seuil{}".format(numseuil),
+                component_property="value",
             )
-        indextotake += [index]
-    resforcastypes = [
-        {
-            "data": [
-                {
-                    "x": ["avant"],
-                    "y": [-df["avant"][indextotake[index]]],
-                    "type": "bar",
-                    "name": u"avant",
-                },
-                {
-                    "x": ["après"],
-                    "y": [-df["apres"][indextotake[index]]],
-                    "type": "bar",
-                    "name": u"après",
-                },
-                #     {'x': ["impact"], 'y': [-df["apres"][indextotake[index]] + df["avant"][indextotake[index]]], 'type': 'bar',
-                #     'name': 'impact'}
-            ]
-            # ,
-            # 'layout': {
-            #    'title': simulate_pop_from_reform.foyertotexte(index)
-            # }
-        }
-        for index, _name in enumerate(names)
-    ]
-    resforcastypes += [
-        -df["apres"][indextotake[index]] + df["avant"][indextotake[index]]
-        for index, _name in enumerate(names)
-    ]
-    print(*resforcastypes)
-    return (*resforcastypes,)
+            for numseuil in range(nbseuil)
+        ]
+        + [
+            Input(
+                component_id="input-taux{}".format(numseuil), component_property="value"
+            )
+            for numseuil in range(nbseuil)
+        ],
+    )
+    def get_reform_result_castypes(*args):
+        print("computing castypes")
+        if not API_mode:
+            myres = simulate_pop_from_reform.CompareOldNew(
+                [int(k) for k in args], isdecile=False
+            )  # [input1,input1]#
+        else:
+            myres = api_resultat_simulation(
+                args[: len(args) // 2], args[len(args) // 2 :], False
+            )
+        print(myres)
+        df = myres["res_brut"]
+        indextotake = []
+        for index, _name in enumerate(names):
+            try:
+                print("alors :", index, df["avant"][index], df["apres"][index])
+            except KeyError:
+                index = str(index)
+                print(
+                    "alors (les index sont foireux, j ai du les stringer):",
+                    index,
+                    df["avant"][index],
+                    df["apres"][index],
+                )
+            indextotake += [index]
+        resforcastypes = [
+            {
+                "data": [
+                    {
+                        "x": ["avant"],
+                        "y": [-df["avant"][indextotake[index]]],
+                        "type": "bar",
+                        "name": u"avant",
+                    },
+                    {
+                        "x": ["après"],
+                        "y": [-df["apres"][indextotake[index]]],
+                        "type": "bar",
+                        "name": u"après",
+                    },
+                    #     {'x': ["impact"], 'y': [-df["apres"][indextotake[index]] + df["avant"][indextotake[index]]], 'type': 'bar',
+                    #     'name': 'impact'}
+                ]
+                # ,
+                # 'layout': {
+                #    'title': simulate_pop_from_reform.foyertotexte(index)
+                # }
+            }
+            for index, _name in enumerate(names)
+        ]
+        resforcastypes += [
+            -df["apres"][indextotake[index]] + df["avant"][indextotake[index]]
+            for index, _name in enumerate(names)
+        ]
+        print(*resforcastypes)
+        return (*resforcastypes,)
+
+
+else:
+
+    @app.callback(
+        [
+            Output(
+                component_id="graphtot-ct{}".format(k), component_property="children"
+            )
+            for k in range(nbgraphs)
+        ],
+        # [Input(component_id="submit-button", component_property="n_clicks")],
+        [
+            Input(
+                component_id="input-seuil{}".format(numseuil),
+                component_property="value",
+            )
+            for numseuil in range(nbseuil)
+        ]
+        + [
+            Input(
+                component_id="input-taux{}".format(numseuil), component_property="value"
+            )
+            for numseuil in range(nbseuil)
+        ],
+    )
+    def get_reform_result_castypes_mieux(*args):
+        print("computing castypes")
+        if not API_mode:
+            myres = simulate_pop_from_reform.CompareOldNew(
+                [int(k) for k in args], isdecile=False
+            )  # [input1,input1]#
+        else:
+            myres = api_resultat_simulation(
+                args[: len(args) // 2], args[len(args) // 2 :], False
+            )
+        print(myres)
+        df = myres["res_brut"]
+        indextotake = []
+        for index, _name in enumerate(names):
+            try:
+                print("alors :", index, df["avant"][index], df["apres"][index])
+            except KeyError:
+                index = str(index)
+                print(
+                    "alors (les index sont foireux, j ai du les stringer):",
+                    index,
+                    df["avant"][index],
+                    df["apres"][index],
+                )
+            indextotake += [index]
+        resforcastypes = [
+            GraphCasType.rendermieux(
+                index, df["avant"][index], df["apres"][index], revenu=revenusCT[index]
+            )
+            for index, _name in enumerate(names)
+        ]
+        print(*resforcastypes)
+        return (*resforcastypes,)
 
 
 # Generates graph

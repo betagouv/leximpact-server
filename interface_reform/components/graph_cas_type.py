@@ -15,6 +15,55 @@ cas_types_textes = [
 
 
 class GraphCasType(object):
+    def rendermieux(index: int, avant: float, apres: float, revenu=10000):
+        relevanttext = ["{:.0f}€/mois".format(revenu / 12.0)]
+        tags = [html.A(rt, className="ui tag label") for rt in relevanttext]
+        diff = avant - apres
+        return [
+            html.Div(
+                dcc.Graph(
+                    id="graph-ct{}".format(index),
+                    figure={
+                        "data": [
+                            {
+                                "x": ["avant"],
+                                "y": [avant],
+                                "type": "bar",
+                                "name": u"avant",
+                            },
+                            {
+                                "x": ["après"],
+                                "y": [apres],
+                                "type": "bar",
+                                "name": u"après",
+                            },
+                            #     {'x': ["impact"], 'y': [-df["apres"][indextotake[index]] + df["avant"][indextotake[index]]], 'type': 'bar',
+                            #     'name': 'impact'}
+                        ]
+                        # ,
+                        # 'layout': {
+                        #    'title': simulate_pop_from_reform.foyertotexte(index)
+                        # }
+                    },
+                ),
+                className="image",
+            ),
+            html.A(
+                [
+                    "Impôt payé :",
+                    html.Div([html.Nobr(avant - apres), "€"], className="detail"),
+                ],
+                className="ui {} ribbon label".format(
+                    "green" if diff < -1 else "red" if diff > 1 else "grey"
+                ),
+            ),
+            html.Div(
+                [html.Div(" | ".join(cas_types_textes[index]), className=" header")]
+                + tags,
+                className="content",
+            ),
+        ]
+
     def render(
         index: int, addressimage: str, halfwidth=True, name=None, diff=0, revenu=10000
     ) -> html:
@@ -45,7 +94,7 @@ class GraphCasType(object):
                     className="content",
                 ),
             ],
-            className="{} card".format("green" if diff < 0 else "red"),
+            className="ui {} card".format("green" if diff < 0 else "red"),
         )
         # return html.Table(
         #     [
