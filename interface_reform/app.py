@@ -109,10 +109,8 @@ graphsCT = [
     for index, _name in enumerate(names)
 ]
 
-nbsplit = 2 if halfwidthgraphs else 1
-graphsCTsplit = [
-    html.P(graphsCT[x : x + nbsplit]) for x in range(0, len(graphsCT), nbsplit)
-]
+nbsplit = 1
+graphsCTsplit = [graphsCT[x : x + nbsplit] for x in range(0, len(graphsCT), nbsplit)]
 
 
 # texte_cas_types=simulate_pop_from_reform.texte_cas_types()
@@ -131,20 +129,23 @@ app.layout = html.Div(
             [
                 html.Div(Article.render(**article_values), className="six wide column"),
                 html.Div(
-                    graphsCTsplit
-                    + (
-                        [
-                            html.P(
-                                [
-                                    dcc.Graph(id="graphtotal"),
-                                    dcc.Graph(id="graphdecile"),
-                                ]
-                            )
-                        ]
-                        if not version_beta_sans_graph_pop
-                        else []
+                    html.Div(
+                        graphsCT
+                        + (
+                            [
+                                html.P(
+                                    [
+                                        dcc.Graph(id="graphtotal"),
+                                        dcc.Graph(id="graphdecile"),
+                                    ]
+                                )
+                            ]
+                            if not version_beta_sans_graph_pop
+                            else []
+                        ),
+                        className="ui three stackable cards",
                     ),
-                    className="six wide column",
+                    className="ten wide column",
                 ),
             ],
             className="ui grid",
@@ -272,15 +273,17 @@ if not version_beta_sans_graph_pop:
 # Generates results for the graphs depending on the simulation on the full population
 nbseuil = 4
 
+nbgraphs = 6
+
 
 @app.callback(
     [
-        Output(component_id="graph-ct0", component_property="figure"),
-        Output(component_id="graph-ct1", component_property="figure"),
-        Output(component_id="graph-ct2", component_property="figure"),
-        Output(component_id="graph-ct3", component_property="figure"),
-        Output(component_id="graph-ct4", component_property="figure"),
-        Output(component_id="graph-ct5", component_property="figure"),
+        Output(component_id="graph-ct{}".format(k), component_property="figure")
+        for k in range(nbgraphs)
+    ]
+    + [
+        Output(component_id="impact-ct{}".format(k), component_property="children")
+        for k in range(nbgraphs)
     ],
     # [Input(component_id="submit-button", component_property="n_clicks")],
     [
@@ -340,6 +343,10 @@ def get_reform_result_castypes(*args):
             #    'title': simulate_pop_from_reform.foyertotexte(index)
             # }
         }
+        for index, _name in enumerate(names)
+    ]
+    resforcastypes += [
+        -df["apres"][indextotake[index]] + df["avant"][indextotake[index]]
         for index, _name in enumerate(names)
     ]
     print(*resforcastypes)
