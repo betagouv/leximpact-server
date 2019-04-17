@@ -16,51 +16,36 @@ cas_types_textes = [
 
 class GraphCasType(object):
     def render(
-        index: int,
-        addressimage: str,
-        halfwidth=True,
-        name=None,
-        revenu=10000,
-        diff=-300,
+        index: int, addressimage: str, halfwidth=True, name=None, diff=0, revenu=10000
     ) -> html:
         relevanttext = ["{:.0f}€/mois".format(revenu / 12.0)]
         tags = [html.A(rt, className="ui tag label") for rt in relevanttext]
         return html.Div(
             [
                 html.Div(
+                    dcc.Graph(id="graph-ct{}".format(index)),
+                    className="image",
+                    style={},
+                ),
+                html.A(
                     [
+                        "Impôt payé :",
                         html.Div(
-                            dcc.Graph(id="graph-ct{}".format(index)),
-                            className="image",
-                            style={},
-                        ),
-                        html.A(
-                            [
-                                "Impôt payé :",
-                                html.Div(
-                                    "{}{}€".format("+" if diff >= 0 else "", diff),
-                                    className="detail",
-                                ),
-                            ],
-                            className="ui {} ribbon label".format(
-                                "green" if diff < 0 else "red"
-                            ),
-                        ),
-                        html.Div(
-                            [
-                                html.Div(
-                                    " | ".join(cas_types_textes[index]),
-                                    className=" header",
-                                )
-                            ]
-                            + tags,
-                            className="content",
+                            [html.Nobr(id="impact-ct{}".format(index)), "€"],
+                            className="detail",
                         ),
                     ],
-                    className="{} card".format("green" if diff < 0 else "red"),
-                )
+                    className="ui {} ribbon label".format(
+                        "green" if diff < 0 else "red"
+                    ),
+                ),
+                html.Div(
+                    [html.Div(" | ".join(cas_types_textes[index]), className=" header")]
+                    + tags,
+                    className="content",
+                ),
             ],
-            className="ui link cards",
+            className="{} card".format("green" if diff < 0 else "red"),
         )
         # return html.Table(
         #     [
