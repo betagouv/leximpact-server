@@ -419,11 +419,12 @@ else:
         ]  # Horrible ajustement
         if not API_mode:
             myres = simulate_pop_from_reform.CompareOldNew(
-                [int(args[i] * adjrate[i]) for i in range(len(args))], isdecile=False
+                [int(int(args[i]) * adjrate[i]) for i in range(len(args))],
+                isdecile=False,
             )  # [input1,input1]#
         else:
             myres = api_resultat_simulation(
-                [int(args[i] * adjrate[i]) for i in range(len(args) // 2)],
+                [int(int(args[i]) * adjrate[i]) for i in range(len(args) // 2)],
                 args[len(args) // 2 :],
                 False,
             )
