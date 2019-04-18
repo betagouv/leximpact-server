@@ -29,7 +29,9 @@ class GraphCasType(object):
         return [
             
              html.Div(
-                [html.Div(" | ".join(cas_types_textes[index]), className=" header", style={"font-size":"185%", "margin-bottom":"0.4em"})]
+                [html.Div(" | ".join(cas_types_textes[index]), 
+                    className=" header", 
+                    style={"font-size":"185%", "margin-bottom":"0.4em", "padding-right":"20px"})]
                 + tags,
                 className="content",
             ),
