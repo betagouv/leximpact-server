@@ -26,16 +26,20 @@ class GraphCasType(object):
                     figure={
                         "data": [
                             {
-                                "x": ["avant"],
+                                "x": ["droit existant"],
                                 "y": [-avant],
                                 "type": "bar",
-                                "name": u"avant",
+                                # "name": u"avant",
+                                "marker": {"color": "E5DC07"},  # " "rgb(40,40,40)"},
+                                "showlegend": False,
                             },
                             {
-                                "x": ["après"],
+                                "x": ["droit proposé"],
                                 "y": [-apres],
                                 "type": "bar",
-                                "name": u"après",
+                                # "name": u"après",
+                                "marker": {"color": "00A3FF"},
+                                "showlegend": False,
                             },
                             #     {'x': ["impact"], 'y': [-df["apres"][indextotake[index]] + df["avant"][indextotake[index]]], 'type': 'bar',
                             #     'name': 'impact'}
