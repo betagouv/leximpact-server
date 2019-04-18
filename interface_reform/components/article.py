@@ -33,7 +33,8 @@ class Article(object):
                 ),
                 html.Div(
                     [
-                        html.Button("Ajouter", className="ui button"),
+                        html.Button("Ajouter", className="ui button", style={
+                            "color": "#00A3FF"}),
                         html.Div(className="or"),
                         html.Button("Enlever une tranche", className="ui button"),
                     ],
@@ -65,14 +66,14 @@ class Article(object):
         return html.P(
             [
                 "1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède ",
-                html.Span(f"{seuil} ", style={"color": "#3B83C0", "font-size": "100%"}),
+                html.Span(f"{seuil} ", style={"color": "#A6A00C", "font-size": "100%"}),
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index}",
                         type="number",
                         value=seuil,
                         style={
-                            "color": "#E07B53",
+                            "color": "#00A3FF",
                             "padding": "0 0 0 .25em",
                             "height": "1.5em",
                             "width": "5em",
@@ -90,7 +91,7 @@ class Article(object):
     def _list_item(index: int, taux: int, seuil: int) -> html:
         return html.Li(
             [
-                html.Span(f"{taux} ", style={"color": "#3B83C0", "font-size": "100%"}),
+                html.Span(f"{taux} ", style={"color": "#A6A00C", "font-size": "100%"}),
                 """ """,
                 html.Div(
                     dcc.Input(
@@ -98,7 +99,7 @@ class Article(object):
                         type="number",
                         value=taux,
                         style={
-                            "color": "#E07B53",
+                            "color": "#00A3FF",
                             "padding": "0 0 0 .25em",
                             "height": "1.5em",
                             "width": "3em",
@@ -112,14 +113,14 @@ class Article(object):
                 """pour la fraction supérieure à """,
                 html.Nobr(id=f"output-seuil{index}"),
                 """ € et inférieure ou égale à """,
-                html.Span(f"{seuil} ", style={"color": "#3B83C0", "font-size": "100%"}),
+                html.Span(f"{seuil} ", style={"color": "#A6A00C", "font-size": "100%"}),
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index + 1}",
                         type="number",
                         value=seuil,
                         style={
-                            "color": "#E07B53",
+                            "color": "#00A3FF",
                             "padding": "0 0 0 .25em",
                             "height": "1.5em",
                             "width": "5em",
@@ -137,7 +138,7 @@ class Article(object):
     def _list_item_last(index: int, taux: int) -> html:
         return html.Li(
             [
-                html.Span(f"{taux} ", style={"color": "#3B83C0", "font-size": "100%"}),
+                html.Span(f"{taux} ", style={"color": "#A6A00C", "font-size": "100%"}),
                 """ """,
                 html.Div(
                     dcc.Input(
@@ -145,7 +146,7 @@ class Article(object):
                         type="number",
                         value=taux,
                         style={
-                            "color": "#E07B53",
+                            "color": "#00A3FF",
                             "padding": "0 0 0 .25em",
                             "height": "1.5em",
                             "width": "3em",

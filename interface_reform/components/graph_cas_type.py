@@ -50,7 +50,7 @@ class GraphCasType(object):
             ),
             html.A(
                 [
-                    "Impôt payé :",
+                    "Effet sur l'impôt payé :",
                     html.Div(
                         [
                             html.Nobr(
@@ -59,14 +59,15 @@ class GraphCasType(object):
                             "€",
                         ],
                         className="detail",
+                        style={"font-size":"150%"}
                     ),
                 ],
-                className="ui {} huge ribbon label".format(
-                    "green" if diff < -1 else "red" if diff > 1 else "grey"
+                className="ui {} large ribbon label".format(
+                    "green" if diff < -1 else "red" if diff > 1 else "grey",
                 ),
             ),
             html.Div(
-                [html.Div(" | ".join(cas_types_textes[index]), className=" header")]
+                [html.Div(" | ".join(cas_types_textes[index]), className=" header", style={"font-size":"165%"})]
                 + tags,
                 className="content",
             ),
