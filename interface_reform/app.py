@@ -361,4 +361,6 @@ def get_reform_result_castypes(n_clicks, *args):
 
 
 if __name__ == "__main__":
-    app.run_server()
+    app.run_server(
+        host=os.environ.get("HOST", "127.0.0.1"), port=os.environ.get("PORT", "8050")
+    )
