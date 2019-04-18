@@ -7,6 +7,7 @@ from functools import partial
 
 import pandas
 import time
+import os
 
 from openfisca_core.simulation_builder import SimulationBuilder
 from openfisca_france import FranceTaxBenefitSystem
@@ -287,13 +288,15 @@ CAS_TYPE = load_data(fread("DCT_old.csv"))
 SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs=TBS)
 
-DUMMY_DATA = load_data(fread("dummy_data.h5"))
-SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
-SIMPOP_BASE = SIMPOP(tbs=TBS)
+if os.environ.get("FLASK_ENV") == "development":
+    DUMMY_DATA = load_data(fread("dummy_data.h5"))
+    SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
+    SIMPOP_BASE = SIMPOP(tbs=TBS)
 
-DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
+    DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
 
-simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
+    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
+
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
 
 
