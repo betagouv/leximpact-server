@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 
-API_mode = (
-    False
-)  # If true, the app will attempt to retrieve data through an API call rather than through Openfisca.
-
-import sys, os
+import sys
+import os
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 
 from components import Article, GraphCasType, Header
+
+version_beta_sans_graph_pop = True
+
+API_mode = (
+    False
+)  # If true, the app will attempt to retrieve data through an API call rather than through Openfisca.
 
 if not API_mode:
     try:
@@ -70,6 +73,7 @@ url_css_to_add = [
     "https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
     "https://fonts.googleapis.com/css?family=Lato",
 ]
+
 links_css_stylesheets = [
     html.Link(href=url, rel="stylesheet") for url in url_css_to_add
 ]
@@ -95,22 +99,26 @@ except (Exception):
         for namefile in sorted(os.listdir("./interface_reform/assets/ImagesCasTypes"))
     ]
 
-halfwidthgraphs = False
-graphsCT = [
-    GraphCasType.render(
-        index,
-        imgstarts[index],
-        halfwidth=halfwidthgraphs,
-        name=names[index],
-        revenu=revenusCT[index],
-    )
-    for index, _name in enumerate(names)
-]
+halfwidthgraphs = True
+if False:
+    graphsCT = [
+        GraphCasType.render(
+            index,
+            imgstarts[index],
+            halfwidth=halfwidthgraphs,
+            name=names[index],
+            revenu=revenusCT[index],
+        )
+        for index, _name in enumerate(names)
+    ]
+else:
+    graphsCT = [
+        html.Div(id="graphtot-ct{}".format(index), className="ui card")
+        for index, _name in enumerate(names)
+    ]
 
-nbsplit = 2 if halfwidthgraphs else 1
-graphsCTsplit = [
-    html.P(graphsCT[x : x + nbsplit]) for x in range(0, len(graphsCT), nbsplit)
-]
+nbsplit = 1
+graphsCTsplit = [graphsCT[x : x + nbsplit] for x in range(0, len(graphsCT), nbsplit)]
 
 
 # texte_cas_types=simulate_pop_from_reform.texte_cas_types()
@@ -122,18 +130,30 @@ app.layout = html.Div(
         Header.render(),
         html.P(
             [html.Button(id="submit-button", n_clicks=0, children="calculer impact")]
-        ),
+        )
+        if not version_beta_sans_graph_pop
+        else html.B(""),
         html.Div(
             [
                 html.Div(Article.render(**article_values), className="six wide column"),
                 html.Div(
-                    graphsCTsplit
-                    + [
-                        html.P(
-                            [dcc.Graph(id="graphtotal"), dcc.Graph(id="graphdecile")]
-                        )
-                    ],
-                    className="eight wide column",
+                    html.Div(
+                        graphsCT
+                        + (
+                            [
+                                html.P(
+                                    [
+                                        dcc.Graph(id="graphtotal"),
+                                        dcc.Graph(id="graphdecile"),
+                                    ]
+                                )
+                            ]
+                            if not version_beta_sans_graph_pop
+                            else []
+                        ),
+                        className="ui three stackable cards",
+                    ),
+                    className="ten wide column",
                 ),
             ],
             className="ui grid",
@@ -184,99 +204,125 @@ def output_seuil3(input1):
     return str(input1)
 
 
-# Generates results for the graphs depending on the simulation on the full population
 nbseuil = 4
 
-
-@app.callback(
-    [
-        Output(component_id="graphtotal", component_property="figure"),
-        Output(component_id="graphdecile", component_property="figure"),
-    ],
-    [Input(component_id="submit-button", component_property="n_clicks")],
-    [
-        State(component_id="input-seuil{}".format(numseuil), component_property="value")
-        for numseuil in range(nbseuil)
-    ]
-    + [
-        State(component_id="input-taux{}".format(numseuil), component_property="value")
-        for numseuil in range(nbseuil)
-    ],
-)
-def get_reform_result(n_clicks, *args):
-    if not API_mode:
-        myres = simulate_pop_from_reform.CompareOldNew(
-            [int(k) for k in args], isdecile=True
-        )  # [input1,input1]#
-    else:
-        myres = api_resultat_simulation(
-            args[: len(args) // 2], args[len(args) // 2 :], True
-        )
-    print(myres)
-    return (
-        {
-            "data": [
-                {
-                    "x": ["avant"],
-                    "y": [myres["total"]["avant"]],
-                    "type": "bar",
-                    "name": u"avant",
-                },
-                {
-                    "x": ["après"],
-                    "y": [myres["total"]["apres"]],
-                    "type": "bar",
-                    "name": u"après",
-                },
-                {
-                    "x": ["impact"],
-                    "y": [myres["total"]["apres"] - myres["total"]["avant"]],
-                    "type": "bar",
-                    "name": "impact",
-                },
-            ],
-            "layout": {"title": "Impact du changement"},
-        },
-        {
-            "data": [
-                {
-                    "x": ["decile {}".format(i)],
-                    "y": [myres["deciles"][i][2] - myres["deciles"][i][1]],
-                    "type": "bar",
-                    "name": "decile {}".format(i),
-                }
-                for i in range(len(myres["deciles"]))
-            ],
-            "layout": {"title": "changement par décile"},
-        },
+# Maybe I can do that ? (i.e. the if is gonna work properly with the callback
+if not version_beta_sans_graph_pop:
+    # Generates results for the graphs depending on the simulation on the full population
+    @app.callback(
+        [
+            Output(component_id="graphtotal", component_property="figure"),
+            Output(component_id="graphdecile", component_property="figure"),
+        ],
+        [Input(component_id="submit-button", component_property="n_clicks")],
+        [
+            State(
+                component_id="input-seuil{}".format(numseuil),
+                component_property="value",
+            )
+            for numseuil in range(nbseuil)
+        ]
+        + [
+            State(
+                component_id="input-taux{}".format(numseuil), component_property="value"
+            )
+            for numseuil in range(nbseuil)
+        ],
     )
+    def get_reform_result(n_clicks, *args):
+        adjrate = [
+            9690 / 9964,
+            26764 / 27519,
+            71754 / 73779,
+            151956 / 156244,
+            1,
+            1,
+            1,
+            1,
+            1,
+        ]  # Horrible ajustement
+        if not API_mode:
+            myres = simulate_pop_from_reform.CompareOldNew(
+                [int(args[i] * adjrate[i]) for i in range(len(args))], isdecile=True
+            )  # [input1,input1]#
+        else:
+            myres = api_resultat_simulation(
+                [int(args[i] * adjrate[i]) for i in range(len(args) // 2)],
+                args[len(args) // 2 :],
+                True,
+            )
+        print(myres)
+        return (
+            {
+                "data": [
+                    {
+                        "x": ["avant"],
+                        "y": [myres["total"]["avant"]],
+                        "type": "bar",
+                        "name": u"avant",
+                    },
+                    {
+                        "x": ["après"],
+                        "y": [myres["total"]["apres"]],
+                        "type": "bar",
+                        "name": u"après",
+                    },
+                    {
+                        "x": ["impact"],
+                        "y": [myres["total"]["apres"] - myres["total"]["avant"]],
+                        "type": "bar",
+                        "name": "impact",
+                    },
+                ],
+                "layout": {"title": "Impact du changement"},
+            },
+            {
+                "data": [
+                    {
+                        "x": ["decile {}".format(i)],
+                        "y": [myres["deciles"][i][2] - myres["deciles"][i][1]],
+                        "type": "bar",
+                        "name": "decile {}".format(i),
+                    }
+                    for i in range(len(myres["deciles"]))
+                ],
+                "layout": {"title": "changement par décile"},
+            },
+        )
 
 
 # Generates results for the graphs depending on the simulation on the full population
 nbseuil = 4
 
+nbgraphs = 6
 
-@app.callback(
-    [
-        Output(component_id="graph-ct0", component_property="figure"),
-        Output(component_id="graph-ct1", component_property="figure"),
-        Output(component_id="graph-ct2", component_property="figure"),
-        Output(component_id="graph-ct3", component_property="figure"),
-        Output(component_id="graph-ct4", component_property="figure"),
-        Output(component_id="graph-ct5", component_property="figure"),
-    ],
-    [Input(component_id="submit-button", component_property="n_clicks")],
-    [
-        State(component_id="input-seuil{}".format(numseuil), component_property="value")
-        for numseuil in range(nbseuil)
-    ]
-    + [
-        State(component_id="input-taux{}".format(numseuil), component_property="value")
-        for numseuil in range(nbseuil)
-    ],
-)
-def get_reform_result_castypes(n_clicks, *args):
-    if True or n_clicks:
+if False:
+
+    @app.callback(
+        [
+            Output(component_id="graph-ct{}".format(k), component_property="figure")
+            for k in range(nbgraphs)
+        ]
+        + [
+            Output(component_id="impact-ct{}".format(k), component_property="children")
+            for k in range(nbgraphs)
+        ],
+        # [Input(component_id="submit-button", component_property="n_clicks")],
+        [
+            Input(
+                component_id="input-seuil{}".format(numseuil),
+                component_property="value",
+            )
+            for numseuil in range(nbseuil)
+        ]
+        + [
+            Input(
+                component_id="input-taux{}".format(numseuil), component_property="value"
+            )
+            for numseuil in range(nbseuil)
+        ],
+    )
+    def get_reform_result_castypes(*args):
         print("computing castypes")
         if not API_mode:
             myres = simulate_pop_from_reform.CompareOldNew(
@@ -316,15 +362,8 @@ def get_reform_result_castypes(n_clicks, *args):
                         "type": "bar",
                         "name": u"après",
                     },
-                    {
-                        "x": ["impact"],
-                        "y": [
-                            -df["apres"][indextotake[index]]
-                            + df["avant"][indextotake[index]]
-                        ],
-                        "type": "bar",
-                        "name": "impact",
-                    },
+                    #     {'x': ["impact"], 'y': [-df["apres"][indextotake[index]] + df["avant"][indextotake[index]]], 'type': 'bar',
+                    #     'name': 'impact'}
                 ]
                 # ,
                 # 'layout': {
@@ -333,10 +372,92 @@ def get_reform_result_castypes(n_clicks, *args):
             }
             for index, _name in enumerate(names)
         ]
+        resforcastypes += [
+            -df["apres"][indextotake[index]] + df["avant"][indextotake[index]]
+            for index, _name in enumerate(names)
+        ]
         print(*resforcastypes)
         return (*resforcastypes,)
-    else:  # Does not run before the first click
-        return tuple([None] * len(names))  #
+
+
+else:
+
+    @app.callback(
+        [
+            Output(
+                component_id="graphtot-ct{}".format(k), component_property="children"
+            )
+            for k in range(nbgraphs)
+        ],
+        # [Input(component_id="submit-button", component_property="n_clicks")],
+        [
+            Input(
+                component_id="input-seuil{}".format(numseuil),
+                component_property="value",
+            )
+            for numseuil in range(nbseuil)
+        ]
+        + [
+            Input(
+                component_id="input-taux{}".format(numseuil), component_property="value"
+            )
+            for numseuil in range(nbseuil)
+        ],
+    )
+    def get_reform_result_castypes_mieux(*args):
+        print("computing castypes")
+        adjrate = [
+            9690 / 9964,
+            26764 / 27519,
+            71754 / 73779,
+            151956 / 156244,
+            1,
+            1,
+            1,
+            1,
+            1,
+        ]  # Horrible ajustement
+        if not API_mode:
+            myres = simulate_pop_from_reform.CompareOldNew(
+                [int(int(args[i]) * adjrate[i]) for i in range(len(args))],
+                isdecile=False,
+            )  # [input1,input1]#
+        else:
+            myres = api_resultat_simulation(
+                [int(int(args[i]) * adjrate[i]) for i in range(len(args) // 2)],
+                args[len(args) // 2 :],
+                False,
+            )
+        print(myres)
+        df = myres["res_brut"]
+        indextotake = []
+        maximpot = 0
+        for index, _name in enumerate(names):
+            try:
+                print("alors :", index, df["avant"][index], df["apres"][index])
+                maximpot = max(maximpot, max(-df["avant"][index], -df["apres"][index]))
+            except KeyError:
+                index = str(index)
+                print(
+                    "alors (les index sont foireux, j ai du les stringer):",
+                    index,
+                    df["avant"][index],
+                    df["apres"][index],
+                )
+                maximpot = max(maximpot, max(-df["avant"][index], -df["apres"][index]))
+            indextotake += [index]
+        resforcastypes = [
+            GraphCasType.rendermieux(
+                index,
+                df["avant"][index],
+                df["apres"][index],
+                revenu=revenusCT[it],
+                maximpot=2000,
+            )
+            for it, index in enumerate(indextotake)
+        ]
+        print(*resforcastypes)
+        return (*resforcastypes,)
 
 
 # Generates graph
