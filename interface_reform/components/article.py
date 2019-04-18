@@ -37,20 +37,23 @@ class Article(object):
                         html.Div(className="or"),
                         html.Button("Enlever une tranche", className="ui button"),
                     ],
-                    className="ui small buttons",
+                    className="ui large buttons",
                 ),
             ],
             className="ui segment",
-            style={"padding": "2em", "font-size": "16px"},
+            style={"padding": "2em", "family": "serif", "font-size": "20px", "font-family": "serif"},
         )
 
     def _header() -> html:
         return html.H1(
             [
                 "Article 197",
-                html.Div("Code général des impôts", className="sub header"),
+                html.Div("Code général des impôts", 
+                            className="sub header",
+                            style={"font-family": "sans serif"}),
             ],
             className="ui header",
+            style={"font-size": "40px", "font-family": "serif"},
         )
 
     def _section() -> html:
@@ -62,7 +65,7 @@ class Article(object):
         return html.P(
             [
                 "1. L'impôt est calculé en appliquant à la fraction de chaque part de revenu qui excède ",
-                html.Span(f"{seuil} ", style={"color": "#3B83C0", "font-size": "80%"}),
+                html.Span(f"{seuil} ", style={"color": "#3B83C0", "font-size": "100%"}),
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index}",
@@ -73,6 +76,8 @@ class Article(object):
                             "padding": "0 0 0 .25em",
                             "height": "1.5em",
                             "width": "5em",
+                            "font-size": "130%",
+                            "font-family": "serif"
                         },
                     ),
                     className="ui mini input",
@@ -85,7 +90,7 @@ class Article(object):
     def _list_item(index: int, taux: int, seuil: int) -> html:
         return html.Li(
             [
-                html.Span(f"{taux} ", style={"color": "#3B83C0", "font-size": "80%"}),
+                html.Span(f"{taux} ", style={"color": "#3B83C0", "font-size": "100%"}),
                 """ """,
                 html.Div(
                     dcc.Input(
@@ -97,6 +102,8 @@ class Article(object):
                             "padding": "0 0 0 .25em",
                             "height": "1.5em",
                             "width": "3em",
+                            "font-size": "130%",
+                            "font-family": "serif"
                         },
                     ),
                     className="ui mini input",
@@ -105,7 +112,7 @@ class Article(object):
                 """pour la fraction supérieure à """,
                 html.Nobr(id=f"output-seuil{index}"),
                 """ € et inférieure ou égale à """,
-                html.Span(f"{seuil} ", style={"color": "#3B83C0", "font-size": "80%"}),
+                html.Span(f"{seuil} ", style={"color": "#3B83C0", "font-size": "100%"}),
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index + 1}",
@@ -116,6 +123,8 @@ class Article(object):
                             "padding": "0 0 0 .25em",
                             "height": "1.5em",
                             "width": "5em",
+                            "font-size": "130%",
+                            "font-family": "serif"
                         },
                     ),
                     className="ui mini input",
@@ -128,7 +137,7 @@ class Article(object):
     def _list_item_last(index: int, taux: int) -> html:
         return html.Li(
             [
-                html.Span(f"{taux} ", style={"color": "#3B83C0", "font-size": "80%"}),
+                html.Span(f"{taux} ", style={"color": "#3B83C0", "font-size": "100%"}),
                 """ """,
                 html.Div(
                     dcc.Input(
@@ -140,6 +149,8 @@ class Article(object):
                             "padding": "0 0 0 .25em",
                             "height": "1.5em",
                             "width": "3em",
+                            "font-size": "130%",
+                            "font-family": "serif"
                         },
                     ),
                     className="ui mini input",
