@@ -17,7 +17,7 @@ format-style:
 	black `git ls-files | grep "\.py$$"`
 
 run:
-	python ./interface_reform/app.py
+	FLASK_ENV=development python ./interface_reform/app.py
 
 server:
 	FLASK_ENV=development python ./server/app.py

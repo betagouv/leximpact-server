@@ -361,4 +361,4 @@ def get_reform_result_castypes(n_clicks, *args):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server()
