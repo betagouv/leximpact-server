@@ -78,7 +78,7 @@ class GraphCasType(object):
                 ),
             ),
             html.Div(
-                [html.Div(" | ".join(cas_types_textes[index]), className=" header", style={"font-size":"165%"})]
+                [html.Div(" | ".join(cas_types_textes[index]), className=" header", style={"font-size":"165%", "margin-bottom":"0.4em"})]
                 + tags,
                 className="content",
             ),
