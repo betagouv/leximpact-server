@@ -52,21 +52,15 @@ class GraphCasType(object):
                             "€",
                         ],
                         className="header",
-                        style={
-                            "font-size": "300%",
-                            "margin-top": "0.5em",
-                        },
+                        style={"font-size": "300%", "margin-top": "0.5em"},
                     ),
                 ],
                 # className="ui {} large ribbon label".format(
                 # "green" if diff < -1 else "red" if diff > 1 else "grey",
                 className="ui {} huge extra".format(
-                    "green" if diff < -1 else "red" if diff > 1 else "grey",
-                   
+                    "green" if diff < -1 else "red" if diff > 1 else "grey"
                 ),
-
             ),
-
             html.A(
                 [html.Div("", className="heart icon", style={"font-size": "0%"})],
                 className="ui {} large right corner label".format(
@@ -81,7 +75,7 @@ class GraphCasType(object):
                             margin=go.layout.Margin(l=50, r=50, b=50, t=20, pad=4),
                             autosize=True,
                             height=250,
-                            #width=200,
+                            # width=200,
                             yaxis={
                                 "range": [
                                     0,

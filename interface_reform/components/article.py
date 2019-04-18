@@ -85,7 +85,7 @@ class Article(object):
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index}",
-                        type="number",
+                        type="text",
                         value=seuil,
                         style={
                             "color": "#00A3FF",
@@ -111,7 +111,7 @@ class Article(object):
                 html.Div(
                     dcc.Input(
                         id=f"input-taux{index}",
-                        type="number",
+                        type="text",
                         value=taux,
                         style={
                             "color": "#00A3FF",
@@ -132,7 +132,7 @@ class Article(object):
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index + 1}",
-                        type="number",
+                        type="text",
                         value=seuil,
                         style={
                             "color": "#00A3FF",
@@ -158,7 +158,7 @@ class Article(object):
                 html.Div(
                     dcc.Input(
                         id=f"input-taux{index}",
-                        type="number",
+                        type="text",
                         value=taux,
                         style={
                             "color": "#00A3FF",
