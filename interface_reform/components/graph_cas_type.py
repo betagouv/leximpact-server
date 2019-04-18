@@ -24,13 +24,24 @@ class GraphCasType(object):
         tags = [html.A(rt, className="ui tag label") for rt in relevanttext]
         diff = avant - apres
         map = max(-avant, -apres)
-        scale = (map) * max(1, (maximpot / map))  # Mise a l'échelle
+        scale = (map) * max(0, (maximpot / map))  # Mise a l'échelle
         return [
             html.Div(
                 dcc.Graph(
                     id="graph-ct{}".format(index),
                     figure={
-                        "layout": go.Layout(yaxis={"range": [0, scale]}),
+                        "layout": go.Layout(
+                            yaxis={
+                                "range": [
+                                    0,
+                                    map if scale <= map else scale,
+                                ],  # Si l'échelle par défaut est trop petite,
+                                # on met en rouge mais on montre la vraie taille
+                                "tickfont": {
+                                    "color": "red" if scale <= map else "black"
+                                },
+                            }
+                        ),
                         "data": [
                             {
                                 "x": ["droit existant"],
@@ -70,15 +81,21 @@ class GraphCasType(object):
                             "€",
                         ],
                         className="detail",
-                        style={"font-size":"150%"}
+                        style={"font-size": "150%"},
                     ),
                 ],
                 className="ui {} large ribbon label".format(
-                    "green" if diff < -1 else "red" if diff > 1 else "grey",
+                    "green" if diff < -1 else "red" if diff > 1 else "grey"
                 ),
             ),
             html.Div(
-                [html.Div(" | ".join(cas_types_textes[index]), className=" header", style={"font-size":"165%"})]
+                [
+                    html.Div(
+                        " | ".join(cas_types_textes[index]),
+                        className=" header",
+                        style={"font-size": "165%"},
+                    )
+                ]
                 + tags,
                 className="content",
             ),

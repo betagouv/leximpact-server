@@ -423,7 +423,7 @@ else:
                 df["avant"][index],
                 df["apres"][index],
                 revenu=revenusCT[it],
-                maximpot=maximpot,
+                maximpot=2000,
             )
             for it, index in enumerate(indextotake)
         ]
