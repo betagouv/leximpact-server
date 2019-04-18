@@ -149,7 +149,7 @@ app.layout = html.Div(
                             if not version_beta_sans_graph_pop
                             else []
                         ),
-                        className="ui two stackable cards",
+                        className="ui three stackable cards",
                     ),
                     className="ten wide column",
                 ),
