@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import connexion
 import sys
+
 sys.path.append("..")
+
 
 def create_app() -> connexion.apps.flask_app.FlaskApp:
     app = connexion.App("server", specification_dir=".")
