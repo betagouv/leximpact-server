@@ -343,7 +343,10 @@ def foyertotexte(idfoy, data=None):
 def foyertorevenu(idfoy, data=None):
     if data is None:
         data = CAS_TYPE
-    revenu = data[data["idfoy"] == idfoy]["salaire_de_base"].sum()
+    revenu = (
+        data[data["idfoy"] == idfoy]["salaire_de_base"].sum()
+        + data[data["idfoy"] == idfoy]["retraite_brute"].sum()
+    )
     print(idfoy, "est mon idfoy et mon rev ", revenu)
     return revenu
 
