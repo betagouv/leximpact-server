@@ -51,7 +51,15 @@ class GraphCasType(object):
             html.A(
                 [
                     "Impôt payé :",
-                    html.Div([html.Nobr(avant - apres), "€"], className="detail"),
+                    html.Div(
+                        [
+                            html.Nobr(
+                                ("+" if avant >= apres else "") + str(avant - apres)
+                            ),
+                            "€",
+                        ],
+                        className="detail",
+                    ),
                 ],
                 className="ui {} ribbon label".format(
                     "green" if diff < -1 else "red" if diff > 1 else "grey"
