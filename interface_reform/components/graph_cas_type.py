@@ -31,6 +31,9 @@ class GraphCasType(object):
                     id="graph-ct{}".format(index),
                     figure={
                         "layout": go.Layout(
+                            autosize=False,
+                            height=400,
+                            width=300,
                             yaxis={
                                 "range": [
                                     0,
@@ -40,7 +43,7 @@ class GraphCasType(object):
                                 "tickfont": {
                                     "color": "red" if scale <= map else "black"
                                 },
-                            }
+                            },
                         ),
                         "data": [
                             {
