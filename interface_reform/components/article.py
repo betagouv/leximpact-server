@@ -44,7 +44,10 @@ class Article(object):
                         ),
                     ],
                     className="ui large buttons",
+                    style={"margin-bottom": "20px"},
                 ),
+                Article._suitearticle(),
+                Article._suitearticle2(),
             ],
             className="ui segment",
             style={
@@ -82,7 +85,7 @@ class Article(object):
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index}",
-                        type="number",
+                        type="text",
                         value=seuil,
                         style={
                             "color": "#00A3FF",
@@ -108,7 +111,7 @@ class Article(object):
                 html.Div(
                     dcc.Input(
                         id=f"input-taux{index}",
-                        type="number",
+                        type="text",
                         value=taux,
                         style={
                             "color": "#00A3FF",
@@ -129,7 +132,7 @@ class Article(object):
                 html.Div(
                     dcc.Input(
                         id=f"input-seuil{index + 1}",
-                        type="number",
+                        type="text",
                         value=seuil,
                         style={
                             "color": "#00A3FF",
@@ -142,7 +145,7 @@ class Article(object):
                     ),
                     className="ui mini input",
                 ),
-                """ € ; """,
+                """ € ; """,
             ],
             value="—",
         )
@@ -155,7 +158,7 @@ class Article(object):
                 html.Div(
                     dcc.Input(
                         id=f"input-taux{index}",
-                        type="number",
+                        type="text",
                         value=taux,
                         style={
                             "color": "#00A3FF",
@@ -174,4 +177,14 @@ class Article(object):
                 """ € """,
             ],
             value="—",
+        )
+
+    def _suitearticle() -> html:
+        return html.P(
+            "2. La réduction d'impôt résultant de l'application du quotient familial ne peut excéder 1 551 € par demi-part ou la moitié de cette somme par quart de part s'ajoutant à une part pour les contribuables célibataires, divorcés, veufs ou soumis à l'imposition distincte prévue au 4 de l'article 6 et à deux parts pour les contribuables mariés soumis à une imposition commune."
+        )
+
+    def _suitearticle2() -> html:
+        return html.P(
+            "Toutefois, pour les contribuables célibataires, divorcés, ou soumis à l'imposition distincte prévue au 4 de l'article 6 qui répondent aux conditions fixées au II de l'article 194, la réduction d'impôt correspondant à la part accordée au titre du premier enfant à charge est limitée à 3 660 € Lorsque les contribuables entretiennent uniquement des enfants dont la charge est réputée également partagée entre l'un et l'autre des parents, la réduction d'impôt correspondant à la demi-part accordée au titre de chacun des deux premiers enfants est limitée à la moitié de cette somme."
         )
