@@ -297,11 +297,11 @@ simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
 
 
-
 def foyertosomethingelse(idfoy):
     return "oui j'ai un foyer son numero est {}".format(idfoy)
 
-def foyertotexte(idfoy,data=None):
+
+def foyertotexte(idfoy, data=None):
     if data is None:
         data = CAS_TYPE
     myct = data[data["idfoy"] == idfoy]
