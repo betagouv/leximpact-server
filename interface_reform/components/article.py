@@ -33,11 +33,15 @@ class Article(object):
                 ),
                 html.Div(
                     [
-                        html.Button("Ajouter", className="ui button", style={
-                            "color": "#00A3FF"}),
+                        html.Button(
+                            "Ajouter", className="ui button", style={"color": "#00A3FF"}
+                        ),
                         html.Div(className="or"),
-                        html.Button("Enlever une tranche", className="ui button",style={
-                            "color": "#FFFFFF"}),
+                        html.Button(
+                            "Enlever une tranche",
+                            className="ui button",
+                            style={"color": "#FFFFFF"},
+                        ),
                     ],
                     className="ui large buttons",
                 ),
