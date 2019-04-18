@@ -402,9 +402,11 @@ else:
         print(myres)
         df = myres["res_brut"]
         indextotake = []
+        maximpot = 0
         for index, _name in enumerate(names):
             try:
                 print("alors :", index, df["avant"][index], df["apres"][index])
+                maximpot = max(maximpot, max(-df["avant"][index], -df["apres"][index]))
             except KeyError:
                 index = str(index)
                 print(
@@ -413,12 +415,17 @@ else:
                     df["avant"][index],
                     df["apres"][index],
                 )
+                maximpot = max(maximpot, max(-df["avant"][index], -df["apres"][index]))
             indextotake += [index]
         resforcastypes = [
             GraphCasType.rendermieux(
-                index, df["avant"][index], df["apres"][index], revenu=revenusCT[index]
+                index,
+                df["avant"][index],
+                df["apres"][index],
+                revenu=revenusCT[it],
+                maximpot=maximpot,
             )
-            for index, _name in enumerate(names)
+            for it, index in enumerate(indextotake)
         ]
         print(*resforcastypes)
         return (*resforcastypes,)

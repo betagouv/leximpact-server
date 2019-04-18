@@ -2,7 +2,7 @@
 
 import dash_core_components as dcc
 import dash_html_components as html
-
+import plotly.graph_objs as go
 
 cas_types_textes = [
     ["Seul·e", "sans enfant"],
@@ -13,17 +13,24 @@ cas_types_textes = [
     ["En couple", "un enfant"],
 ]  # Decrit les cas types
 
+from math import log10
+
 
 class GraphCasType(object):
-    def rendermieux(index: int, avant: float, apres: float, revenu=10000):
+    def rendermieux(
+        index: int, avant: float, apres: float, revenu=10000, maximpot=35000
+    ):
         relevanttext = ["{:.0f}€/mois".format(revenu / 12.0)]
         tags = [html.A(rt, className="ui tag label") for rt in relevanttext]
         diff = avant - apres
+        map = max(-avant, -apres)
+        scale = (map) * max(1, (maximpot / map))  # Mise a l'échelle
         return [
             html.Div(
                 dcc.Graph(
                     id="graph-ct{}".format(index),
                     figure={
+                        "layout": go.Layout(yaxis={"range": [0, scale]}),
                         "data": [
                             {
                                 "x": ["droit existant"],
