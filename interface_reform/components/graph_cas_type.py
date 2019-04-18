@@ -61,7 +61,7 @@ class GraphCasType(object):
                         className="detail",
                     ),
                 ],
-                className="ui {} ribbon label".format(
+                className="ui {} huge ribbon label".format(
                     "green" if diff < -1 else "red" if diff > 1 else "grey"
                 ),
             ),
