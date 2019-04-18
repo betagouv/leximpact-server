@@ -16,6 +16,7 @@ from openfisca_france.model.base import Reform
 
 version_beta_sans_simu_pop = True
 
+
 def fread(filename: str) -> Callable:
     if filename[-3:] == ".h5":
         fun = pandas.read_hdf
@@ -293,18 +294,18 @@ if not version_beta_sans_simu_pop:
     DUMMY_DATA = load_data(fread("dummy_data.h5"))
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
-    #Keeping computations short with option to keep file under 1000 FF
+    # Keeping computations short with option to keep file under 1000 FF
     DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
 
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
 
 
-
 def foyertosomethingelse(idfoy):
     return "oui j'ai un foyer son numero est {}".format(idfoy)
 
-def foyertotexte(idfoy,data=None):
+
+def foyertotexte(idfoy, data=None):
     if data is None:
         data = CAS_TYPE
     myct = data[data["idfoy"] == idfoy]

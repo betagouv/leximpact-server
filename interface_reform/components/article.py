@@ -42,16 +42,23 @@ class Article(object):
                 ),
             ],
             className="ui segment",
-            style={"padding": "2em", "family": "serif", "font-size": "20px", "font-family": "serif"},
+            style={
+                "padding": "2em",
+                "family": "serif",
+                "font-size": "20px",
+                "font-family": "serif",
+            },
         )
 
     def _header() -> html:
         return html.H1(
             [
                 "Article 197",
-                html.Div("Code général des impôts", 
-                            className="sub header",
-                            style={"font-family": "sans serif"}),
+                html.Div(
+                    "Code général des impôts",
+                    className="sub header",
+                    style={"font-family": "sans serif"},
+                ),
             ],
             className="ui header",
             style={"font-size": "40px", "font-family": "serif"},
@@ -78,7 +85,7 @@ class Article(object):
                             "height": "1.5em",
                             "width": "5em",
                             "font-size": "130%",
-                            "font-family": "serif"
+                            "font-family": "serif",
                         },
                     ),
                     className="ui mini input",
@@ -104,7 +111,7 @@ class Article(object):
                             "height": "1.5em",
                             "width": "3em",
                             "font-size": "130%",
-                            "font-family": "serif"
+                            "font-family": "serif",
                         },
                     ),
                     className="ui mini input",
@@ -125,7 +132,7 @@ class Article(object):
                             "height": "1.5em",
                             "width": "5em",
                             "font-size": "130%",
-                            "font-family": "serif"
+                            "font-family": "serif",
                         },
                     ),
                     className="ui mini input",
@@ -151,7 +158,7 @@ class Article(object):
                             "height": "1.5em",
                             "width": "3em",
                             "font-size": "130%",
-                            "font-family": "serif"
+                            "font-family": "serif",
                         },
                     ),
                     className="ui mini input",
