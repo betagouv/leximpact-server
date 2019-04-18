@@ -27,13 +27,59 @@ class GraphCasType(object):
         scale = (map) * max(0, (maximpot / map))  # Mise a l'échelle
         return [
             html.Div(
+                [
+                    html.Div(
+                        " | ".join(cas_types_textes[index]),
+                        className=" header",
+                        style={
+                            "font-size": "185%",
+                            "margin-bottom": "0.4em",
+                            "padding-right": "20px",
+                        },
+                    )
+                ]
+                + tags,
+                className="content",
+            ),
+            html.A(
+                [
+                    "Effet sur l'impôt payé :",
+                    html.Div(
+                        [
+                            html.Nobr(
+                                ("+" if avant >= apres else "") + str(avant - apres)
+                            ),
+                            "€",
+                        ],
+                        className="header",
+                        style={
+                            "font-size": "300%",
+                            "margin-top": "0.5em",
+                            "colour": "black",
+                        },
+                    ),
+                ],
+                # className="ui {} large ribbon label".format(
+                # "green" if diff < -1 else "red" if diff > 1 else "grey",
+                className="ui {} huge extra".format(
+                    "green" if diff < -1 else "red" if diff > 1 else "grey"
+                ),
+            ),
+            html.A(
+                [html.Div("", className="heart icon", style={"font-size": "0%"})],
+                className="ui {} large right corner label".format(
+                    "green" if diff < -1 else "red" if diff > 1 else "grey"
+                ),
+            ),
+            html.Div(
                 dcc.Graph(
                     id="graph-ct{}".format(index),
                     figure={
                         "layout": go.Layout(
-                            autosize=False,
-                            height=400,
-                            width=300,
+                            margin=go.layout.Margin(l=50, r=50, b=50, t=50, pad=4),
+                            autosize=True,
+                            # height=300,
+                            # width=400,
                             yaxis={
                                 "range": [
                                     0,
@@ -72,35 +118,6 @@ class GraphCasType(object):
                     },
                 ),
                 className="image",
-            ),
-            html.A(
-                [
-                    "Effet sur l'impôt payé :",
-                    html.Div(
-                        [
-                            html.Nobr(
-                                ("+" if avant >= apres else "") + str(avant - apres)
-                            ),
-                            "€",
-                        ],
-                        className="detail",
-                        style={"font-size": "150%"},
-                    ),
-                ],
-                className="ui {} large ribbon label".format(
-                    "green" if diff < -1 else "red" if diff > 1 else "grey"
-                ),
-            ),
-            html.Div(
-                [
-                    html.Div(
-                        " | ".join(cas_types_textes[index]),
-                        className=" header",
-                        style={"font-size": "165%", "margin-bottom": "0.4em"},
-                    )
-                ]
-                + tags,
-                className="content",
             ),
         ]
 
