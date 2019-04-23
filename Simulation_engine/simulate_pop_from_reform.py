@@ -282,7 +282,7 @@ def compare(
     return dic_res
 
 
-PERIOD = "2014"
+PERIOD = "2018"
 TBS = FranceTaxBenefitSystem()
 REFORM = partial(reform_from_bareme, period=PERIOD, tbs=TBS)
 
