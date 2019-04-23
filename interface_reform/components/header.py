@@ -13,7 +13,10 @@ class Header(object):
     def _navbar() -> html:
         return html.Div(
             [
-                Header._item("LEXIMPACT", className="header item"),
+                html.Div(
+                    [html.A("BETA", className="ui red left ribbon label"), "LEXIMPACT"],
+                    className="ui item header",
+                ),
                 Header._item("Simulateur de l'impôt sur le revenu", className="active"),
                 Header._item(
                     "Vos retours !",
