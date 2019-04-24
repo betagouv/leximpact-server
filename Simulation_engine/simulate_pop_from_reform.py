@@ -241,7 +241,6 @@ def compare(
     dic_res["total"] = {}
     dic_res["total"]["avant"] = res[0]
     dic_res["total"]["apres"] = res[1]
-    dic_res["res_brut"] = df
     if compute_deciles:
         print("Computing Deciles")
         totweight = dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
@@ -256,7 +255,7 @@ def compare(
         currb = 0
         curra = 0
         dfv = df.values
-        decilesres = [(0, 0, 0)]
+        decilesres = [[0, 0, 0]]
         decdiffres = []
         print(decilweights, dfv[0], totweight)
         print(dfv[1])
@@ -266,7 +265,7 @@ def compare(
             currb += v[1] * v[0]
             curra += v[2] * v[0]
             if currw >= decilweights[numdecile] - eps:
-                decilesres += [(currw, currb, curra)]
+                decilesres += [[currw, currb, curra]]
                 decdiffres += [
                     [
                         decilesres[numdecile][k] - decilesres[numdecile - 1][k]
@@ -279,6 +278,8 @@ def compare(
         print("mes valeurs diff deciles :", decdiffres)
         # TODO : interpolate quantiles instead of doing the granular approach
         dic_res["deciles"] = decdiffres
+    else:  # This only interests us for the castypes
+        dic_res["res_brut"] = df.to_dict()
     return dic_res
 
 
