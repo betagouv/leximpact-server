@@ -69,6 +69,18 @@ article_values = {
     "taux3": 45,
 }
 
+adjrate = [
+    9807 / 9964,
+    27086 / 27519,
+    72617 / 73779,
+    153783 / 156244,
+    1,
+    1,
+    1,
+    1,
+    1,
+]  # Horrible ajustement
+
 url_css_to_add = [
     "https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
     "https://fonts.googleapis.com/css?family=Lato",
@@ -230,17 +242,6 @@ if not version_beta_sans_graph_pop:
         ],
     )
     def get_reform_result(n_clicks, *args):
-        adjrate = [
-            9690 / 9964,
-            26764 / 27519,
-            71754 / 73779,
-            151956 / 156244,
-            1,
-            1,
-            1,
-            1,
-            1,
-        ]  # Horrible ajustement
         if not API_mode:
             myres = simulate_pop_from_reform.CompareOldNew(
                 [int(args[i] * adjrate[i]) for i in range(len(args))], isdecile=True
@@ -406,17 +407,6 @@ else:
     )
     def get_reform_result_castypes_mieux(*args):
         print("computing castypes")
-        adjrate = [
-            9690 / 9964,
-            26764 / 27519,
-            71754 / 73779,
-            151956 / 156244,
-            1,
-            1,
-            1,
-            1,
-            1,
-        ]  # Horrible ajustement
         if not API_mode:
             myres = simulate_pop_from_reform.CompareOldNew(
                 [int(int(args[i]) * adjrate[i]) for i in range(len(args))],
