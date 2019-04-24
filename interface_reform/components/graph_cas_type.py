@@ -21,7 +21,7 @@ class GraphCasType(object):
         relevanttext = ["{:.0f}€/mois".format(revenu / 12.0)]
         tags = [html.A(rt, className="ui tag label") for rt in relevanttext]
         diff = avant - apres
-        map = max(-avant, -apres)
+        map = max(-avant, -apres, 1)
         scale = (map) * max(0, (maximpot / map))  # Mise a l'échelle
         return [
             html.Div(
