@@ -41,12 +41,89 @@ def load_data(fread: Callable):
     return data
 
 
+# impot_revenu:
+#  bareme:
+#    seuils : list of thresholds
+#    taux :  list of rates x 100
+#  decote :
+#    seuil_celib :
+#    seuil_couple :
+
+
+def reform_generique(tbs, dictparams, period):
+    class apply_reform(Reform):
+        def apply(self):
+            self.modify_parameters(modifier_function=reform)
+
+    def reform(parameters):
+        print("Oui je suis censé passer par là")
+        instant = periods.instant(period)
+        reform_period = periods.period(
+            "year:1900:200"
+        )  # Pour le moment mes réformes sont sur l'éternité
+        if "impot_revenu" in dictparams:
+            dir = dictparams["impot_revenu"]
+            if "decote" in dir:
+                dird = dir["decote"]
+                seuil_celib = dird["seuil_celib"]
+                seuil_couple = dird["seuil_couple"]
+                print("decote avant modif : ")
+                print(
+                    parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
+                    parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
+                )
+                parameters.impot_revenu.decote.seuil_celib.update(
+                    period=reform_period, value=seuil_celib
+                )
+                parameters.impot_revenu.decote.seuil_couple.update(
+                    period=reform_period, value=seuil_couple
+                )
+                print("decote apres modif : ")
+                print(
+                    parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
+                    parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
+                )
+            if "bareme" in dir:
+                dirb = dir["bareme"]
+                seuils = dirb["seuils"]
+                taux = dirb["taux"]
+                print("bareme avant modif :")
+                print(parameters.impot_revenu.bareme.get_at_instant(instant))
+                for i in range(len(seuils)):
+                    parameters.impot_revenu.bareme.brackets[i].threshold.update(
+                        period=reform_period, value=seuils[i]
+                    )
+                    parameters.impot_revenu.bareme.brackets[i].rate.update(
+                        period=reform_period, value=taux[i] * 0.01
+                    )
+
+                for i in range(len(seuils), 15):
+                    try:
+                        parameters.impot_revenu.bareme.brackets[i].threshold.update(
+                            period=reform_period, value=seuils[-1] + i
+                        )
+                        parameters.impot_revenu.bareme.brackets[i].rate.update(
+                            period=reform_period, value=taux[-1] * 0.01
+                        )
+                    except (Exception):
+                        break
+
+                print("bareme après modif :")
+                print(parameters.impot_revenu.bareme.get_at_instant(instant))
+        return parameters
+
+    return apply_reform(tbs)
+
+
+# Deprecated function
 def reform_from_bareme(tbs, seuils, taux, period):
     class apply_reform(Reform):
         def apply(self):
             self.modify_parameters(modifier_function=reform)
 
     def reform(parameters):
+        print("Non je ne suis plus censé passer par là")
+        assert 1 == 0  # Le script doit désormais utiliser une autre fonction
         instant = periods.instant(period)
 
         print("bareme avant modif :")
@@ -285,7 +362,8 @@ def compare(
 
 PERIOD = "2018"
 TBS = FranceTaxBenefitSystem()
-REFORM = partial(reform_from_bareme, period=PERIOD, tbs=TBS)
+# REFORM = partial(reform_from_bareme, period=PERIOD, tbs=TBS)
+REFORM = partial(reform_generique, period=PERIOD, tbs=TBS)
 
 CAS_TYPE = load_data(fread("DCT.csv"))
 SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
@@ -381,9 +459,19 @@ def CompareOldNew(taux, isdecile=True):
     )
     print(taux)
     print(taux[0], len(taux))
-    reform = reform_from_bareme(
-        TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
-    )
+
+    dictreform = {
+        "impot_revenu": {
+            "bareme": {
+                "seuils": [0] + taux[: len(taux) // 2],
+                "taux": [0] + taux[len(taux) // 2 :],
+            }
+        }
+    }
+    reform = reform_generique(TBS, dictreform, PERIOD)
+    #   reform = reform_from_bareme(
+    #       TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
+    #   )
     simulation_reform = simulation(PERIOD, data, reform, timer=time)
     return compare(
         taux, PERIOD, simulation_base, simulation_reform, isdecile, timer=time
@@ -392,26 +480,47 @@ def CompareOldNew(taux, isdecile=True):
 
 if __name__ == "__main__":
     taux = [9964, 27159, 73779, 156244, 14, 30, 41, 45]
-    reform = reform_from_bareme(
-        TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
-    )
-    simulation_reform = simulation(PERIOD, DUMMY_DATA, reform, timer=time)
-    compare(taux, PERIOD, simulation_base_deciles, simulation_reform, timer=time)
+    dictreform = {
+        "impot_revenu": {
+            "bareme": {
+                "seuils": [0] + taux[: len(taux) // 2],
+                "taux": [0] + taux[len(taux) // 2 :],
+            },
+            "decote": {"seuil_celib": 1000, "seuil_couple": 2000},
+        }
+    }
+    reform = reform_generique(TBS, dictreform, PERIOD)
+    # reform = reform_from_bareme(
+    #     TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
+    # )
+    if version_beta_sans_simu_pop:
+        simulation_reform = simulation(PERIOD, CAS_TYPE, reform, timer=time)
+        compare(
+            taux,
+            PERIOD,
+            simulation_base_castypes,
+            simulation_reform,
+            compute_deciles=False,
+            timer=time,
+        )
+    else:
+        simulation_reform = simulation(PERIOD, DUMMY_DATA, reform, timer=time)
+        compare(taux, PERIOD, simulation_base_deciles, simulation_reform, timer=time)
 
 
-def cas_type(taux):
-    reform = REFORM(taux=taux)
+def cas_type(dictreforms):
+    reform = REFORM(dictreform=dictreforms)
     simulation_reform = SIMCAT(tbs=reform)
     return compare(PERIOD, taux, SIMCAT_BASE, simulation_reform)
 
 
-def decile(taux):
-    reform = REFORM(taux=taux)
+def decile(dictreforms):
+    reform = REFORM(dictreform=dictreforms)
     simulation_reform = SIMPOP(tbs=reform)
     return compare(PERIOD, taux, SIMPOP_BASE, simulation_reform)
 
 
-def cout_etat(taux):
-    reform = REFORM(taux=taux)
+def cout_etat(dictreforms):
+    reform = REFORM(dictreform=dictreforms)
     simulation_reform = SIMPOP(tbs=reform)
     return compare(SIMPOP_BASE, simulation_reform, PERIOD, taux, compute_deciles=True)
