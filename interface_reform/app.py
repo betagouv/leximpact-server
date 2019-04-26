@@ -465,7 +465,7 @@ else:
             indextotake += [index]
         resforcastypes = [
             GraphCasType.rendermieux(
-                index,
+                it,
                 df["avant"][index],
                 df["apres"][index],
                 revenu=revenusCT[it],
