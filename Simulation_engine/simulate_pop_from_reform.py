@@ -73,10 +73,10 @@ def reform_generique(tbs, dictparams, period):
                     parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
                 )
                 parameters.impot_revenu.decote.seuil_celib.update(
-                    period=reform_period, value=seuil_celib
+                    period=reform_period, value=float(seuil_celib)
                 )
                 parameters.impot_revenu.decote.seuil_couple.update(
-                    period=reform_period, value=seuil_couple
+                    period=reform_period, value=float(seuil_couple)
                 )
                 print("decote apres modif : ")
                 print(
@@ -263,16 +263,10 @@ def simulation(period, data, tbs, timer=None):
 
 
 def compare(
-    bareme: List[int],
-    period: str,
-    simulation_base,
-    simulation_reform,
-    compute_deciles=True,
-    timer=None,
+    period: str, simulation_base, simulation_reform, compute_deciles=True, timer=None
 ):
     res = []
     kk = 0
-    taux = bareme[0]
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
         if not kk:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
@@ -309,11 +303,6 @@ def compare(
                 else:
                     df["avant"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                     kk += 1
-    print(
-        "Je suis Wengerboy et j'ai été lancé avec un parametre de {} et oui j'ai fini {}".format(
-            taux, res
-        )
-    )
     dic_res = {}
     dic_res["total"] = {}
     dic_res["total"]["avant"] = res[0]
@@ -449,7 +438,7 @@ def texte_cas_types(data=None):
     return dic_res
 
 
-def CompareOldNew(taux, isdecile=True):
+def CompareOldNew(taux=None, isdecile=True, dictreform=None):
     print("comparing old new, isdecile = {} ".format(isdecile))
     # if isdecile, we want the impact on the full population, while just a cas type on the isdecile=False
     data, simulation_base = (
@@ -457,25 +446,22 @@ def CompareOldNew(taux, isdecile=True):
         if isdecile
         else (CAS_TYPE, simulation_base_castypes)
     )
-    print(taux)
-    print(taux[0], len(taux))
-
-    dictreform = {
-        "impot_revenu": {
-            "bareme": {
-                "seuils": [0] + taux[: len(taux) // 2],
-                "taux": [0] + taux[len(taux) // 2 :],
+    if dictreform is None:
+        assert taux is not None
+        dictreform = {
+            "impot_revenu": {
+                "bareme": {
+                    "seuils": [0] + taux[: len(taux) // 2],
+                    "taux": [0] + taux[len(taux) // 2 :],
+                }
             }
         }
-    }
     reform = reform_generique(TBS, dictreform, PERIOD)
     #   reform = reform_from_bareme(
     #       TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
     #   )
     simulation_reform = simulation(PERIOD, data, reform, timer=time)
-    return compare(
-        taux, PERIOD, simulation_base, simulation_reform, isdecile, timer=time
-    )
+    return compare(PERIOD, simulation_base, simulation_reform, isdecile, timer=time)
 
 
 if __name__ == "__main__":
@@ -496,7 +482,6 @@ if __name__ == "__main__":
     if version_beta_sans_simu_pop:
         simulation_reform = simulation(PERIOD, CAS_TYPE, reform, timer=time)
         compare(
-            taux,
             PERIOD,
             simulation_base_castypes,
             simulation_reform,
@@ -505,22 +490,4 @@ if __name__ == "__main__":
         )
     else:
         simulation_reform = simulation(PERIOD, DUMMY_DATA, reform, timer=time)
-        compare(taux, PERIOD, simulation_base_deciles, simulation_reform, timer=time)
-
-
-def cas_type(dictreforms):
-    reform = REFORM(dictreform=dictreforms)
-    simulation_reform = SIMCAT(tbs=reform)
-    return compare(PERIOD, taux, SIMCAT_BASE, simulation_reform)
-
-
-def decile(dictreforms):
-    reform = REFORM(dictreform=dictreforms)
-    simulation_reform = SIMPOP(tbs=reform)
-    return compare(PERIOD, taux, SIMPOP_BASE, simulation_reform)
-
-
-def cout_etat(dictreforms):
-    reform = REFORM(dictreform=dictreforms)
-    simulation_reform = SIMPOP(tbs=reform)
-    return compare(SIMPOP_BASE, simulation_reform, PERIOD, taux, compute_deciles=True)
+        compare(PERIOD, simulation_base_deciles, simulation_reform, timer=time)
