@@ -87,7 +87,7 @@ components:
     compareoldnew:
       type: object
       properties:
-        isdecile:
+        deciles:
           type: boolean
         reforme:
           type: object
