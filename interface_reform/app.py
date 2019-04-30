@@ -69,17 +69,7 @@ article_values = {
     "taux3": 45,
 }
 
-adjrate = [
-    9807 / 9964,
-    27086 / 27519,
-    72617 / 73779,
-    153783 / 156244,
-    1,
-    1,
-    1,
-    1,
-    1,
-]  # Horrible ajustement
+adjrate = [1, 1, 1, 1, 1, 1, 1, 1, 1]  # Horrible ajustement
 
 url_css_to_add = [
     "https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i|PT+Serif",
