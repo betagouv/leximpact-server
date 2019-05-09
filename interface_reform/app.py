@@ -33,8 +33,13 @@ else:
 
     def api_resultat_simulation(seuils, taux, compute_deciles):
         d = {"bareme_ir": {"taux": taux, "seuils": seuils}, "deciles": compute_deciles}
-        r = requests.post("http://127.0.0.1:5000/calculate/compare", json=d)
+        r = requests.post("http://127.0.0.1:5000/calculate/compare_old", json=d)
         return r.json()[0]
+
+    def api_simule(compute_deciles, dicreform):
+        d = {"reforme": dicreform, "deciles": compute_deciles}
+        r = requests.post("http://127.0.0.1:5000/calculate/compare", json=d)
+        return r.json()
 
 
 external_scripts = [
@@ -208,6 +213,8 @@ def output_seuil3(input1):
 
 nbseuil = 4
 
+nameextravars = ["decote_seuil_celib", "decote_seuil_couple"]
+
 # Maybe I can do that ? (i.e. the if is gonna work properly with the callback
 if not version_beta_sans_graph_pop:
     # Generates results for the graphs depending on the simulation on the full population
@@ -229,19 +236,21 @@ if not version_beta_sans_graph_pop:
                 component_id="input-taux{}".format(numseuil), component_property="value"
             )
             for numseuil in range(nbseuil)
+        ]
+        + [
+            State(component_id=namevar, component_property="value")
+            for namevar in nameextravars
         ],
     )
     def get_reform_result(n_clicks, *args):
+
+        dicreform = dicreformfromargs(*args)
         if not API_mode:
             myres = simulate_pop_from_reform.CompareOldNew(
-                [int(args[i] * adjrate[i]) for i in range(len(args))], isdecile=True
+                taux=None, isdecile=True, dictreform=dicreform
             )  # [input1,input1]#
         else:
-            myres = api_resultat_simulation(
-                [int(args[i] * adjrate[i]) for i in range(len(args) // 2)],
-                args[len(args) // 2 :],
-                True,
-            )
+            myres = api_simule(True, dicreform)
         print(myres)
         return (
             {
@@ -284,6 +293,22 @@ if not version_beta_sans_graph_pop:
 
 # Generates results for the graphs depending on the simulation on the full population
 nbseuil = 4
+
+
+def dicreformfromargs(*args):
+    dicreform = {}
+    dicreform["impot_revenu"] = {}
+    dicreform["impot_revenu"]["bareme"] = {}
+    dicreform["impot_revenu"]["bareme"]["seuils"] = [
+        int(int(args[i]) * adjrate[i]) for i in range(nbseuil)
+    ]
+    dicreform["impot_revenu"]["bareme"]["taux"] = args[nbseuil : 2 * nbseuil]
+    if len(args) > 2 * nbseuil:
+        dicreform["impot_revenu"]["decote"] = {}
+        dicreform["impot_revenu"]["decote"]["seuil_celib"] = args[2 * nbseuil]
+        dicreform["impot_revenu"]["decote"]["seuil_couple"] = args[2 * nbseuil + 1]
+    return dicreform
+
 
 nbgraphs = 6
 
@@ -393,21 +418,23 @@ else:
                 component_id="input-taux{}".format(numseuil), component_property="value"
             )
             for numseuil in range(nbseuil)
+        ]
+        + [
+            Input(component_id=namevar, component_property="value")
+            for namevar in nameextravars
         ],
     )
     def get_reform_result_castypes_mieux(*args):
         print("computing castypes")
+        dicreform = dicreformfromargs(*args)
         if not API_mode:
             myres = simulate_pop_from_reform.CompareOldNew(
-                [int(int(args[i]) * adjrate[i]) for i in range(len(args))],
+                taux=None,  # [int(int(args[i]) * adjrate[i]) for i in range(len(args))],
                 isdecile=False,
+                dictreform=dicreform,
             )  # [input1,input1]#
         else:
-            myres = api_resultat_simulation(
-                [int(int(args[i]) * adjrate[i]) for i in range(len(args) // 2)],
-                args[len(args) // 2 :],
-                False,
-            )
+            myres = api_simule(False, dicreform)
         print(myres)
         df = myres["res_brut"]
         indextotake = []
@@ -428,7 +455,7 @@ else:
             indextotake += [index]
         resforcastypes = [
             GraphCasType.rendermieux(
-                index,
+                it,
                 df["avant"][index],
                 df["apres"][index],
                 revenu=revenusCT[it],
