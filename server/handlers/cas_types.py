@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from server.services import OpenFiscaTest
-from Simulation_engine.simulate_pop_from_reform import CompareOldNew, revenus_cas_types
+from Simulation_engine.simulate_pop_from_reform import (
+    desc_cas_types,
+    CompareOldNew,
+    revenus_cas_types,
+)
 
 
 class CasTypes(object):
@@ -12,6 +16,10 @@ class CasTypes(object):
     def revenus(**params: dict) -> tuple:
         rct = revenus_cas_types()
         return {int(k): int(v) for k, v in rct.items()}, 201
+
+    def description_cas_types(**params: dict) -> tuple:
+        rct = desc_cas_types()
+        return rct, 201
 
 
 class SimulationRunner(object):

@@ -420,6 +420,40 @@ def foyertorevenu(idfoy, data=None):
     return revenu
 
 
+def foyertodictcastype(idfoy, data=None):
+    if data is None:
+        data = CAS_TYPE
+    revenu = (
+        data[data["idfoy"] == idfoy]["salaire_de_base"].sum()
+        + data[data["idfoy"] == idfoy]["retraite_brute"].sum()
+    )
+    nbpr = len(data[(data["idfoy"] == idfoy) & (data["quifoy"] <= 1)])
+    nbpac = len(data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1)])
+    nbret = len(data[(data["idfoy"] == idfoy) & (data["retraite_brute"] > 0)])
+    # Si un retraite et l'autre n'a pas de revenu, on compte les 2.
+    if nbret:
+        nbret = len(
+            data[
+                (data["idfoy"] == idfoy)
+                & (
+                    (data["retraite_brute"] > 0)
+                    | ((data["salaire_de_base"] < 1) & (data["age"] >= 55))
+                )
+            ]
+        )
+
+    guad = len(data[(data["idfoy"] == idfoy) & (data["residence_fiscale_guadeloupe"])])
+    dicres = {
+        "revenu": int(revenu),
+        "nombre_declarants": int(nbpr),
+        "nombre_personnes_a_charge": int(nbpac),
+        "nombre_declarants_retraites": int(nbret),
+        "guadeloupe": bool(guad),
+    }
+    print(dicres)
+    return dicres
+
+
 def revenus_cas_types(data=None):
     if data is None:
         data = CAS_TYPE
@@ -428,6 +462,13 @@ def revenus_cas_types(data=None):
         dic_res[k] = foyertorevenu(k, data)
     print("dic_res ", dic_res)
     return dic_res
+
+
+def desc_cas_types(data=None):
+    if data is None:
+        data = CAS_TYPE
+    listfoyers = sorted(list(set(data["idfoy"].values)))
+    return [foyertodictcastype(k, data) for k in listfoyers]
 
 
 def texte_cas_types(data=None):
