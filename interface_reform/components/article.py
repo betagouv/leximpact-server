@@ -48,6 +48,7 @@ class Article(object):
                 ),
                 Article._suitearticle(),
                 Article._suitearticle2(),
+                Article._alinea4(),
             ],
             className="ui segment",
             style={
@@ -188,3 +189,36 @@ class Article(object):
         return html.P(
             "Toutefois, pour les contribuables célibataires, divorcés, ou soumis à l'imposition distincte prévue au 4 de l'article 6 qui répondent aux conditions fixées au II de l'article 194, la réduction d'impôt correspondant à la part accordée au titre du premier enfant à charge est limitée à 3 660 € Lorsque les contribuables entretiennent uniquement des enfants dont la charge est réputée également partagée entre l'un et l'autre des parents, la réduction d'impôt correspondant à la demi-part accordée au titre de chacun des deux premiers enfants est limitée à la moitié de cette somme."
         )
+
+    def _alinea4() -> html:
+        return html.P(
+            [
+                "4. a. Le montant de l'impôt résultant de l'application des dispositions précédentes est diminué, dans la limite de son montant, de la différence entre ",
+                *Article._dynamic_value(namevar="decote_seuil_celib", oldvalue=1196),
+                "€ et les trois quarts de son montant pour les contribuables célibataires, divorcés ou veufs et de la différence entre ",
+                *Article._dynamic_value(namevar="decote_seuil_couple", oldvalue=1970),
+                " € et les trois quarts de son montant pour les contribuables soumis à imposition commune.",
+            ]
+        )
+
+    def _dynamic_value(namevar: str, oldvalue: int) -> html:
+        return [
+            html.Span(f"{oldvalue} ", style={"color": "#A6A00C", "font-size": "100%"}),
+            """ """,
+            html.Div(
+                dcc.Input(
+                    id=namevar,
+                    type="text",
+                    value=oldvalue,
+                    style={
+                        "color": "#00A3FF",
+                        "padding": "0 0 0 .25em",
+                        "height": "1.5em",
+                        "width": "3em",
+                        "font-size": "130%",
+                        "font-family": "serif",
+                    },
+                ),
+                className="ui mini input",
+            ),
+        ]

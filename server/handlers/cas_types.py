@@ -30,3 +30,12 @@ class SimulationRunner(object):
             ],
             201,
         )
+
+    def simulereforme(**params: dict) -> tuple:
+        dbod = params["body"]
+        return (
+            CompareOldNew(
+                taux=None, isdecile=dbod["deciles"], dictreform=dbod["reforme"]
+            ),
+            201,
+        )
