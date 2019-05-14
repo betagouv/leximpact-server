@@ -6,7 +6,7 @@ import os
 
 from flask_cors import CORS
 
-sys.path.append("..")
+sys.path.append(".")
 
 
 def create_app() -> connexion.apps.flask_app.FlaskApp:
