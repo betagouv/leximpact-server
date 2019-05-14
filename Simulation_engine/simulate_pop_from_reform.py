@@ -13,7 +13,7 @@ from openfisca_core import periods
 from openfisca_france.model.base import Reform
 
 
-version_beta_sans_simu_pop = False
+version_beta_sans_simu_pop = True
 
 
 def fread(filename: str) -> Callable:
