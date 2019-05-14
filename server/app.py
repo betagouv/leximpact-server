@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+
 import connexion
 import sys
+import os
+
 from flask_cors import CORS
 
 sys.path.append("..")
@@ -15,4 +18,6 @@ def create_app() -> connexion.apps.flask_app.FlaskApp:
 
 if __name__ == "__main__":
     app = create_app()
-    app.run()
+    app.run(
+        host=os.environ.get("HOST", "127.0.0.1"), port=os.environ.get("PORT", "5000")
+    )
