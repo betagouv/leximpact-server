@@ -24,6 +24,7 @@ setup(
         "connexion[swagger-ui] >= 2.2.0, < 3.0.0",
         "dash >= 0.39.0, < 0.40.0",
         "dash-daq >= 0.1.0, < 0.2.0",
+        "flask-cors >= 3.0.7, < 3.1.0",
         "openfisca-core >= 31.0.0, < 35.0.0",
         "openfisca-france >= 42.1.1, < 43.0.0",
         "pandas >= 0.24.0, < 0.25.0",
