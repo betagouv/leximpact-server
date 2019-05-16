@@ -37,9 +37,18 @@ class SimulationRunner(object):
 
     def simulereforme(**params: dict) -> tuple:
         dbod = params["body"]
+        dct = None
+        if "description_cas_types" in dbod:
+            isdecile = False
+            dct = dbod["description_cas_types"]
+        else:
+            isdecile = dbod["deciles"]
         return (
             CompareOldNew(
-                taux=None, isdecile=dbod["deciles"], dictreform=dbod["reforme"]
+                taux=None,
+                isdecile=isdecile,
+                dictreform=dbod["reforme"],
+                castypedesc=dct,
             ),
             201,
         )

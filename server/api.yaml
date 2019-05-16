@@ -122,6 +122,21 @@ components:
                       type: integer
                     seuil_couple:
                       type: integer
+        description_cas_types:
+          type: array
+          items:
+            type: object
+            properties:
+              nombre_declarants:
+                type: integer
+              nombre_personnes_a_charge:
+                type: integer
+              nombre_declarants_retraites:
+                type: integer
+              revenu:
+                type: integer
+              guadeloupe:
+                type: boolean
     description_cas_types:
       type: array
       items:
