@@ -1,16 +1,16 @@
-level_0,index,activite,age,categorie_salarie,chomage_brut,chomage_imposable,contrat_de_travail,date_naissance,effectif_entreprise,heures_remunerees_volume,idfam,idfoy,idmen,pensions_alimentaires_percues,quifam,quifoy,quimen,rag,retraite_brute,ric,rnc,statut_marital,salaire_de_base,taux_csg_remplacement,f4ba,loyer,statut_occupation_logement,taxe_habitation,wprm,zone_apl,quimenof,residence_fiscale_guadeloupe
-0,0,0,32,0,0,0,0,1982-11-05,0,1200,0,0,0,0,0,0,0,0,0,0,0,2,15600,taux plein,0,0,0,0,1,2,personne_de_reference,false
-1,1,0,29,0,0,0,0,1985-11-05,0,1200,1,1,1,0,0,0,0,0,0,0,0,5,31200,taux plein,0,0,0,0,1,2,personne_de_reference,false
-2,2,2,7,7,0,0,6,2007-01-01,0,0,1,1,1,0,3,3,3,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,false
-3,3,0,41,0,0,0,0,1973-08-30,0,1200,2,2,2,0,0,0,0,0,0,0,0,5,25113,taux plein,0,0,0,0,1,2,personne_de_reference,false
-4,4,0,40,0,0,0,0,1974-05-30,0,1200,2,2,2,0,1,1,1,0,0,0,0,5,13287,taux plein,0,0,0,0,1,2,personne_de_reference,false
-5,5,3,68,7,0,0,6,1946-12-24,0,0,3,3,3,0,0,0,0,0,8667,0,0,5,0,taux plein,0,0,0,0,1,2,personne_de_reference,false
-6,6,3,70,7,0,0,6,1944-05-11,0,0,3,3,3,0,1,1,1,0,6933,0,0,5,0,taux plein,0,0,0,0,1,2,personne_de_reference,false
-7,7,0,36,0,0,0,0,1978-06-14,0,1200,4,4,4,0,0,0,0,0,0,0,0,2,27600,taux plein,0,0,0,0,1,2,personne_de_reference,false
-8,8,0,36,0,0,0,0,1978-06-13,0,1200,4,4,4,0,1,1,1,0,0,0,0,2,27600,taux plein,0,0,0,0,1,2,personne_de_reference,false
-9,9,2,6,7,0,0,6,2008-06-02,0,0,4,4,4,0,9,9,9,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,false
-10,10,2,6,7,0,0,6,2008-06-06,0,0,4,4,4,0,10,10,10,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,false
-11,11,0,31,0,0,0,0,1983-06-14,0,1200,5,5,5,0,0,0,0,0,0,0,0,2,27600,taux plein,0,0,0,0,1,2,personne_de_reference,true
-12,12,0,31,0,0,0,0,1983-06-13,0,1200,5,5,5,0,1,1,1,0,0,0,0,2,27600,taux plein,0,0,0,0,1,2,personne_de_reference,true
-13,13,2,2,7,0,0,6,2012-06-02,0,0,5,5,5,0,13,13,13,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,true
-14,14,2,1,7,0,0,6,2013-06-06,0,0,5,5,5,0,14,14,14,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,true
+level_0,index,activite,age,categorie_salarie,chomage_brut,chomage_imposable,contrat_de_travail,date_naissance,effectif_entreprise,heures_remunerees_volume,idfam,idfoy,idmen,pensions_alimentaires_percues,quifam,quifoy,quimen,rag,retraite_brute,ric,rnc,statut_marital,salaire_de_base,taux_csg_remplacement,f4ba,loyer,statut_occupation_logement,taxe_habitation,wprm,zone_apl,quimenof,residence_fiscale_guadeloupe,residence_fiscale_guyane
+0,0,0,32,0,0,0,0,1982-11-05,0,1200,0,0,0,0,0,0,0,0,0,0,0,2,15600,taux plein,0,0,0,0,1,2,personne_de_reference,false,false
+1,1,0,29,0,0,0,0,1985-11-05,0,1200,1,1,1,0,0,0,0,0,0,0,0,5,31200,taux plein,0,0,0,0,1,2,personne_de_reference,false,false
+2,2,2,7,7,0,0,6,2007-01-01,0,0,1,1,1,0,3,3,3,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,false,false
+3,3,0,41,0,0,0,0,1973-08-30,0,1200,2,2,2,0,0,0,0,0,0,0,0,5,25113,taux plein,0,0,0,0,1,2,personne_de_reference,false,false
+4,4,0,40,0,0,0,0,1974-05-30,0,1200,2,2,2,0,1,1,1,0,0,0,0,5,13287,taux plein,0,0,0,0,1,2,personne_de_reference,false,false
+5,5,3,68,7,0,0,6,1946-12-24,0,0,3,3,3,0,0,0,0,0,8667,0,0,5,0,taux plein,0,0,0,0,1,2,personne_de_reference,false,false
+6,6,3,70,7,0,0,6,1944-05-11,0,0,3,3,3,0,1,1,1,0,6933,0,0,5,0,taux plein,0,0,0,0,1,2,personne_de_reference,false,false
+7,7,0,36,0,0,0,0,1978-06-14,0,1200,4,4,4,0,0,0,0,0,0,0,0,2,27600,taux plein,0,0,0,0,1,2,personne_de_reference,false,false
+8,8,0,36,0,0,0,0,1978-06-13,0,1200,4,4,4,0,1,1,1,0,0,0,0,2,27600,taux plein,0,0,0,0,1,2,personne_de_reference,false,false
+9,9,2,6,7,0,0,6,2008-06-02,0,0,4,4,4,0,9,9,9,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,false,false
+10,10,2,6,7,0,0,6,2008-06-06,0,0,4,4,4,0,10,10,10,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,false,false
+11,11,0,31,0,0,0,0,1983-06-14,0,1200,5,5,5,0,0,0,0,0,0,0,0,2,27600,taux plein,0,0,0,0,1,2,personne_de_reference,true,false
+12,12,0,31,0,0,0,0,1983-06-13,0,1200,5,5,5,0,1,1,1,0,0,0,0,2,27600,taux plein,0,0,0,0,1,2,personne_de_reference,true,false
+13,13,2,2,7,0,0,6,2012-06-02,0,0,5,5,5,0,13,13,13,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,true,false
+14,14,2,1,7,0,0,6,2013-06-06,0,0,5,5,5,0,14,14,14,0,0,0,0,2,0,taux plein,0,0,0,0,1,2,enfant,true,false

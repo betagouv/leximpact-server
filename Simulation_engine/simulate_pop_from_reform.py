@@ -442,13 +442,20 @@ def foyertodictcastype(idfoy, data=None):
             ]
         )
 
-    guad = len(data[(data["idfoy"] == idfoy) & (data["residence_fiscale_guadeloupe"])])
+    outremer1 = (
+        len(data[(data["idfoy"] == idfoy) & (data["residence_fiscale_guadeloupe"])]) > 0
+    )
+    outremer2 = (
+        len(data[(data["idfoy"] == idfoy) & (data["residence_fiscale_guyane"])]) > 0
+    )
+    assert not (outremer1 * outremer2)
+
     dicres = {
         "revenu": int(revenu),
         "nombre_declarants": int(nbpr),
         "nombre_personnes_a_charge": int(nbpac),
         "nombre_declarants_retraites": int(nbret),
-        "guadeloupe": bool(guad),
+        "outre_mer": 1 * outremer1 + 2 * outremer2,
     }
     print(dicres)
     return dicres
@@ -520,6 +527,7 @@ def dataframe_from_ct_desc(descriptions):
         "zone_apl",
         "quimenof",
         "residence_fiscale_guadeloupe",
+        "residence_fiscale_guyane",
     ]
     # liste des cols valant 0
     zerocols = [
@@ -568,7 +576,8 @@ def dataframe_from_ct_desc(descriptions):
             dres[colqui] += list(range(nbd)) + list(range(indexpac, indexpac + nbc))
         dres["quimenof"] += ["personne_de_reference"] * nbd + ["enfant"] * nbc
         indexpac += nbc
-        dres["residence_fiscale_guadeloupe"] += [ct["guadeloupe"]] * (nbd + nbc)
+        dres["residence_fiscale_guadeloupe"] += [ct["outre_mer"] == 1] * (nbd + nbc)
+        dres["residence_fiscale_guyane"] += [ct["outre_mer"] == 2] * (nbd + nbc)
         if ct["nombre_declarants_retraites"]:
             dres["retraite_brute"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
             dres["salaire_de_base"] += [0] * (nbd + nbc)

@@ -150,7 +150,7 @@ components:
             type: integer
           revenu:
             type: integer
-          guadeloupe:
-            type: boolean
+          outre_mer:
+            type: integer
 
 
