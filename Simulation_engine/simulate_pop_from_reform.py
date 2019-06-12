@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-from typing import List
 from typing import Callable
 from functools import partial
 

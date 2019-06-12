@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from server.services import OpenFiscaTest
-from Simulation_engine.simulate_pop_from_reform import (
-    foyertosomethingelse,
-    CompareOldNew,
-    revenus_cas_types,
-)
+from Simulation_engine.simulate_pop_from_reform import CompareOldNew, revenus_cas_types
 
 
 class CasTypes(object):
