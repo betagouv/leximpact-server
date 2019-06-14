@@ -420,6 +420,47 @@ def foyertorevenu(idfoy, data=None):
     return revenu
 
 
+def foyertodictcastype(idfoy, data=None):
+    if data is None:
+        data = CAS_TYPE
+    revenu = (
+        data[data["idfoy"] == idfoy]["salaire_de_base"].sum()
+        + data[data["idfoy"] == idfoy]["retraite_brute"].sum()
+    )
+    nbpr = len(data[(data["idfoy"] == idfoy) & (data["quifoy"] <= 1)])
+    nbpac = len(data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1)])
+    nbret = len(data[(data["idfoy"] == idfoy) & (data["retraite_brute"] > 0)])
+    # Si un retraite et l'autre n'a pas de revenu, on compte les 2.
+    if nbret:
+        nbret = len(
+            data[
+                (data["idfoy"] == idfoy)
+                & (
+                    (data["retraite_brute"] > 0)
+                    | ((data["salaire_de_base"] < 1) & (data["age"] >= 55))
+                )
+            ]
+        )
+
+    outremer1 = (
+        len(data[(data["idfoy"] == idfoy) & (data["residence_fiscale_guadeloupe"])]) > 0
+    )
+    outremer2 = (
+        len(data[(data["idfoy"] == idfoy) & (data["residence_fiscale_guyane"])]) > 0
+    )
+    assert not (outremer1 * outremer2)
+
+    dicres = {
+        "revenu": int(revenu),
+        "nombre_declarants": int(nbpr),
+        "nombre_personnes_a_charge": int(nbpac),
+        "nombre_declarants_retraites": int(nbret),
+        "outre_mer": 1 * outremer1 + 2 * outremer2,
+    }
+    print(dicres)
+    return dicres
+
+
 def revenus_cas_types(data=None):
     if data is None:
         data = CAS_TYPE
@@ -428,6 +469,13 @@ def revenus_cas_types(data=None):
         dic_res[k] = foyertorevenu(k, data)
     print("dic_res ", dic_res)
     return dic_res
+
+
+def desc_cas_types(data=None):
+    if data is None:
+        data = CAS_TYPE
+    listfoyers = sorted(list(set(data["idfoy"].values)))
+    return [foyertodictcastype(k, data) for k in listfoyers]
 
 
 def texte_cas_types(data=None):
@@ -439,13 +487,138 @@ def texte_cas_types(data=None):
     return dic_res
 
 
-def CompareOldNew(taux=None, isdecile=True, dictreform=None):
+def simulation_from_ct(descriptions):
+    df = dataframe_from_ct_desc(descriptions)
+    return (df, simulation(PERIOD, df, TBS, timer=time))
+
+
+# Transforme une description de cas types en un dataframe parsable. Good luck!
+def dataframe_from_ct_desc(descriptions):
+    cols = [
+        "index",
+        "activite",
+        "age",
+        "categorie_salarie",
+        "chomage_brut",
+        "chomage_imposable",
+        "contrat_de_travail",
+        "date_naissance",
+        "effectif_entreprise",
+        "heures_remunerees_volume",
+        "idfam",
+        "idfoy",
+        "idmen",
+        "pensions_alimentaires_percues",
+        "quifam",
+        "quifoy",
+        "quimen",
+        "rag",
+        "retraite_brute",
+        "ric",
+        "rnc",
+        "statut_marital",
+        "salaire_de_base",
+        "taux_csg_remplacement",
+        "f4ba",
+        "loyer",
+        "statut_occupation_logement",
+        "taxe_habitation",
+        "wprm",
+        "zone_apl",
+        "quimenof",
+        "residence_fiscale_guadeloupe",
+        "residence_fiscale_guyane",
+    ]
+    # liste des cols valant 0
+    zerocols = [
+        "chomage_brut",
+        "chomage_imposable",
+        "effectif_entreprise",
+        "effectif_entreprise",
+        "pensions_alimentaires_percues",
+        "rag",
+        "ric",
+        "rnc",
+        "f4ba",
+        "loyer",
+        "statut_occupation_logement",
+        "taxe_habitation",
+    ]
+    othercolsfixes = {
+        "wprm": 1,
+        "zone_apl": 2,
+        "taux_csg_remplacement": "taux_plein",
+    }  # nom de colonne : valeur fixe
+
+    for k in zerocols:
+        othercolsfixes[k] = 0
+
+    colbinaires = {
+        "categorie_salarie": (0, 7),
+        "age": (60, 15),
+        "date_naissance": ("1958-05-10", "2005-03-10"),
+    }  # nom de colonne : (valeur_adulte, valeur_enfant)
+
+    for k in othercolsfixes:
+        colbinaires[k] = (othercolsfixes[k], othercolsfixes[k])
+
+    dres = {}  # keys = the columns
+    for c in cols:
+        dres[c] = []
+    indexfoyer = 0
+    indexpac = 2
+    for ct in descriptions:
+        nbd = ct["nombre_declarants"]
+        nbc = ct["nombre_personnes_a_charge"]
+        for colid in ["idfoy", "idmen", "idfam"]:
+            dres[colid] += [indexfoyer] * (nbd + nbc)
+        for colqui in ["quifoy", "quimen", "quifam"]:
+            dres[colqui] += list(range(nbd)) + list(range(indexpac, indexpac + nbc))
+        dres["quimenof"] += ["personne_de_reference"] * nbd + ["enfant"] * nbc
+        indexpac += nbc
+        dres["residence_fiscale_guadeloupe"] += [ct["outre_mer"] == 1] * (nbd + nbc)
+        dres["residence_fiscale_guyane"] += [ct["outre_mer"] == 2] * (nbd + nbc)
+        if ct["nombre_declarants_retraites"]:
+            dres["retraite_brute"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
+            dres["salaire_de_base"] += [0] * (nbd + nbc)
+        else:
+            dres["salaire_de_base"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
+            dres["retraite_brute"] += [0] * (nbd + nbc)
+        indexfoyer += 1
+        for k in range(nbd):
+            dres["activite"] += [0] if not ct["nombre_declarants_retraites"] else [3]
+            dres["contrat_de_travail"] += (
+                [0] if not ct["nombre_declarants_retraites"] else [6]
+            )
+            dres["heures_remunerees_volume"] += (
+                [1200] if not ct["nombre_declarants_retraites"] else [0]
+            )
+            dres["statut_marital"] += [5] if nbd > 1 else [2]
+        for k in range(nbc):
+            dres["activite"] += [2]
+            dres["contrat_de_travail"] += [6]
+            dres["heures_remunerees_volume"] += [0]
+            dres["statut_marital"] += [2]
+    dres["index"] = list(range(len(dres["quifoy"])))
+    for col, v in colbinaires.items():
+        dres[col] = [
+            v[0] if k == "personne_de_reference" else v[1] for k in dres["quimenof"]
+        ]
+    df = pandas.DataFrame.from_dict(dres)
+    return df
+
+
+def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     print("comparing old new, isdecile = {} ".format(isdecile))
     # if isdecile, we want the impact on the full population, while just a cas type on the isdecile=False
     data, simulation_base = (
         (DUMMY_DATA, simulation_base_deciles)
         if isdecile
-        else (CAS_TYPE, simulation_base_castypes)
+        else (
+            (CAS_TYPE, simulation_base_castypes)
+            if castypedesc is None
+            else simulation_from_ct(castypedesc)
+        )
     )
     if dictreform is None:
         assert taux is not None
@@ -489,6 +662,9 @@ if __name__ == "__main__":
             compute_deciles=False,
             timer=time,
         )
+        print("Et l'autre)")
+        CompareOldNew("osef", False, dictreform, desc_cas_types())
     else:
         simulation_reform = simulation(PERIOD, DUMMY_DATA, reform, timer=time)
         compare(PERIOD, simulation_base_deciles, simulation_reform, timer=time)
+        compare(PERIOD, None, simulation_reform, timer=time)

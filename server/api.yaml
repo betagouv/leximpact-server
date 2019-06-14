@@ -22,15 +22,24 @@ paths:
     post:
       summary: Calcule l'impact par cas types
       operationId: server.handlers.CasTypes.revenus
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/revenus'
       responses:
           '201':
-            description: Encore plus Cool
+            description: Renvoie les revenus des cas types. Utilisé seulement par l'API Dash
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/revenus'
+  /metadata/description_cas_types:
+    post:
+      summary: Decrit les cas types
+      operationId: server.handlers.CasTypes.description_cas_types
+      responses:
+        '201':
+          description: Renvoie la description des cas types par défaut
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/description_cas_types'
   /calculate/compare_old:
     post:
       summary: Calcule l'impact d'une loi
@@ -113,3 +122,35 @@ components:
                       type: integer
                     seuil_couple:
                       type: integer
+        description_cas_types:
+          type: array
+          items:
+            type: object
+            properties:
+              nombre_declarants:
+                type: integer
+              nombre_personnes_a_charge:
+                type: integer
+              nombre_declarants_retraites:
+                type: integer
+              revenu:
+                type: integer
+              guadeloupe:
+                type: boolean
+    description_cas_types:
+      type: array
+      items:
+        type: object
+        properties:
+          nombre_declarants:
+            type: integer
+          nombre_personnes_a_charge:
+            type: integer
+          nombre_declarants_retraites:
+            type: integer
+          revenu:
+            type: integer
+          outre_mer:
+            type: integer
+
+
