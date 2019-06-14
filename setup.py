@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="LexImpact",
+    name="LexImpact Server",
     author="LexImpact Team",
     author_email="leximpact@openfisca.org",
     version="0.1.0",
