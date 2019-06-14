@@ -9,7 +9,7 @@ from dash.dependencies import Input, Output, State
 
 from components import Article, GraphCasType, Header
 
-version_beta_sans_graph_pop = True
+version_beta_sans_graph_pop = False
 
 API_mode = (
     False

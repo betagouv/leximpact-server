@@ -61,6 +61,7 @@ def reform_generique(tbs, dictparams, period):
         reform_period = periods.period(
             "year:1900:200"
         )  # Pour le moment mes réformes sont sur l'éternité
+        print(dictparams)
         if "impot_revenu" in dictparams:
             dir = dictparams["impot_revenu"]
             if "decote" in dir:
@@ -346,6 +347,7 @@ def compare(
         dic_res["deciles"] = decdiffres
     else:  # This only interests us for the castypes
         dic_res["res_brut"] = df.to_dict()
+    print(dic_res)
     return dic_res
 
 
@@ -363,7 +365,7 @@ if not version_beta_sans_simu_pop:
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
     # Keeping computations short with option to keep file under 1000 FF
-    DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
+    # DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
 
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
