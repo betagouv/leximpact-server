@@ -29,6 +29,17 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/revenus'
+  /:
+    get:
+      summary: Renvoie un message de bienvenue
+      operationId: server.handlers.CasTypes.hello
+      responses:
+          '200':
+            description: Un petit bonjour
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/greetings'
   /metadata/description_cas_types:
     post:
       summary: Decrit les cas types
@@ -75,6 +86,11 @@ components:
           type: object
         cas_types:
           type: array
+    greetings:
+      type: object
+      properties:
+        hello:
+          type: string
     revenus:
       type: object
     compareoldnew_old:

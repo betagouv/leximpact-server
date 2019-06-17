@@ -17,6 +17,9 @@ class CasTypes(object):
         rct = revenus_cas_types()
         return {int(k): int(v) for k, v in rct.items()}, 201
 
+    def hello(**params: dict) -> tuple:
+        return {"hello": "coucou"}, 200
+
     def description_cas_types(**params: dict) -> tuple:
         rct = desc_cas_types()
         return rct, 201
