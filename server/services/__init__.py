@@ -1,1 +1,1 @@
-from .openfisca import OpenFiscaTest  # noqa
+from .openfisca import OpenFisca  # noqa
