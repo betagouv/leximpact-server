@@ -1,12 +1,12 @@
 {
-    "reforme" : {
-        "impot_revenu":{
-            "bareme" :{
+    "reforme": {
+        "impot_revenu": {
+            "bareme" : {
                 "seuils" : [9964,27519,73779,156244],
                 "taux" : [14,30,41,45]
             },
-            "decote" : {"seuil_celib" : 1196, "seuil_couple" : 1970 }
+            "decote": {"seuil_celib" : 1196, "seuil_couple" : 1970}
         }
     },
-    "deciles":false
+    "deciles": false
 }

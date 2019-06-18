@@ -29,6 +29,7 @@ setup(
         "flask-cors >= 3.0.7, < 3.1.0",
         "gevent >= 1.4.0, < 1.5.0",
         "gunicorn >= 19.0.0, < 20.0.0",
+        "meinheld >= 1.0.1, < 2.0.0",
         "openfisca-core >= 31.0.0, < 35.0.0",
         "openfisca-france >= 42.4.0, < 43.0.0",
         "pandas >= 0.24.0, < 0.25.0",

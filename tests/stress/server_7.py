@@ -2,14 +2,12 @@
 
 import os
 
-from tornado.wsgi import WSGIContainer
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
+import bjoern
 
 from server.app import app
 
-port = os.environ.get("PORT")
-server = HTTPServer(WSGIContainer(app))
-server.bind(port)
-server.start(9)
-IOLoop.current().start()
+host = os.environ.get("HOST")
+port = int(os.environ.get("PORT"))
+
+if __name__ == "__main__":
+    bjoern.run(app, host, port, reuse_port=True)
