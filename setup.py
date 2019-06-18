@@ -22,8 +22,6 @@ setup(
     ],
     install_requires=[
         "connexion[swagger-ui] >= 2.2.0, < 3.0.0",
-        "dash >= 0.39.0, < 0.40.0",
-        "dash-daq >= 0.1.0, < 0.2.0",
         "flask-cors >= 3.0.7, < 3.1.0",
         "gunicorn >= 19.0.0, < 20.0.0",
         "openfisca-core >= 31.0.0, < 35.0.0",
@@ -34,7 +32,7 @@ setup(
     extras_require={
         "dev": [
             "autopep8 >= 1.4.0, < 1.5.0",
-            "black",
+            "black < 20.0.0",
             "flake8 >= 3.7.0, < 3.8.0",
             "flake8-bugbear >= 19.3.0, < 20.0.0",
             "pytest >= 4.0.0, < 5.0.0",
