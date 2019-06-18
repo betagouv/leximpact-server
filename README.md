@@ -76,7 +76,7 @@ make run
 Pour s'assurer que tout marche bien :
 
 ```sh
-./test/stress/test.sh
+./tests/server/stress/test.sh
 ```
 
 Félicitations :tada: LexImpact-Server est en train de tourner !

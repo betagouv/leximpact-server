@@ -171,9 +171,10 @@ def simulation(period, data, tbs, timer=None):
         instances[ofent] = sb.declare_entity(ofent, ent_ids)
         sb.join_with_persons(instances[ofent], persons_ent, roles=persons_ent_roles)
 
-        # The following ssumes data defined for an entity are the same for all rows in the same entity
-        # Or at least that the first non null value found for an entity will always be the total value for an entity
-        # (Which is the case for f4ba). These checks are performed in the checkdata function defined belowx
+        # The following ssumes data defined for an entity are the same for all rows in
+        # the same entity. Or at least that the first non null value found for an
+        # entity will always be the total value for an entity (which is the case for
+        # f4ba). These checks are performed in the checkdata function defined below.
         dictionnaire_datagrouped[ofent] = (
             data.groupby("id" + ent, as_index=False).first().sort_values(by="id" + ent)
         )
@@ -561,7 +562,8 @@ def dataframe_from_ct_desc(descriptions):
             dres["salaire_de_base"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
             dres["retraite_brute"] += [0] * (nbd + nbc)
         indexfoyer += 1
-        for k in range(nbd):
+
+        for _ in range(nbd):
             dres["activite"] += [0] if not ct["nombre_declarants_retraites"] else [3]
             dres["contrat_de_travail"] += (
                 [0] if not ct["nombre_declarants_retraites"] else [6]
@@ -570,7 +572,7 @@ def dataframe_from_ct_desc(descriptions):
                 [1200] if not ct["nombre_declarants_retraites"] else [0]
             )
             dres["statut_marital"] += [5] if nbd > 1 else [2]
-        for k in range(nbc):
+        for _ in range(nbc):
             dres["activite"] += [2]
             dres["contrat_de_travail"] += [6]
             dres["heures_remunerees_volume"] += [0]
@@ -586,7 +588,8 @@ def dataframe_from_ct_desc(descriptions):
 
 def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     print("comparing old new, isdecile = {} ".format(isdecile))
-    # if isdecile, we want the impact on the full population, while just a cas type on the isdecile=False
+    # if isdecile, we want the impact on the full population, while just a cas type on
+    # the isdecile=False
     data, simulation_base = (
         (DUMMY_DATA, simulation_base_deciles)
         if isdecile

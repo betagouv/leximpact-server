@@ -3,13 +3,13 @@
 import pytest
 import json
 
-from server.app import create_app
+from server.app import app
 
 
 @pytest.fixture
 def client():
-    app = create_app()
-    client = app.app.test_client()
+    app.config['TESTING'] = True
+    client = app.test_client()
     return client
 
 

@@ -28,10 +28,10 @@ test: check-style
 	pytest
 
 stress-server:
-	./tests/stress/server_2.sh
+	./tests/server/stress/server.sh
 
 stress-test:
-	./tests/stress/benchmark.sh
+	./tests/server/stress/benchmark.sh
 
 simpop:
 	python ./Simulation_engine/simulate_pop_from_reform.py
