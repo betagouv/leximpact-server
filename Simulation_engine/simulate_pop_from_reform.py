@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
-from typing import Callable
 from functools import partial
 
 import pandas
 import time
+import os
 
 from openfisca_core.simulation_builder import SimulationBuilder
 from openfisca_france import FranceTaxBenefitSystem
@@ -16,37 +16,13 @@ from openfisca_france.model.base import Reform
 version_beta_sans_simu_pop = True
 
 
-def fread(filename: str) -> Callable:
+def load_data(filename: str):
+    path = os.path.join(os.path.dirname(__file__), filename)
+
     if filename[-3:] == ".h5":
-        fun = pandas.read_hdf
+        return pandas.read_hdf(path)
 
-    else:
-        fun = pandas.read_csv
-
-    return lambda path: fun(path.format(filename))
-
-
-def load_data(fread: Callable):
-    try:
-        data = fread("./{}")
-
-    except (Exception):
-        # try:
-        data = fread("Simulation_engine/{}")
-
-        # except (Exception):
-        #     data = fread("C:/EIG/Leximpact_git/Simulation_engine/{}")
-
-    return data
-
-
-# impot_revenu:
-#  bareme:
-#    seuils : list of thresholds
-#    taux :  list of rates x 100
-#  decote :
-#    seuil_celib :
-#    seuil_couple :
+    return pandas.read_csv(path)
 
 
 def reform_generique(tbs, dictparams, period):
@@ -355,12 +331,12 @@ TBS = FranceTaxBenefitSystem()
 # REFORM = partial(reform_from_bareme, period=PERIOD, tbs=TBS)
 REFORM = partial(reform_generique, period=PERIOD, tbs=TBS)
 
-CAS_TYPE = load_data(fread("DCT.csv"))
+CAS_TYPE = load_data("DCT.csv")
 SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs=TBS)
 
 if not version_beta_sans_simu_pop:
-    DUMMY_DATA = load_data(fread("dummy_data.h5"))
+    DUMMY_DATA = load_data("dummy_data.h5")
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
     # Keeping computations short with option to keep file under 1000 FF

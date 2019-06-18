@@ -3,14 +3,13 @@
 import connexion
 import os
 
-from flask_cors import CORS as cors
+from flask_cors import CORS
 
 con = connexion.App("server", specification_dir=".")
-app = con.app
 con.add_api("api.yaml")
-cors(app, origins="*")
+app = con.app
+CORS(app, origins="*")
+
 
 if __name__ == "__main__":
-    con.run(
-        host=os.environ.get("HOST", "127.0.0.1"), port=os.environ.get("PORT", "5000")
-    )
+    con.run(host=os.environ.get("HOST"), port=os.environ.get("PORT"))

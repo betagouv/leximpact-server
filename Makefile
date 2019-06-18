@@ -17,18 +17,14 @@ format-style:
 	black `git ls-files | grep "\.py$$"`
 
 run:
-	FLASK_ENV=development python ./interface_reform/app.py
-
-server:
-	FLASK_ENV=development python ./server/app.py
-
-load:
-	@# The idea is to test POST /calculate or something more CPU intensive.
-	ab -n 10000 -c 100 http://127.0.0.1:5000/
+	FLASK_ENV=development PORT=5000 python ./server/app.py
 
 test:
 	flake8 `git ls-files | grep "\.py$$"`
 	pytest
+
+stress:
+	./tests/stress/benchmark.sh
 
 simpop:
 	python ./Simulation_engine/simulate_pop_from_reform.py
