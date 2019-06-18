@@ -1,1 +1,1 @@
-web: FLASK_ENV=production HOST=0.0.0.0 python ./server/app.py
+api: gunicorn --chdir ./server app:app --bind 0.0.0.0:$PORT --workers=3
