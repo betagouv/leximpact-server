@@ -10,6 +10,11 @@ install:
 	pip install --upgrade pip
 	pip install --editable .[dev] --upgrade
 
+check-style:
+	@# Do not analyse .gitignored files.
+	@# `make` needs `$$` to output `$`. Ref: http://stackoverflow.com/questions/2382764.
+	flake8 `git ls-files | grep "\.py$$"`
+
 format-style:
 	@# Do not analyse .gitignored files.
 	@# `make` needs `$$` to output `$`. Ref: http://stackoverflow.com/questions/2382764.
@@ -19,8 +24,7 @@ format-style:
 run:
 	FLASK_ENV=development PORT=5000 python ./server/app.py
 
-test:
-	flake8 `git ls-files | grep "\.py$$"`
+test: check-style
 	pytest
 
 stress-server:
