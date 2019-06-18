@@ -10,6 +10,11 @@ install:
 	pip install --upgrade pip
 	pip install --editable .[dev] --upgrade
 
+check-style:
+	@# Do not analyse .gitignored files.
+	@# `make` needs `$$` to output `$`. Ref: http://stackoverflow.com/questions/2382764.
+	flake8 `git ls-files | grep "\.py$$"`
+
 format-style:
 	@# Do not analyse .gitignored files.
 	@# `make` needs `$$` to output `$`. Ref: http://stackoverflow.com/questions/2382764.
@@ -17,14 +22,16 @@ format-style:
 	black `git ls-files | grep "\.py$$"`
 
 run:
-	FLASK_ENV=development python ./interface_reform/app.py
+	FLASK_ENV=development PORT=5000 python ./server/app.py
 
-server:
-	FLASK_ENV=development python ./server/app.py
-
-test:
-	flake8 `git ls-files | grep "\.py$$"`
+test: check-style
 	pytest
+
+stress-server:
+	./tests/server/stress/server.sh
+
+stress-test:
+	./tests/server/stress/benchmark.sh
 
 simpop:
 	python ./Simulation_engine/simulate_pop_from_reform.py

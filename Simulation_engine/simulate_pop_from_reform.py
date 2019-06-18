@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
-from typing import Callable
 from functools import partial
 
 import pandas
 import time
+import os
 
 from openfisca_core.simulation_builder import SimulationBuilder
 from openfisca_france import FranceTaxBenefitSystem
@@ -16,37 +16,13 @@ from openfisca_france.model.base import Reform
 version_beta_sans_simu_pop = True
 
 
-def fread(filename: str) -> Callable:
+def load_data(filename: str):
+    path = os.path.join(os.path.dirname(__file__), filename)
+
     if filename[-3:] == ".h5":
-        fun = pandas.read_hdf
+        return pandas.read_hdf(path)
 
-    else:
-        fun = pandas.read_csv
-
-    return lambda path: fun(path.format(filename))
-
-
-def load_data(fread: Callable):
-    try:
-        data = fread("./{}")
-
-    except (Exception):
-        try:
-            data = fread("./Simulation_engine/{}")
-
-        except (Exception):
-            data = fread("C:/EIG/Leximpact_git/Simulation_engine/{}")
-
-    return data
-
-
-# impot_revenu:
-#  bareme:
-#    seuils : list of thresholds
-#    taux :  list of rates x 100
-#  decote :
-#    seuil_celib :
-#    seuil_couple :
+    return pandas.read_csv(path)
 
 
 def reform_generique(tbs, dictparams, period):
@@ -195,9 +171,10 @@ def simulation(period, data, tbs, timer=None):
         instances[ofent] = sb.declare_entity(ofent, ent_ids)
         sb.join_with_persons(instances[ofent], persons_ent, roles=persons_ent_roles)
 
-        # The following ssumes data defined for an entity are the same for all rows in the same entity
-        # Or at least that the first non null value found for an entity will always be the total value for an entity
-        # (Which is the case for f4ba). These checks are performed in the checkdata function defined belowx
+        # The following ssumes data defined for an entity are the same for all rows in
+        # the same entity. Or at least that the first non null value found for an
+        # entity will always be the total value for an entity (which is the case for
+        # f4ba). These checks are performed in the checkdata function defined below.
         dictionnaire_datagrouped[ofent] = (
             data.groupby("id" + ent, as_index=False).first().sort_values(by="id" + ent)
         )
@@ -355,12 +332,12 @@ TBS = FranceTaxBenefitSystem()
 # REFORM = partial(reform_from_bareme, period=PERIOD, tbs=TBS)
 REFORM = partial(reform_generique, period=PERIOD, tbs=TBS)
 
-CAS_TYPE = load_data(fread("DCT.csv"))
+CAS_TYPE = load_data("DCT.csv")
 SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs=TBS)
 
 if not version_beta_sans_simu_pop:
-    DUMMY_DATA = load_data(fread("dummy_data.h5"))
+    DUMMY_DATA = load_data("dummy_data.h5")
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
     # Keeping computations short with option to keep file under 1000 FF
@@ -585,7 +562,8 @@ def dataframe_from_ct_desc(descriptions):
             dres["salaire_de_base"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
             dres["retraite_brute"] += [0] * (nbd + nbc)
         indexfoyer += 1
-        for k in range(nbd):
+
+        for _ in range(nbd):
             dres["activite"] += [0] if not ct["nombre_declarants_retraites"] else [3]
             dres["contrat_de_travail"] += (
                 [0] if not ct["nombre_declarants_retraites"] else [6]
@@ -594,7 +572,7 @@ def dataframe_from_ct_desc(descriptions):
                 [1200] if not ct["nombre_declarants_retraites"] else [0]
             )
             dres["statut_marital"] += [5] if nbd > 1 else [2]
-        for k in range(nbc):
+        for _ in range(nbc):
             dres["activite"] += [2]
             dres["contrat_de_travail"] += [6]
             dres["heures_remunerees_volume"] += [0]
@@ -610,7 +588,8 @@ def dataframe_from_ct_desc(descriptions):
 
 def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     print("comparing old new, isdecile = {} ".format(isdecile))
-    # if isdecile, we want the impact on the full population, while just a cas type on the isdecile=False
+    # if isdecile, we want the impact on the full population, while just a cas type on
+    # the isdecile=False
     data, simulation_base = (
         (DUMMY_DATA, simulation_base_deciles)
         if isdecile

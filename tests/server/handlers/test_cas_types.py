@@ -3,25 +3,6 @@
 import pytest
 import json
 
-from server.app import create_app
-
-
-@pytest.fixture
-def client():
-    app = create_app()
-    client = app.app.test_client()
-    return client
-
-
-@pytest.fixture
-def mimetype() -> str:
-    return "application/json"
-
-
-@pytest.fixture
-def headers(mimetype: str) -> dict:
-    return {"Content-Type": mimetype, "Accept": mimetype}
-
 
 @pytest.fixture
 def data() -> str:
