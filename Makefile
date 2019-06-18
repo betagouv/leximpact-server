@@ -23,7 +23,10 @@ test:
 	flake8 `git ls-files | grep "\.py$$"`
 	pytest
 
-stress:
+stress-server:
+	./tests/stress/server_2.sh
+
+stress-test:
 	./tests/stress/benchmark.sh
 
 simpop:
