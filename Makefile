@@ -22,6 +22,10 @@ run:
 server:
 	FLASK_ENV=development python ./server/app.py
 
+load:
+	@# The idea is to test POST /calculate or something more CPU intensive.
+	ab -n 10000 -c 100 http://127.0.0.1:5000/
+
 test:
 	flake8 `git ls-files | grep "\.py$$"`
 	pytest

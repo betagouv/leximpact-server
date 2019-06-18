@@ -31,11 +31,11 @@ def load_data(fread: Callable):
         data = fread("./{}")
 
     except (Exception):
-        try:
-            data = fread("./Simulation_engine/{}")
+        # try:
+        data = fread("Simulation_engine/{}")
 
-        except (Exception):
-            data = fread("C:/EIG/Leximpact_git/Simulation_engine/{}")
+        # except (Exception):
+        #     data = fread("C:/EIG/Leximpact_git/Simulation_engine/{}")
 
     return data
 
