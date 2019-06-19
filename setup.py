@@ -32,7 +32,7 @@ setup(
     extras_require={
         "dev": [
             "autopep8 >= 1.4.0, < 1.5.0",
-            "black < 20.0.0",
+            "black",
             "flake8 >= 3.7.0, < 3.8.0",
             "flake8-bugbear >= 19.3.0, < 20.0.0",
             "pytest >= 4.0.0, < 5.0.0",
