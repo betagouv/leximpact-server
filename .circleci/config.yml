@@ -14,10 +14,10 @@ jobs:
           key: v1-py3-venv-{{ .Branch }}-{{ checksum "setup.py" }}
 
       - run:
-          name: Install libyaml
+          name: Install required libraries
           command: |
             apt-get update
-            apt-get -y install libyaml-dev
+            apt-get -y install libyaml-dev libhdf5-serial-dev
 
       - run:
           name: Create a virtualenv
