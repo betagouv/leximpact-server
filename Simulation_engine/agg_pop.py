@@ -348,72 +348,73 @@ def aggregate(period: str, simulation_base):
     return dictionnaire_datagrouped["foyer_fiscal"]
 
 
-PERIOD = "2018"
-TBS = FranceTaxBenefitSystem()
-DUMMY_DATA = load_data("./Simulation_engine/dummy_data.h5")
-# Keeping computations short with option to keep file under 1000 FF
-# DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
-simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
+if __name__ == "__main__":
+    PERIOD = "2018"
+    TBS = FranceTaxBenefitSystem()
+    DUMMY_DATA = load_data("./Simulation_engine/dummy_data.h5")
+    # Keeping computations short with option to keep file under 1000 FF
+    # DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
+    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
 
-df = aggregate(PERIOD, simulation_base_deciles)
-
-tranches = (
-    [10, 12, 15, 20, 30, 50]
-    + list(range(100, 1000, 100))
-    + list(range(1000, 10000, 1000))
-    + [10 ** 6]
-)
-trancheslim = [tranche * 1000 for tranche in tranches]
-sommesPartielles = [(0, 0, 0)]
-for tranche in trancheslim:
-    nombreCourant, sommeCourante, sommeimpots = df[df["rfr"] <= tranche][
-        ["wprm", "rfrw", "irppw"]
-    ].sum()
-    sommesPartielles += [(nombreCourant, sommeCourante, sommeimpots)]
-
-valeursref = [
-    (8779578, 37017352.91, -120470.926),
-    (2141456, 23577329.09, -52667.915),
-    (3415487, 46459160.772, -97920.236),
-    (5907523, 102764311.931, 1757682.568),
-    (6830792, 167947232.228, 5647709.376),
-    (6553656, 250560654.266, 13309362.326),
-    (3305940, 217391801.563, 20630440.587),
-    (597946, 78515622.095, 12812673.619),
-    (88183, 21094944.421, 4697851.34),
-    (28243, 9670624.317, 2422618.717),
-    (12523, 5567585.822, 1464664.904),
-    (6552, 3572204.884, 965369.51),
-    (3889, 2512859.538, 685320.67),
-    (2456, 1833358.763, 511723.79),
-    (1709, 1445836.223, 405218.849),
-    (1247, 1181172.438, 330407.275),
-    (4463, 6045094.957, 1605428.388),
-    (978, 2349456.523, 618765.854),
-    (389, 1339663.563, 332044.446),
-    (177, 792643.994, 192016.727),
-    (106, 582664.429, 145106.787),
-    (62, 399427.263, 108240.956),
-    (41, 310128.514, 84401.203),
-    (36, 302012.261, 65296.768),
-    (163, 2701278.296, 580641.771),
-]
-
-
-res = {}
-adjust = [1, 1000, -1000]
-for k in range(len(tranches)):
-    res[tranches[k]] = [
-        (sommesPartielles[k + 1][i] - sommesPartielles[k][i]) / adjust[i]
-        for i in range(3)
-    ]
-
-    res[tranches[k]] += [
-        (res[tranches[k]][i] - valeursref[k][i]) * 100 / valeursref[k][i]
-        for i in range(3)
-    ]
-    print(
-        "{} : {:.2f} \t{:.2f}\t{:.2f}\t{:.2f}%\t{:.2f}%\t{:.2f}%".format(
-            tranches[k], *res[tranches[k]]
-        )
+    df = aggregate(PERIOD, simulation_base_deciles)
+    tranches = (
+        [10, 12, 15, 20, 30, 50]
+        + list(range(100, 1000, 100))
+        + list(range(1000, 10000, 1000))
+        + [10 ** 6]
     )
+    trancheslim = [tranche * 1000 for tranche in tranches]
+    sommesPartielles = [(0, 0, 0)]
+    nbp = [0]
+    for tranche in trancheslim:
+        nombreCourant, sommeCourante, sommeimpots = df[df["rfr"] <= tranche][
+            ["wprm", "rfrw", "irppw"]
+        ].sum()
+        sommesPartielles += [(nombreCourant, sommeCourante, sommeimpots)]
+        nbp += [len(df[df["rfr"] <= tranche])]
+    valeursref = [
+        (8779578, 37017352.91, -120470.926),
+        (2141456, 23577329.09, -52667.915),
+        (3415487, 46459160.772, -97920.236),
+        (5907523, 102764311.931, 1757682.568),
+        (6830792, 167947232.228, 5647709.376),
+        (6553656, 250560654.266, 13309362.326),
+        (3305940, 217391801.563, 20630440.587),
+        (597946, 78515622.095, 12812673.619),
+        (88183, 21094944.421, 4697851.34),
+        (28243, 9670624.317, 2422618.717),
+        (12523, 5567585.822, 1464664.904),
+        (6552, 3572204.884, 965369.51),
+        (3889, 2512859.538, 685320.67),
+        (2456, 1833358.763, 511723.79),
+        (1709, 1445836.223, 405218.849),
+        (1247, 1181172.438, 330407.275),
+        (4463, 6045094.957, 1605428.388),
+        (978, 2349456.523, 618765.854),
+        (389, 1339663.563, 332044.446),
+        (177, 792643.994, 192016.727),
+        (106, 582664.429, 145106.787),
+        (62, 399427.263, 108240.956),
+        (41, 310128.514, 84401.203),
+        (36, 302012.261, 65296.768),
+        (163, 2701278.296, 580641.771),
+    ]
+
+    res = {}
+    adjust = [1, 1000, -1000]
+    for k in range(len(tranches)):
+        res[tranches[k]] = [
+            (sommesPartielles[k + 1][i] - sommesPartielles[k][i]) / adjust[i]
+            for i in range(3)
+        ]
+
+        res[tranches[k]] += [
+            (res[tranches[k]][i] - valeursref[k][i]) * 100 / valeursref[k][i]
+            for i in range(3)
+        ]
+        res[tranches[k]] += [nbp[k + 1] - nbp[k]]
+        print(
+            "{} : {:.2f} \t{:.2f}\t{:.2f}\t{:.2f}%\t{:.2f}%\t{:.2f}%\t{}".format(
+                tranches[k], *res[tranches[k]]
+            )
+        )
