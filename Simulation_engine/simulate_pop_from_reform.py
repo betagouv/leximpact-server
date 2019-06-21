@@ -320,6 +320,21 @@ def compare(
         print("mes valeurs agreg deciles :", decilesres)
         print("mes valeurs diff deciles :", decdiffres)
         # TODO : interpolate quantiles instead of doing the granular approach
+        # This is the only TODO part in this code, I highly doubt it's the most pressing matter
+        adjustResultsToConstant = True
+        if adjustResultsToConstant:  #
+            resultBase = 78 * 10 ** 9
+            # Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
+            # C'est pour permettre d'obtenir des résultats réalistes sans données
+            # Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
+            # Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+            ajustement = resultBase / res[0]
+            dic_res["total"]["avant"] *= ajustement
+            dic_res["total"]["apres"] *= ajustement
+            for k in range(len(decdiffres)):
+                decdiffres[k] = [
+                    decdiffres[k][i] * (ajustement if i else 1) for i in range(3)
+                ]
         dic_res["deciles"] = decdiffres
     else:  # This only interests us for the castypes
         dic_res["res_brut"] = df.to_dict()
@@ -341,7 +356,7 @@ if not version_beta_sans_simu_pop:
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
     # Keeping computations short with option to keep file under 1000 FF
-    # DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
+    DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
 
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
