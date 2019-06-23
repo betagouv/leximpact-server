@@ -13,7 +13,7 @@ from openfisca_core import periods
 from openfisca_france.model.base import Reform
 
 
-version_beta_sans_simu_pop = True
+version_beta_sans_simu_pop = False
 
 
 def load_data(filename: str):
@@ -303,17 +303,19 @@ def compare(
         print(decilweights, dfv[0], totweight)
         print(dfv[1])
         eps = 0.0001
+        keysdicres = ["poids", "avant", "apres"]
         for v in dfv:
             currw += v[0]
-            currb += v[1] * v[0]
-            curra += v[2] * v[0]
+            currb += -v[1] * v[0]
+            curra += -v[2] * v[0]
             if currw >= decilweights[numdecile] - eps:
                 decilesres += [[currw, currb, curra]]
                 decdiffres += [
-                    [
-                        decilesres[numdecile][k] - decilesres[numdecile - 1][k]
+                    {
+                        keysdicres[k]: decilesres[numdecile][k]
+                        - decilesres[numdecile - 1][k]
                         for k in range(3)
-                    ]
+                    }
                 ]
                 numdecile += 1
         print("In fine ", currw, currb, curra)
@@ -329,12 +331,12 @@ def compare(
             # Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
             # Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
             ajustement = resultBase / res[0]
+            print("dic res avant", dic_res, ajustement)
             dic_res["total"]["avant"] *= ajustement
             dic_res["total"]["apres"] *= ajustement
             for k in range(len(decdiffres)):
-                decdiffres[k] = [
-                    decdiffres[k][i] * (ajustement if i else 1) for i in range(3)
-                ]
+                for i in decdiffres[k]:
+                    decdiffres[k][i] = decdiffres[k][i] * ajustement
         dic_res["deciles"] = decdiffres
     else:  # This only interests us for the castypes
         dic_res["res_brut"] = df.to_dict()
