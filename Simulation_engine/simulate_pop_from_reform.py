@@ -358,7 +358,7 @@ if not version_beta_sans_simu_pop:
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
     # Keeping computations short with option to keep file under 1000 FF
-    DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
+    DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
 
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
