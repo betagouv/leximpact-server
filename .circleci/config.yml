@@ -1,0 +1,48 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: python:3.7
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: v1-py3-apt-{{ .Branch }}-{{ checksum "setup.py" }}
+
+      - restore_cache:
+          key: v1-py3-venv-{{ .Branch }}-{{ checksum "setup.py" }}
+
+      - run:
+          name: Install required libraries
+          command: |
+            apt-get update
+            apt-get -y install libyaml-dev libhdf5-serial-dev
+
+      - run:
+          name: Create a virtualenv
+          command: |
+            mkdir -p /tmp/venv/leximpact-server
+            python -m venv /tmp/venv/leximpact-server
+
+      - run:
+          name: Activate virtualenv
+          command: echo "source /tmp/venv/leximpact-server/bin/activate" >> $BASH_ENV
+
+      - run:
+          name: Install dependencies
+          command: make install
+
+      - save_cache:
+          key: v1-py3-venv-{{ .Branch }}-{{ checksum "setup.py" }}
+          paths:
+            - /tmp/venv/leximpact-server
+
+      - save_cache:
+          key: v1-py3-apt-{{ checksum "setup.py" }}
+          paths:
+            - /var/cache/apt/archives
+
+      - run:
+          name: Run tests
+          command: make test
