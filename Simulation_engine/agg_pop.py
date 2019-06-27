@@ -356,7 +356,71 @@ if __name__ == "__main__":
     # DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
 
-    df = aggregate(PERIOD, simulation_base_deciles)
+    df = aggregate(PERIOD, simulation_base_deciles).sort_values(by="rfr")
+    df.to_csv("exporteveryone.csv")
+    print(
+        "{} FF sur {} ont un revenu>0 , donc {:.2f}% ont que dalle ".format(
+            len(df[df["rfr"] > 0.01]),
+            len(df),
+            100 - 100 * len(df[df["rfr"] > 0.01]) / len(df),
+        )
+    )
+
+    # Step 1 : Ajustement du nombre de mecs à zéro...
+    oldweight = 1 - df[df["rfr"] > 0.01]["wprm"].sum() / df["wprm"].sum()
+    targetweight = 0.06
+    redweightifrfr0 = targetweight * (1 - oldweight) / oldweight / (1 - targetweight)
+    print(
+        "Non en fait {} FF sur {} ont un revenu>0 , donc {:.2f}% ont que dalle. Je vais les ajuster.".format(
+            df[df["rfr"] > 0.01]["wprm"].sum(),
+            df["wprm"].sum(),
+            100 - 100 * df[df["rfr"] > 0.01]["wprm"].sum() / df["wprm"].sum(),
+        )
+    )
+    print("old : {} new : {} adj : {}".format(oldweight, targetweight, redweightifrfr0))
+    # Revenus deciles:
+    totrunsumrfr = 0
+    totrunsumwprm = 0
+    # Ajustement de réduction du poids
+    df.loc[df["rfr"] < 0.01, "wprm"] = df["wprm"] * redweightifrfr0
+    df.loc[df["rfr"] < 0.01, "rfrw"] = df["rfrw"] * redweightifrfr0
+    print(
+        "Non en fait {} FF sur {} ont un revenu>0 , donc {:.2f}% ont que dalle ".format(
+            df[df["rfr"] > 0.01]["wprm"].sum(),
+            df["wprm"].sum(),
+            100 - 100 * df[df["rfr"] > 0]["wprm"].sum() / df["wprm"].sum(),
+        )
+    )
+    # Step 1.1 : Ajuster le 1er décile  (pour l'instant on fait que dalle, y a pas vraiment d'impact
+
+    # Step 2 : PBP (pareto by parts)
+
+    # Stats officielles
+    so = pandas.read_csv("./Simulation_engine/Calib/ResFinalCalibSenat.csv")
+    # Je vais désormais déterminer la distribution de tout le monde :
+    # - dans le premier décile :  Les valeurs exactes de l'ERFS * un facteur scalaire qui permet de rendre le premier décile = ce que je veux.
+    # - dans la dernière catégorie : je prend le param de la loi de Pareto qui permet d'égaliser la moyenne de la dernière tranche
+    # - dans toutes les autres catégories (sauf la dernière) : la distrib restrinte à un intervalle est une loi de Pareto au premier paramètre = le
+    # debut de l'intervalle et deuxième paramètre : celui qui permet d'obtenir le bon nombre de gens dans l'intervalle
+    ### End of step 2. Why am I commenting like that ? Who knows?
+
+    totw = df["wprm"].sum()
+    decilesagg = [(0, 0)]  # poids, rfr
+    nbdec = 10
+    wlims = [(totw - 0.00001) * _ / nbdec for _ in range(1, nbdec + 1)]
+    numdec = 1
+    for x in df[["wprm", "rfr", "rfrw"]].values:
+        totrunsumwprm += x[0]
+        totrunsumrfr += x[2]
+        if totrunsumwprm >= wlims[numdec - 1]:
+            print("{} Decile lim : {}".format(numdec, x[1]))
+            decilesagg += [(totrunsumwprm, totrunsumrfr)]
+            thisdec = [
+                decilesagg[-1][0] - decilesagg[-2][0],
+                decilesagg[-1][1] - decilesagg[-2][1],
+            ]
+            print(thisdec, "{:.2f}".format(thisdec[1] / thisdec[0]))
+            numdec += 1
     tranches = (
         [10, 12, 15, 20, 30, 50]
         + list(range(100, 1000, 100))
