@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-from functools import partial
-
 import pandas
 import time
 import os
@@ -325,7 +323,7 @@ def compare(
     return dic_res
 
 
-def aggregate(period: str, simulation_base):
+def aggregats_ff(period: str, simulation_base):
     res = []
     for simulation, dictionnaire_datagrouped in [simulation_base]:
         df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
@@ -349,16 +347,155 @@ def aggregate(period: str, simulation_base):
     return dictionnaire_datagrouped["foyer_fiscal"]
 
 
-if __name__ == "__main__":
+def genpareto(xm, k, x):
+    # (xm/res)^k=x
+    return pow(x, -1 / k) * xm
+
+
+def reverseCDF(calibratedso):
+    sonk = calibratedso["Nk"].values
+    sork = calibratedso["Rk"].values
+    sopp = calibratedso["paramPareto"].values
+
+    def reverseCDFfromTable(row):
+        x = 1 - row["rsnw"]
+        eps = 10 ** -9
+        # returns (with the params specified) the value of Y so that (the probability that a random foyer
+        # fiscal is higher than Y) is x.
+        for piece in range(
+            len(sonk)
+        ):  # unoptimised computationally, ln(len(sov)) is possible
+            if piece == len(sonk) - 1 or x > sonk[piece + 1] - eps:
+                break
+        if sopp[piece] < 0:
+            return row["rfr"]
+        # otherwise, we should not be here (we keep the empirical distribution for the lowest part so not
+        # supposed to call this function)
+        relprob = x / sonk[piece]
+        simrfr = genpareto(sork[piece], sopp[piece], relprob)
+        assert piece == len(sork) - 1 or simrfr <= sork[piece + 1]
+        # making sure I stay within the bounds
+        return simrfr
+
+    return reverseCDFfromTable
+
+
+def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
+    totw = df[nameweight].sum()
+    decilesagg = [(0, 0)]  # poids, rfr
+    nbdec = 10
+    wlims = [(totw - 0.00001) * _ / nbdec for _ in range(1, nbdec + 1)]
+    numdec = 1
+    namerfrw = namerfr + "w"  # Revenus deciles:
+    totrunsumrfr = 0
+    totrunsumwprm = 0
+    for x in df[[nameweight, namerfr, namerfrw]].values:
+        totrunsumwprm += x[0]
+        totrunsumrfr += x[2]
+        if totrunsumwprm >= wlims[numdec - 1]:
+            print("{} Decile lim : {}".format(numdec, x[1]))
+            decilesagg += [(totrunsumwprm, totrunsumrfr)]
+            thisdec = [
+                decilesagg[-1][0] - decilesagg[-2][0],
+                decilesagg[-1][1] - decilesagg[-2][1],
+            ]
+            print(thisdec, "{:.2f}".format(thisdec[1] / thisdec[0]))
+            numdec += 1
+    tranches = (
+        [10, 12, 15, 20, 30, 50]
+        + list(range(100, 1000, 100))
+        + list(range(1000, 10000, 1000))
+        + [10 ** 6]
+    )
+    trancheslim = [tranche * 1000 for tranche in tranches]
+    sommesPartielles = [(0, 0, 0)]
+    nbp = [0]
+
+    if namerfr != "rfr":
+        print("WARNING: the impot is not good")
+    for tranche in trancheslim:
+        nombreCourant, sommeCourante, sommeimpots = df[df[namerfr] <= tranche][
+            [nameweight, namerfr + "w", "irppw"]
+        ].sum()
+        sommesPartielles += [(nombreCourant, sommeCourante, sommeimpots)]
+        nbp += [len(df[df[namerfr] <= tranche])]
+        # nb foyers fisccaux , rfr, impots
+    valeursref = [
+        (8779578, 37017352.91, -120470.926),
+        (2141456, 23577329.09, -52667.915),
+        (3415487, 46459160.772, -97920.236),
+        (5907523, 102764311.931, 1757682.568),
+        (6830792, 167947232.228, 5647709.376),
+        (6553656, 250560654.266, 13309362.326),
+        (3305940, 217391801.563, 20630440.587),
+        (597946, 78515622.095, 12812673.619),
+        (88183, 21094944.421, 4697851.34),
+        (28243, 9670624.317, 2422618.717),
+        (12523, 5567585.822, 1464664.904),
+        (6552, 3572204.884, 965369.51),
+        (3889, 2512859.538, 685320.67),
+        (2456, 1833358.763, 511723.79),
+        (1709, 1445836.223, 405218.849),
+        (1247, 1181172.438, 330407.275),
+        (4463, 6045094.957, 1605428.388),
+        (978, 2349456.523, 618765.854),
+        (389, 1339663.563, 332044.446),
+        (177, 792643.994, 192016.727),
+        (106, 582664.429, 145106.787),
+        (62, 399427.263, 108240.956),
+        (41, 310128.514, 84401.203),
+        (36, 302012.261, 65296.768),
+        (163, 2701278.296, 580641.771),
+    ]
+
+    res = {}
+    adjust = [1, 1000, -1000]
+    for k in range(len(tranches)):
+        res[tranches[k]] = [
+            (sommesPartielles[k + 1][i] - sommesPartielles[k][i]) / adjust[i]
+            for i in range(3)
+        ]
+
+        res[tranches[k]] += [
+            (res[tranches[k]][i] - valeursref[k][i]) * 100 / valeursref[k][i]
+            for i in range(3)
+        ]
+        res[tranches[k]] += [nbp[k + 1] - nbp[k]]
+        print(
+            "{} : {:.2f} \t{:.2f}\t{:.2f}\t{:.2f}%\t{:.2f}%\t{:.2f}%\t{}".format(
+                tranches[k], *res[tranches[k]]
+            )
+        )
+
+
+def test_h5_input(input_h5="./Simulation_engine/dummy_data.h5"):
     PERIOD = "2018"
     TBS = FranceTaxBenefitSystem()
-    DUMMY_DATA = load_data("./Simulation_engine/dummy_data.h5")
+    DUMMY_DATA = load_data(input_h5)
+    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
+    df = aggregats_ff(PERIOD, simulation_base_deciles).sort_values(by="rfr")
+    testerrorvalues(df)
+    aggs_to_compute = ["wprm", "salaire_de_base", "retraite_brute", "rfr", "irpp"]
+    for ag in aggs_to_compute:
+        if ag != "wprm":
+            print("Total aggrégé {} : {}".format(ag, (df[ag] * df["wprm"]).sum()))
+        else:
+            print("Total aggrégé {} : {}".format(ag, df[ag].sum()))
+
+
+def ajustement_h5(
+    input_h5="./Simulation_engine/dummy_data.h5",
+    output_h5="./Simulation_engine/dummy_data_ajuste.h5",
+    distribution_rfr_population="./Simulation_engine/Calib/ResFinalCalibSenat.csv",
+):
+    PERIOD = "2018"
+    ajuste_h5 = output_h5
+    TBS = FranceTaxBenefitSystem()
+    DUMMY_DATA = load_data(input_h5)
     # Keeping computations short with option to keep file under 1000 FF
     # DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
-
-    df = aggregate(PERIOD, simulation_base_deciles).sort_values(by="rfr")
-    df.to_csv("exporteveryone.csv")
+    df = aggregats_ff(PERIOD, simulation_base_deciles).sort_values(by="rfr")
     print(
         "{} FF sur {} ont un revenu>0 , donc {:.2f}% ont que dalle ".format(
             len(df[df["rfr"] > 0.01]),
@@ -385,7 +522,11 @@ if __name__ == "__main__":
     df["realwprm"] = df["wprm"]
     df.loc[df["rfr"] < 0.01, "adjwstep0"] = redweightifrfr0
     df.loc[df["rfr"] < 0.01, "realwprm"] = df["wprm"] * redweightifrfr0
-    # df.loc[df["rfr"] < 0.01, "rfrw"] = df["rfrw"] * redweightifrfr0
+    # Calibration du nombre total de foyers fiscaux
+    target_foyers_fiscaux = 37889181
+    # src : https://www.economie.gouv.fr/files/files/directions_services/dgfip/Rapport/2017/RA2017_cahierstats_0719.pdf
+    adjust_wprm = target_foyers_fiscaux / df["realwprm"].sum()
+    df["realwprm"] = df["realwprm"] * adjust_wprm
     print(
         "Non en fait {} FF sur {} ont un revenu>0 , donc {:.2f}% ont que dalle ".format(
             df[df["rfr"] > 0.01]["wprm"].sum(),
@@ -396,9 +537,13 @@ if __name__ == "__main__":
     # Step 1.1 : Ajuster le 1er décile  (pour l'instant on fait que dalle, y a pas vraiment d'impact
 
     # Step 2 : PBP (pareto by parts)
-
     # Stats officielles
-    so = pandas.read_csv("./Simulation_engine/Calib/ResFinalCalibSenat.csv")
+    so = pandas.read_csv(distribution_rfr_population)
+    # doit contenir :
+    # Colonne Rk : Revenu Fiscal de référence
+    # Colonne Nk : Pourcentage de foyers fiscaux ayant un RFR >= à la colonne Rk
+    # Colonne Ark : RFR moyen des foyers fiscaux  ayant un RFR >= à la colonne Rk (utilisée seulement pour la loi du
+    # plus haut décile
     # Je vais désormais déterminer la distribution de tout le monde :
     # 2.0 - bon je vais associer le running weight de chaque mec...
     totw = df["realwprm"].sum()
@@ -437,130 +582,51 @@ if __name__ == "__main__":
     paramsPareto += [1 / (lastaverage / lastthresh - 1) + 1]
     so["paramPareto"] = paramsPareto
 
-    def genpareto(xm, k, x):
-        # (xm/res)^k=x
-        return pow(x, -1 / k) * xm
-
-    def reverseCDF(calibratedso):
-        sonk = calibratedso["Nk"].values
-        sork = calibratedso["Rk"].values
-        sopp = calibratedso["paramPareto"].values
-
-        def reverseCDFfromTable(row):
-            x = 1 - row["rsnw"]
-            eps = 10 ** -9
-            # returns (with the params specified) the value of Y so that (the probability that a random foyer
-            # fiscal is higher than Y) is x.
-            for piece in range(
-                len(sonk)
-            ):  # unoptimised computationally, ln(len(sov)) is possible
-                if piece == len(sonk) - 1 or x > sonk[piece + 1] - eps:
-                    break
-            if sopp[piece] < 0:
-                return row["rfr"]
-            # otherwise, we should not be here (we keep the empirical distribution for the lowest part so not
-            # supposed to call this function)
-            relprob = x / sonk[piece]
-            simrfr = genpareto(sork[piece], sopp[piece], relprob)
-            assert piece == len(sork) - 1 or simrfr <= sork[piece + 1]
-            # making sure I stay within the bounds
-            return simrfr
-
-        return reverseCDFfromTable
-
     df["realrfr"] = df.apply(reverseCDF(so), axis=1)
-    df["realrfrw"] = df["realrfr"] * df["wprm"]
+    df["realrfrw"] = df["realrfr"] * df["realwprm"]
 
-    df.to_csv("DidIdoIt.csv")
     # OK now that this great function works (does it? Why not try it? comparing it now to the original function??)
     # I can generate the REAL rfr
 
-    ### End of step 2. Why am I commenting like that ? Who knows?
-    def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
-        totw = df["wprm"].sum()
-        decilesagg = [(0, 0)]  # poids, rfr
-        nbdec = 10
-        wlims = [(totw - 0.00001) * _ / nbdec for _ in range(1, nbdec + 1)]
-        numdec = 1
-        namerfrw = namerfr + "w"  # Revenus deciles:
-        totrunsumrfr = 0
-        totrunsumwprm = 0
-        for x in df[["wprm", namerfr, namerfrw]].values:
-            totrunsumwprm += x[0]
-            totrunsumrfr += x[2]
-            if totrunsumwprm >= wlims[numdec - 1]:
-                print("{} Decile lim : {}".format(numdec, x[1]))
-                decilesagg += [(totrunsumwprm, totrunsumrfr)]
-                thisdec = [
-                    decilesagg[-1][0] - decilesagg[-2][0],
-                    decilesagg[-1][1] - decilesagg[-2][1],
-                ]
-                print(thisdec, "{:.2f}".format(thisdec[1] / thisdec[0]))
-                numdec += 1
-        tranches = (
-            [10, 12, 15, 20, 30, 50]
-            + list(range(100, 1000, 100))
-            + list(range(1000, 10000, 1000))
-            + [10 ** 6]
-        )
-        trancheslim = [tranche * 1000 for tranche in tranches]
-        sommesPartielles = [(0, 0, 0)]
-        nbp = [0]
-
-        if namerfr != "rfr":
-            print("WARNING: the impot is not good")
-        for tranche in trancheslim:
-            nombreCourant, sommeCourante, sommeimpots = df[df["rfr"] <= tranche][
-                ["wprm", namerfr, "irppw"]
-            ].sum()
-            sommesPartielles += [(nombreCourant, sommeCourante, sommeimpots)]
-            nbp += [len(df[df["rfr"] <= tranche])]
-        valeursref = [
-            (8779578, 37017352.91, -120470.926),
-            (2141456, 23577329.09, -52667.915),
-            (3415487, 46459160.772, -97920.236),
-            (5907523, 102764311.931, 1757682.568),
-            (6830792, 167947232.228, 5647709.376),
-            (6553656, 250560654.266, 13309362.326),
-            (3305940, 217391801.563, 20630440.587),
-            (597946, 78515622.095, 12812673.619),
-            (88183, 21094944.421, 4697851.34),
-            (28243, 9670624.317, 2422618.717),
-            (12523, 5567585.822, 1464664.904),
-            (6552, 3572204.884, 965369.51),
-            (3889, 2512859.538, 685320.67),
-            (2456, 1833358.763, 511723.79),
-            (1709, 1445836.223, 405218.849),
-            (1247, 1181172.438, 330407.275),
-            (4463, 6045094.957, 1605428.388),
-            (978, 2349456.523, 618765.854),
-            (389, 1339663.563, 332044.446),
-            (177, 792643.994, 192016.727),
-            (106, 582664.429, 145106.787),
-            (62, 399427.263, 108240.956),
-            (41, 310128.514, 84401.203),
-            (36, 302012.261, 65296.768),
-            (163, 2701278.296, 580641.771),
-        ]
-
-        res = {}
-        adjust = [1, 1000, -1000]
-        for k in range(len(tranches)):
-            res[tranches[k]] = [
-                (sommesPartielles[k + 1][i] - sommesPartielles[k][i]) / adjust[i]
-                for i in range(3)
-            ]
-
-            res[tranches[k]] += [
-                (res[tranches[k]][i] - valeursref[k][i]) * 100 / valeursref[k][i]
-                for i in range(3)
-            ]
-            res[tranches[k]] += [nbp[k + 1] - nbp[k]]
-            print(
-                "{} : {:.2f} \t{:.2f}\t{:.2f}\t{:.2f}%\t{:.2f}%\t{:.2f}%\t{}".format(
-                    tranches[k], *res[tranches[k]]
-                )
-            )
+    ### End of step 2.
 
     testerrorvalues(df, "rfr", "wprm")
     testerrorvalues(df, "realrfr", "realwprm")
+    # OKOK bon maintenant mon df contient le bon rfr et le bon realwprm
+    df["total_ajust_revenu"] = 1
+    df.loc[df["rfr"] > 0, "total_ajust_revenu"] = df["realrfr"] / df["rfr"]
+    df["total_ajust_poids"] = df["realwprm"] / df["wprm"]
+
+    # Je vais ajuster le .h5
+    to_transform = pandas.read_hdf(input_h5)
+    tt_colonnes = to_transform.columns
+    df_changes = df[["idfoy", "total_ajust_revenu", "total_ajust_poids"]]
+    to_transform = to_transform.merge(df_changes, on="idfoy")
+    colspoids = ["wprm"]
+    colsrevenus = [
+        "chomage_brut",
+        "pensions_alimentaires_percues",
+        "rag",
+        "ric",
+        "rnc",
+        "salaire_de_base",
+        "f4ba",
+        # "loyer",
+        # "taxe_habitation",
+    ]
+    for cp in colspoids:
+        to_transform[cp] = to_transform[cp] * to_transform["total_ajust_poids"]
+    for cp in colsrevenus:
+        to_transform[cp] = to_transform[cp] * to_transform["total_ajust_revenu"]
+    to_transform = to_transform[tt_colonnes]
+    to_transform.to_hdf(ajuste_h5, key="input")
+
+    # J'ai ajusté le h5
+
+
+if __name__ == "__main__":
+    ajustement_h5()
+    print("before adj :")
+    test_h5_input()
+    print("after adj :")
+    test_h5_input("./Simulation_engine/dummy_data_ajuste.h5")
