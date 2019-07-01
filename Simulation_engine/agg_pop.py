@@ -6,6 +6,7 @@ from functools import partial
 import pandas
 import time
 import os
+import math
 
 from openfisca_core.simulation_builder import SimulationBuilder
 from openfisca_france import FranceTaxBenefitSystem
@@ -378,12 +379,13 @@ if __name__ == "__main__":
         )
     )
     print("old : {} new : {} adj : {}".format(oldweight, targetweight, redweightifrfr0))
-    # Revenus deciles:
-    totrunsumrfr = 0
-    totrunsumwprm = 0
+
     # Ajustement de réduction du poids
-    df.loc[df["rfr"] < 0.01, "wprm"] = df["wprm"] * redweightifrfr0
-    df.loc[df["rfr"] < 0.01, "rfrw"] = df["rfrw"] * redweightifrfr0
+    df["adjwstep0"] = 1
+    df["realwprm"] = df["wprm"]
+    df.loc[df["rfr"] < 0.01, "adjwstep0"] = redweightifrfr0
+    df.loc[df["rfr"] < 0.01, "realwprm"] = df["wprm"] * redweightifrfr0
+    # df.loc[df["rfr"] < 0.01, "rfrw"] = df["rfrw"] * redweightifrfr0
     print(
         "Non en fait {} FF sur {} ont un revenu>0 , donc {:.2f}% ont que dalle ".format(
             df[df["rfr"] > 0.01]["wprm"].sum(),
@@ -398,87 +400,167 @@ if __name__ == "__main__":
     # Stats officielles
     so = pandas.read_csv("./Simulation_engine/Calib/ResFinalCalibSenat.csv")
     # Je vais désormais déterminer la distribution de tout le monde :
-    # - dans le premier décile :  Les valeurs exactes de l'ERFS * un facteur scalaire qui permet de rendre le premier décile = ce que je veux.
-    # - dans la dernière catégorie : je prend le param de la loi de Pareto qui permet d'égaliser la moyenne de la dernière tranche
-    # - dans toutes les autres catégories (sauf la dernière) : la distrib restrinte à un intervalle est une loi de Pareto au premier paramètre = le
-    # debut de l'intervalle et deuxième paramètre : celui qui permet d'obtenir le bon nombre de gens dans l'intervalle
-    ### End of step 2. Why am I commenting like that ? Who knows?
-
-    totw = df["wprm"].sum()
-    decilesagg = [(0, 0)]  # poids, rfr
-    nbdec = 10
-    wlims = [(totw - 0.00001) * _ / nbdec for _ in range(1, nbdec + 1)]
-    numdec = 1
-    for x in df[["wprm", "rfr", "rfrw"]].values:
-        totrunsumwprm += x[0]
-        totrunsumrfr += x[2]
-        if totrunsumwprm >= wlims[numdec - 1]:
-            print("{} Decile lim : {}".format(numdec, x[1]))
-            decilesagg += [(totrunsumwprm, totrunsumrfr)]
-            thisdec = [
-                decilesagg[-1][0] - decilesagg[-2][0],
-                decilesagg[-1][1] - decilesagg[-2][1],
-            ]
-            print(thisdec, "{:.2f}".format(thisdec[1] / thisdec[0]))
-            numdec += 1
-    tranches = (
-        [10, 12, 15, 20, 30, 50]
-        + list(range(100, 1000, 100))
-        + list(range(1000, 10000, 1000))
-        + [10 ** 6]
+    # 2.0 - bon je vais associer le running weight de chaque mec...
+    totw = df["realwprm"].sum()
+    df = df.sort_values(by="rfr")
+    df["nw"] = df["realwprm"] / totw  # normalized weight (total = 1)
+    df["rsnw"] = df["nw"].cumsum() - df["nw"] / 2  # somme cumulée des nw.  on prend
+    # 2.1 - dans le premier décile :  Les valeurs exactes de l'ERFS * un facteur scalaire qui permet de rendre le premier décile = ce que je veux.
+    targetFirstDec = so["Rk"][1]
+    limWeightFirstDec = so["Nk"][1]
+    limOrigFirstDec = max(df[df["rsnw"] <= 1 - limWeightFirstDec]["rfr"])
+    df["adjrevstep2"] = 1
+    df.loc[df["rsnw"] <= 1 - limWeightFirstDec, "adjrevstep2"] = (
+        targetFirstDec / limOrigFirstDec
     )
-    trancheslim = [tranche * 1000 for tranche in tranches]
-    sommesPartielles = [(0, 0, 0)]
-    nbp = [0]
-    for tranche in trancheslim:
-        nombreCourant, sommeCourante, sommeimpots = df[df["rfr"] <= tranche][
-            ["wprm", "rfrw", "irppw"]
-        ].sum()
-        sommesPartielles += [(nombreCourant, sommeCourante, sommeimpots)]
-        nbp += [len(df[df["rfr"] <= tranche])]
-    valeursref = [
-        (8779578, 37017352.91, -120470.926),
-        (2141456, 23577329.09, -52667.915),
-        (3415487, 46459160.772, -97920.236),
-        (5907523, 102764311.931, 1757682.568),
-        (6830792, 167947232.228, 5647709.376),
-        (6553656, 250560654.266, 13309362.326),
-        (3305940, 217391801.563, 20630440.587),
-        (597946, 78515622.095, 12812673.619),
-        (88183, 21094944.421, 4697851.34),
-        (28243, 9670624.317, 2422618.717),
-        (12523, 5567585.822, 1464664.904),
-        (6552, 3572204.884, 965369.51),
-        (3889, 2512859.538, 685320.67),
-        (2456, 1833358.763, 511723.79),
-        (1709, 1445836.223, 405218.849),
-        (1247, 1181172.438, 330407.275),
-        (4463, 6045094.957, 1605428.388),
-        (978, 2349456.523, 618765.854),
-        (389, 1339663.563, 332044.446),
-        (177, 792643.994, 192016.727),
-        (106, 582664.429, 145106.787),
-        (62, 399427.263, 108240.956),
-        (41, 310128.514, 84401.203),
-        (36, 302012.261, 65296.768),
-        (163, 2701278.296, 580641.771),
-    ]
+    # 2.2 - dans toutes les autres catégories (sauf la dernière) : la distrib restrinte à un intervalle est une loi de Pareto au premier paramètre = le
+    # debut de l'intervalle et deuxième paramètre : celui qui permet d'obtenir le bon nombre de gens dans l'intervalle
+    # Détermination de ce paramètre
+    sonk = so["Nk"].values
+    # parce que je sais toujours pas itérer ligne à ligne dans un DataFrame
+    sork = so["Rk"].values
+    paramsPareto = [-1]
+    for i in range(1, len(sonk) - 1):
+        n0 = sonk[i]
+        n1 = sonk[i + 1]
+        r0 = sork[i]
+        r1 = sork[i + 1]
 
-    res = {}
-    adjust = [1, 1000, -1000]
-    for k in range(len(tranches)):
-        res[tranches[k]] = [
-            (sommesPartielles[k + 1][i] - sommesPartielles[k][i]) / adjust[i]
-            for i in range(3)
-        ]
+        newparam = math.log(n1 / n0) / math.log(r0 / r1)
+        paramsPareto += [newparam]
 
-        res[tranches[k]] += [
-            (res[tranches[k]][i] - valeursref[k][i]) * 100 / valeursref[k][i]
-            for i in range(3)
-        ]
-        res[tranches[k]] += [nbp[k + 1] - nbp[k]]
-        print(
-            "{} : {:.2f} \t{:.2f}\t{:.2f}\t{:.2f}%\t{:.2f}%\t{:.2f}%\t{}".format(
-                tranches[k], *res[tranches[k]]
-            )
+    # 2.3 - dans la dernière catégorie : je prend le param de la loi de Pareto qui permet d'égaliser la moyenne de la dernière tranche
+    # OK la moyenne d'une Pareto est : esp = (1 + 1/(k-1)) * xm
+    #  k = 1/(esp/xm - 1) + 1
+    lastaverage = so["dArk"].values[-1] * 1000
+    lastthresh = sork[-1]
+    paramsPareto += [1 / (lastaverage / lastthresh - 1) + 1]
+    so["paramPareto"] = paramsPareto
+
+    def genpareto(xm, k, x):
+        # (xm/res)^k=x
+        return pow(x, -1 / k) * xm
+
+    def reverseCDF(calibratedso):
+        sonk = calibratedso["Nk"].values
+        sork = calibratedso["Rk"].values
+        sopp = calibratedso["paramPareto"].values
+
+        def reverseCDFfromTable(row):
+            x = 1 - row["rsnw"]
+            eps = 10 ** -9
+            # returns (with the params specified) the value of Y so that (the probability that a random foyer
+            # fiscal is higher than Y) is x.
+            for piece in range(
+                len(sonk)
+            ):  # unoptimised computationally, ln(len(sov)) is possible
+                if piece == len(sonk) - 1 or x > sonk[piece + 1] - eps:
+                    break
+            if sopp[piece] < 0:
+                return row["rfr"]
+            # otherwise, we should not be here (we keep the empirical distribution for the lowest part so not
+            # supposed to call this function)
+            relprob = x / sonk[piece]
+            simrfr = genpareto(sork[piece], sopp[piece], relprob)
+            assert piece == len(sork) - 1 or simrfr <= sork[piece + 1]
+            # making sure I stay within the bounds
+            return simrfr
+
+        return reverseCDFfromTable
+
+    df["realrfr"] = df.apply(reverseCDF(so), axis=1)
+    df["realrfrw"] = df["realrfr"] * df["wprm"]
+
+    df.to_csv("DidIdoIt.csv")
+    # OK now that this great function works (does it? Why not try it? comparing it now to the original function??)
+    # I can generate the REAL rfr
+
+    ### End of step 2. Why am I commenting like that ? Who knows?
+    def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
+        totw = df["wprm"].sum()
+        decilesagg = [(0, 0)]  # poids, rfr
+        nbdec = 10
+        wlims = [(totw - 0.00001) * _ / nbdec for _ in range(1, nbdec + 1)]
+        numdec = 1
+        namerfrw = namerfr + "w"  # Revenus deciles:
+        totrunsumrfr = 0
+        totrunsumwprm = 0
+        for x in df[["wprm", namerfr, namerfrw]].values:
+            totrunsumwprm += x[0]
+            totrunsumrfr += x[2]
+            if totrunsumwprm >= wlims[numdec - 1]:
+                print("{} Decile lim : {}".format(numdec, x[1]))
+                decilesagg += [(totrunsumwprm, totrunsumrfr)]
+                thisdec = [
+                    decilesagg[-1][0] - decilesagg[-2][0],
+                    decilesagg[-1][1] - decilesagg[-2][1],
+                ]
+                print(thisdec, "{:.2f}".format(thisdec[1] / thisdec[0]))
+                numdec += 1
+        tranches = (
+            [10, 12, 15, 20, 30, 50]
+            + list(range(100, 1000, 100))
+            + list(range(1000, 10000, 1000))
+            + [10 ** 6]
         )
+        trancheslim = [tranche * 1000 for tranche in tranches]
+        sommesPartielles = [(0, 0, 0)]
+        nbp = [0]
+
+        if namerfr != "rfr":
+            print("WARNING: the impot is not good")
+        for tranche in trancheslim:
+            nombreCourant, sommeCourante, sommeimpots = df[df["rfr"] <= tranche][
+                ["wprm", namerfr, "irppw"]
+            ].sum()
+            sommesPartielles += [(nombreCourant, sommeCourante, sommeimpots)]
+            nbp += [len(df[df["rfr"] <= tranche])]
+        valeursref = [
+            (8779578, 37017352.91, -120470.926),
+            (2141456, 23577329.09, -52667.915),
+            (3415487, 46459160.772, -97920.236),
+            (5907523, 102764311.931, 1757682.568),
+            (6830792, 167947232.228, 5647709.376),
+            (6553656, 250560654.266, 13309362.326),
+            (3305940, 217391801.563, 20630440.587),
+            (597946, 78515622.095, 12812673.619),
+            (88183, 21094944.421, 4697851.34),
+            (28243, 9670624.317, 2422618.717),
+            (12523, 5567585.822, 1464664.904),
+            (6552, 3572204.884, 965369.51),
+            (3889, 2512859.538, 685320.67),
+            (2456, 1833358.763, 511723.79),
+            (1709, 1445836.223, 405218.849),
+            (1247, 1181172.438, 330407.275),
+            (4463, 6045094.957, 1605428.388),
+            (978, 2349456.523, 618765.854),
+            (389, 1339663.563, 332044.446),
+            (177, 792643.994, 192016.727),
+            (106, 582664.429, 145106.787),
+            (62, 399427.263, 108240.956),
+            (41, 310128.514, 84401.203),
+            (36, 302012.261, 65296.768),
+            (163, 2701278.296, 580641.771),
+        ]
+
+        res = {}
+        adjust = [1, 1000, -1000]
+        for k in range(len(tranches)):
+            res[tranches[k]] = [
+                (sommesPartielles[k + 1][i] - sommesPartielles[k][i]) / adjust[i]
+                for i in range(3)
+            ]
+
+            res[tranches[k]] += [
+                (res[tranches[k]][i] - valeursref[k][i]) * 100 / valeursref[k][i]
+                for i in range(3)
+            ]
+            res[tranches[k]] += [nbp[k + 1] - nbp[k]]
+            print(
+                "{} : {:.2f} \t{:.2f}\t{:.2f}\t{:.2f}%\t{:.2f}%\t{:.2f}%\t{}".format(
+                    tranches[k], *res[tranches[k]]
+                )
+            )
+
+    testerrorvalues(df, "rfr", "wprm")
+    testerrorvalues(df, "realrfr", "realwprm")
