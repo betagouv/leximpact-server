@@ -107,8 +107,27 @@ def reform_generique(tbs, dictparams, period):
                     print("plaf qf avant :")
                     print(parameters.impot_revenu.plafond_qf.get_at_instant(instant))
                 dirr = dir["plafond_qf"]
-                if "abat_dom" in dirr:
 
+                # if "maries_ou_pacses" in requete["impot_revenu"]["plafond_qf"]:
+                #     parameters.impot_revenu.plafond_qf.maries_ou_pacses.update(
+                #         period=reform_period,
+                #         value=requete["impot_revenu"]["plafond_qf"]["maries_ou_pacses"],
+                #     )
+
+                for var_name in [
+                    "maries_ou_pacses",
+                    "celib_enf",
+                    "celib",
+                    "reduc_postplafond",
+                    "reduc_postplafond_veuf",
+                ]:
+                    if var_name in dirr:
+                        pp = eval(
+                            "parameters.impot_revenu.plafond_qf.{}".format(var_name)
+                        )
+                        pp.update(period=reform_period, value=float(dirr[var_name]))
+
+                if "abat_dom" in dirr:
                     paramstoprint = [
                         parameters.impot_revenu.plafond_qf.abat_dom.taux_GuadMarReu,
                         parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuadMarReu,
