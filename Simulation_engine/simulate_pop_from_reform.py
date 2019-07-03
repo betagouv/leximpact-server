@@ -155,9 +155,23 @@ def reform_generique(tbs, dictparams, period):
                     parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuyMay.update(
                         period=reform_period, value=float(plaf_GuyMay)
                     )
+                if "reduction_ss_condition_revenus" in dirr:
+                    dirrr = dirr["reduction_ss_condition_revenus"]
+                    for var_name in ["seuil_maj_enf", "seuil1", "seuil2", "taux"]:
+                        if var_name in dirrr:
+                            pp = eval(
+                                "parameters.impot_revenu.plafond_qf.reduction_ss_condition_revenus.{}".format(
+                                    var_name
+                                )
+                            )
+                            pp.update(
+                                period=reform_period, value=float(dirrr[var_name])
+                            )
+
                 if verbose:
                     print("plaf qf après :")
                     print(parameters.impot_revenu.plafond_qf.get_at_instant(instant))
+
         return parameters
 
     return apply_reform(tbs)
@@ -172,38 +186,39 @@ def reform_from_bareme(tbs, seuils, taux, period):
     def reform(parameters):
         print("Non je ne suis plus censé passer par là")
         assert 1 == 0  # Le script doit désormais utiliser une autre fonction
-        instant = periods.instant(period)
 
-        print("bareme avant modif :")
-        print(parameters.impot_revenu.bareme.get_at_instant(instant))
-        reform_period = periods.period(
-            "year:1900:200"
-        )  # Pour le moment mes réformes sont sur l'éternité
-        for i in range(len(seuils)):
-            parameters.impot_revenu.bareme.brackets[i].threshold.update(
-                period=reform_period, value=seuils[i]
-            )
-            parameters.impot_revenu.bareme.brackets[i].rate.update(
-                period=reform_period, value=taux[i] * 0.01
-            )
-
-        for i in range(len(seuils), 15):
-            try:
-                parameters.impot_revenu.bareme.brackets[i].threshold.update(
-                    period=reform_period, value=seuils[-1] + i
-                )
-                parameters.impot_revenu.bareme.brackets[i].rate.update(
-                    period=reform_period, value=taux[-1] * 0.01
-                )
-            except (Exception):
-                break
-
-        print("bareme après modif :")
-        print(parameters.impot_revenu.bareme.get_at_instant(instant))
-
-        return parameters
-
-    return apply_reform(tbs)
+    #     instant = periods.instant(period)
+    #
+    #     print("bareme avant modif :")
+    #     print(parameters.impot_revenu.bareme.get_at_instant(instant))
+    #     reform_period = periods.period(
+    #         "year:1900:200"
+    #     )  # Pour le moment mes réformes sont sur l'éternité
+    #     for i in range(len(seuils)):
+    #         parameters.impot_revenu.bareme.brackets[i].threshold.update(
+    #             period=reform_period, value=seuils[i]
+    #         )
+    #         parameters.impot_revenu.bareme.brackets[i].rate.update(
+    #             period=reform_period, value=taux[i] * 0.01
+    #         )
+    #
+    #     for i in range(len(seuils), 15):
+    #         try:
+    #             parameters.impot_revenu.bareme.brackets[i].threshold.update(
+    #                 period=reform_period, value=seuils[-1] + i
+    #             )
+    #             parameters.impot_revenu.bareme.brackets[i].rate.update(
+    #                 period=reform_period, value=taux[-1] * 0.01
+    #             )
+    #         except (Exception):
+    #             break
+    #
+    #     print("bareme après modif :")
+    #     print(parameters.impot_revenu.bareme.get_at_instant(instant))
+    #
+    #     return parameters
+    #
+    # return apply_reform(tbs)
 
 
 def simulation(period, data, tbs, timer=None):
