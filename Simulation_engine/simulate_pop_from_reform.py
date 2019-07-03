@@ -32,41 +32,54 @@ def reform_generique(tbs, dictparams, period):
         def apply(self):
             self.modify_parameters(modifier_function=reform)
 
-    def reform(parameters):
-        print("Oui je suis censé passer par là")
+    def reform(parameters, verbose=False):
+        if verbose:
+            print("Oui je suis censé passer par là")
         instant = periods.instant(period)
         reform_period = periods.period(
             "year:1900:200"
         )  # Pour le moment mes réformes sont sur l'éternité
-        print(dictparams)
+        if verbose:
+            print(dictparams)
         if "impot_revenu" in dictparams:
             dir = dictparams["impot_revenu"]
             if "decote" in dir:
                 dird = dir["decote"]
                 seuil_celib = dird["seuil_celib"]
                 seuil_couple = dird["seuil_couple"]
-                print("decote avant modif : ")
-                print(
-                    parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
-                    parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
-                )
+                if verbose:
+                    print("decote avant modif : ")
+                    print(
+                        parameters.impot_revenu.decote.seuil_celib.get_at_instant(
+                            instant
+                        ),
+                        parameters.impot_revenu.decote.seuil_couple.get_at_instant(
+                            instant
+                        ),
+                    )
                 parameters.impot_revenu.decote.seuil_celib.update(
                     period=reform_period, value=float(seuil_celib)
                 )
                 parameters.impot_revenu.decote.seuil_couple.update(
                     period=reform_period, value=float(seuil_couple)
                 )
-                print("decote apres modif : ")
-                print(
-                    parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
-                    parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
-                )
+                if verbose:
+                    print("decote apres modif : ")
+                    print(
+                        parameters.impot_revenu.decote.seuil_celib.get_at_instant(
+                            instant
+                        ),
+                        parameters.impot_revenu.decote.seuil_couple.get_at_instant(
+                            instant
+                        ),
+                    )
             if "bareme" in dir:
                 dirb = dir["bareme"]
                 seuils = dirb["seuils"]
                 taux = dirb["taux"]
-                print("bareme avant modif :")
-                print(parameters.impot_revenu.bareme.get_at_instant(instant))
+                if verbose:
+                    print("bareme avant modif :")
+                    print(parameters.impot_revenu.bareme.get_at_instant(instant))
                 for i in range(len(seuils)):
                     parameters.impot_revenu.bareme.brackets[i].threshold.update(
                         period=reform_period, value=seuils[i]
@@ -86,8 +99,46 @@ def reform_generique(tbs, dictparams, period):
                     except (Exception):
                         break
 
-                print("bareme après modif :")
-                print(parameters.impot_revenu.bareme.get_at_instant(instant))
+                if verbose:
+                    print("bareme après modif :")
+                    print(parameters.impot_revenu.bareme.get_at_instant(instant))
+            if "plafond_qf" in dir:
+                if verbose:
+                    print("plaf qf avant :")
+                    print(parameters.impot_revenu.plafond_qf.get_at_instant(instant))
+                dirr = dir["plafond_qf"]
+                if "abat_dom" in dirr:
+
+                    paramstoprint = [
+                        parameters.impot_revenu.plafond_qf.abat_dom.taux_GuadMarReu,
+                        parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuadMarReu,
+                        parameters.impot_revenu.plafond_qf.abat_dom.taux_GuyMay,
+                        parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuyMay,
+                    ]
+                    if verbose:
+                        print("abat_dom avant modif : ")
+                        for pp in paramstoprint:
+                            print(pp.get_at_instant(instant))
+                    dirrr = dirr["abat_dom"]
+                    taux_GuadMarReu = dirrr["taux_GuadMarReu"]
+                    parameters.impot_revenu.plafond_qf.abat_dom.taux_GuadMarReu.update(
+                        period=reform_period, value=float(taux_GuadMarReu)
+                    )
+                    plaf_GuadMarReu = dirrr["plaf_GuadMarReu"]
+                    parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuadMarReu.update(
+                        period=reform_period, value=float(plaf_GuadMarReu)
+                    )
+                    taux_GuyMay = dirrr["taux_GuyMay"]
+                    parameters.impot_revenu.plafond_qf.abat_dom.taux_GuyMay.update(
+                        period=reform_period, value=float(taux_GuyMay)
+                    )
+                    plaf_GuyMay = dirrr["plaf_GuyMay"]
+                    parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuyMay.update(
+                        period=reform_period, value=float(plaf_GuyMay)
+                    )
+                if verbose:
+                    print("plaf qf après :")
+                    print(parameters.impot_revenu.plafond_qf.get_at_instant(instant))
         return parameters
 
     return apply_reform(tbs)
