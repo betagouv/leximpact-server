@@ -253,7 +253,7 @@ def compare(
 
             dictionnaire_datagrouped["foyer_fiscal"][
                 nomvariable
-            ] = simulation.calculate(nomvariable, period, max_nb_cycles=1)
+            ] = simulation.calculate(nomvariable, period)
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = (
                 dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                 * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
