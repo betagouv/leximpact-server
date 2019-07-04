@@ -505,6 +505,8 @@ def dataframe_from_ct_desc(descriptions):
         "quimenof",
         "residence_fiscale_guadeloupe",
         "residence_fiscale_guyane",
+        "quifoyof",
+        "quifamof",
     ]
     # liste des cols valant 0
     zerocols = [
@@ -531,34 +533,56 @@ def dataframe_from_ct_desc(descriptions):
         othercolsfixes[k] = 0
 
     colbinaires = {
-        "categorie_salarie": (0, 7),
-        "age": (60, 15),
-        "date_naissance": ("1958-05-10", "2005-03-10"),
-    }  # nom de colonne : (valeur_adulte, valeur_enfant)
+        "categorie_salarie": (0, 7, 7),
+        "age": (60, 15, 78),
+        "date_naissance": ("1958-05-10", "2005-03-10", "1940-06-18"),
+    }  # nom de colonne : (valeur_adulte, valeur_enfant,valeur_retraite)
 
     for k in othercolsfixes:
-        colbinaires[k] = (othercolsfixes[k], othercolsfixes[k])
+        colbinaires[k] = (othercolsfixes[k], othercolsfixes[k], othercolsfixes[k])
 
     dres = {}  # keys = the columns
     for c in cols:
         dres[c] = []
+    isretraite = (
+        []
+    )  # vecteur nous informant si le ff est "retraité", i.e. plus de 65 ans. On mettra aussi le revenu
+    # en "retraite brute"
+
     indexfoyer = 0
     indexpac = 2
     for ct in descriptions:
+        print("myct : ", ct)
         nbd = ct["nombre_declarants"]
         nbc = ct["nombre_personnes_a_charge"]
         for colid in ["idfoy", "idmen", "idfam"]:
             dres[colid] += [indexfoyer] * (nbd + nbc)
         for colqui in ["quifoy", "quimen", "quifam"]:
             dres[colqui] += list(range(nbd)) + list(range(indexpac, indexpac + nbc))
-        dres["quimenof"] += ["personne_de_reference"] * nbd + ["enfant"] * nbc
+        dres["quimenof"] += (
+            ["personne_de_reference"] * min(1, nbd)
+            + ["conjoint"] * (max(0, min(1, nbd - 1)))
+            + ["enfant"] * nbc
+        )
+        dres["quifamof"] += (
+            ["demandeur"] * min(1, nbd)
+            + ["conjoint"] * (max(0, min(1, nbd - 1)))
+            + ["enfant"] * nbc
+        )
+        dres["quifoyof"] += (
+            ["declarant_principal"] * min(1, nbd)
+            + ["conjoint"] * (max(0, min(1, nbd - 1)))
+            + ["enfant"] * nbc
+        )
         indexpac += nbc
         dres["residence_fiscale_guadeloupe"] += [ct["outre_mer"] == 1] * (nbd + nbc)
         dres["residence_fiscale_guyane"] += [ct["outre_mer"] == 2] * (nbd + nbc)
         if ct["nombre_declarants_retraites"]:
             dres["retraite_brute"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
             dres["salaire_de_base"] += [0] * (nbd + nbc)
+            isretraite += [1] * (nbd) + [0] * (nbc)
         else:
+            isretraite += [0] * (nbd + nbc)
             dres["salaire_de_base"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
             dres["retraite_brute"] += [0] * (nbd + nbc)
         indexfoyer += 1
@@ -580,7 +604,10 @@ def dataframe_from_ct_desc(descriptions):
     dres["index"] = list(range(len(dres["quifoy"])))
     for col, v in colbinaires.items():
         dres[col] = [
-            v[0] if k == "personne_de_reference" else v[1] for k in dres["quimenof"]
+            v[2]
+            if k[1]
+            else (v[0] if k[0] in ("personne_de_reference", "conjoint") else v[1])
+            for k in zip(dres["quimenof"], isretraite)
         ]
     df = pandas.DataFrame.from_dict(dres)
     return df
