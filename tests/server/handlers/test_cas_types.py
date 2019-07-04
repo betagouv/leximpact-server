@@ -1,21 +1,51 @@
 # -*- coding: utf-8 -*-
 
-import pytest
+from functools import partial
 import json
+
+import pytest
 
 
 @pytest.fixture
-def data() -> str:
+def payload() -> str:
     return {
-        "reform": {"variable": "name", "operation": "+", "times": "3"},
-        "cas_types": [{"name": "Dorine"}],
+        "reforme": {
+            "impot_revenu": {
+                "bareme": {
+                    "seuils": [9964, 27519, 73779, 156244],
+                    "taux": [12, 30, 41, 45],
+                },
+                "decote": {"seuil_celib": 1196, "seuil_couple": 1970},
+                "plafond_qf": {
+                    "abat_dom": {
+                        "taux_GuadMarReu": 0.3,
+                        "plaf_GuadMarReu": 2450,
+                        "taux_GuyMay": 0.4,
+                        "plaf_GuyMay": 4050,
+                    },
+                    "maries_ou_pacses": 1551,
+                    "celib_enf": 3660,
+                    "celib": 927,
+                    "reduc_postplafond": 1547,
+                    "reduc_postplafond_veuf": 1728,
+                    "reduction_ss_condition_revenus": {
+                        "seuil_maj_enf": 3797,
+                        "seuil1": 18984,
+                        "seuil2": 21036,
+                        "taux": 0.20,
+                    },
+                },
+            }
+        },
+        "deciles": False,
     }
 
 
-def test_calculate(client, data, headers, mimetype):
-    response = client.post(
-        "/calculate/cas_types", data=json.dumps(data), headers=headers
-    )
-    assert response.content_type == mimetype
-    assert response.status_code == 201
-    assert json.loads(response.data) == [{"name": "DorineDorineDorine"}]
+def test_calculate_compare(client, payload, headers):
+    cas_types = json.loads(client.post("metadata/description_cas_types").data)
+    response = partial(client.post, "calculate/compare", headers=headers)
+    payload_full = dict({**payload, "description_cas_types": cas_types})
+    actual = json.loads(response(data=json.dumps(payload)).data)
+    expected = json.loads(response(data=json.dumps(payload_full)).data)
+
+    assert actual == expected
