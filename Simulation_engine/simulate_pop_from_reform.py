@@ -2,6 +2,7 @@
 
 
 from functools import partial
+from typing import List
 
 import pandas
 import time
@@ -318,30 +319,52 @@ def compare(
                     }
                 ]
                 numdecile += 1
+
         print("In fine ", currw, currb, curra)
         print("mes valeurs agreg deciles :", decilesres)
         print("mes valeurs diff deciles :", decdiffres)
         # TODO : interpolate quantiles instead of doing the granular approach
         # This is the only TODO part in this code, I highly doubt it's the most pressing matter
         adjustResultsToConstant = True
-        if adjustResultsToConstant:  #
-            resultBase = 78 * 10 ** 9
-            # Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
-            # C'est pour permettre d'obtenir des résultats réalistes sans données
-            # Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
-            # Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
-            ajustement = resultBase / res[0]
-            print("dic res avant", dic_res, ajustement)
-            dic_res["total"]["avant"] *= ajustement
-            dic_res["total"]["apres"] *= ajustement
-            for k in range(len(decdiffres)):
-                for i in decdiffres[k]:
-                    decdiffres[k][i] = decdiffres[k][i] * ajustement
-        dic_res["deciles"] = decdiffres
+
+        if adjustResultsToConstant:
+            adjust = adjustment(78 * 10 ** 9, dic_res["total"]["avant"])
+            dic_res["total"] = adjust_total(adjust, dic_res["total"])
+            dic_res["deciles"] = adjust_deciles(adjust, decdiffres)
+        else:
+            dic_res["deciles"] = decdiffres
+
     else:  # This only interests us for the castypes
         dic_res["res_brut"] = df.to_dict()
     print(dic_res)
     return dic_res
+
+
+def adjustment(result_base: int, avant: int):
+    return result_base / avant
+
+
+def adjust_total(adjustment: int, total: dict):
+    # Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
+    # C'est pour permettre d'obtenir des résultats réalistes sans données
+    # Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
+    # Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    avant = total["avant"] * adjustment
+    apres = total["apres"] * adjustment
+
+    return {"avant": avant, "apres": apres}
+
+
+def adjust_deciles(adjustment: int, deciles: List[dict]):
+    # Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
+    # C'est pour permettre d'obtenir des résultats réalistes sans données
+    # Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
+    # Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    for k in range(len(deciles)):
+        for i in deciles[k]:
+            deciles[k][i] = deciles[k][i] * adjustment
+
+    return deciles
 
 
 PERIOD = "2018"
