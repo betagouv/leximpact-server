@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 
-
 from functools import partial
+from toolz.functoolz import pipe  # type: ignore
 from typing import List
 
 import pandas
 import time
 import os
 
-from openfisca_core.simulation_builder import SimulationBuilder
-from openfisca_france import FranceTaxBenefitSystem
-from openfisca_core import periods
-from openfisca_france.model.base import Reform
+from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
+from openfisca_france import FranceTaxBenefitSystem  # type: ignore
+from openfisca_core import periods  # type: ignore
+from openfisca_france.model.base import Reform  # type: ignore
+
+from Simulation_engine.reforms import mapping
 
 # Config
 version_beta_sans_simu_pop = True
@@ -32,62 +34,21 @@ def reform_generique(tbs, dictparams, period):
         def apply(self):
             self.modify_parameters(modifier_function=reform)
 
-    def reform(parameters):
-        print("Oui je suis censé passer par là")
+    def reform(parameters, verbose=False):
+        if verbose:
+            print("Oui je suis censé passer par là")
         instant = periods.instant(period)
         reform_period = periods.period(
             "year:1900:200"
         )  # Pour le moment mes réformes sont sur l'éternité
-        print(dictparams)
+        if verbose:
+            print(dictparams)
+
         if "impot_revenu" in dictparams:
             dir = dictparams["impot_revenu"]
-            if "decote" in dir:
-                dird = dir["decote"]
-                seuil_celib = dird["seuil_celib"]
-                seuil_couple = dird["seuil_couple"]
-                print("decote avant modif : ")
-                print(
-                    parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
-                    parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
-                )
-                parameters.impot_revenu.decote.seuil_celib.update(
-                    period=reform_period, value=float(seuil_celib)
-                )
-                parameters.impot_revenu.decote.seuil_couple.update(
-                    period=reform_period, value=float(seuil_couple)
-                )
-                print("decote apres modif : ")
-                print(
-                    parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
-                    parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
-                )
-            if "bareme" in dir:
-                dirb = dir["bareme"]
-                seuils = dirb["seuils"]
-                taux = dirb["taux"]
-                print("bareme avant modif :")
-                print(parameters.impot_revenu.bareme.get_at_instant(instant))
-                for i in range(len(seuils)):
-                    parameters.impot_revenu.bareme.brackets[i].threshold.update(
-                        period=reform_period, value=seuils[i]
-                    )
-                    parameters.impot_revenu.bareme.brackets[i].rate.update(
-                        period=reform_period, value=taux[i] * 0.01
-                    )
+            args = (parameters, dir, instant, reform_period, verbose)
+            parameters, *_ = pipe(args, *(mapping()[param] for param in tuple(dir)))
 
-                for i in range(len(seuils), 15):
-                    try:
-                        parameters.impot_revenu.bareme.brackets[i].threshold.update(
-                            period=reform_period, value=seuils[-1] + i
-                        )
-                        parameters.impot_revenu.bareme.brackets[i].rate.update(
-                            period=reform_period, value=taux[-1] * 0.01
-                        )
-                    except (Exception):
-                        break
-
-                print("bareme après modif :")
-                print(parameters.impot_revenu.bareme.get_at_instant(instant))
         return parameters
 
     return apply_reform(tbs)
@@ -102,38 +63,39 @@ def reform_from_bareme(tbs, seuils, taux, period):
     def reform(parameters):
         print("Non je ne suis plus censé passer par là")
         assert 1 == 0  # Le script doit désormais utiliser une autre fonction
-        instant = periods.instant(period)
 
-        print("bareme avant modif :")
-        print(parameters.impot_revenu.bareme.get_at_instant(instant))
-        reform_period = periods.period(
-            "year:1900:200"
-        )  # Pour le moment mes réformes sont sur l'éternité
-        for i in range(len(seuils)):
-            parameters.impot_revenu.bareme.brackets[i].threshold.update(
-                period=reform_period, value=seuils[i]
-            )
-            parameters.impot_revenu.bareme.brackets[i].rate.update(
-                period=reform_period, value=taux[i] * 0.01
-            )
-
-        for i in range(len(seuils), 15):
-            try:
-                parameters.impot_revenu.bareme.brackets[i].threshold.update(
-                    period=reform_period, value=seuils[-1] + i
-                )
-                parameters.impot_revenu.bareme.brackets[i].rate.update(
-                    period=reform_period, value=taux[-1] * 0.01
-                )
-            except (Exception):
-                break
-
-        print("bareme après modif :")
-        print(parameters.impot_revenu.bareme.get_at_instant(instant))
-
-        return parameters
-
-    return apply_reform(tbs)
+    #     instant = periods.instant(period)
+    #
+    #     print("bareme avant modif :")
+    #     print(parameters.impot_revenu.bareme.get_at_instant(instant))
+    #     reform_period = periods.period(
+    #         "year:1900:200"
+    #     )  # Pour le moment mes réformes sont sur l'éternité
+    #     for i in range(len(seuils)):
+    #         parameters.impot_revenu.bareme.brackets[i].threshold.update(
+    #             period=reform_period, value=seuils[i]
+    #         )
+    #         parameters.impot_revenu.bareme.brackets[i].rate.update(
+    #             period=reform_period, value=taux[i] * 0.01
+    #         )
+    #
+    #     for i in range(len(seuils), 15):
+    #         try:
+    #             parameters.impot_revenu.bareme.brackets[i].threshold.update(
+    #                 period=reform_period, value=seuils[-1] + i
+    #             )
+    #             parameters.impot_revenu.bareme.brackets[i].rate.update(
+    #                 period=reform_period, value=taux[-1] * 0.01
+    #             )
+    #         except (Exception):
+    #             break
+    #
+    #     print("bareme après modif :")
+    #     print(parameters.impot_revenu.bareme.get_at_instant(instant))
+    #
+    #     return parameters
+    #
+    # return apply_reform(tbs)
 
 
 def simulation(period, data, tbs, timer=None):
@@ -284,12 +246,7 @@ def compare(
                     df["avant"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                     kk += 1
 
-    dic_res = {
-        "total": {
-            "avant": res[0],
-            "apres": res[1],
-        }
-    }
+    dic_res = {"total": {"avant": res[0], "apres": res[1]}}
 
     if compute_deciles:
         print("Computing Deciles")
