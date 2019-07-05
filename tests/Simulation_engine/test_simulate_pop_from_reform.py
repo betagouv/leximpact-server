@@ -1,10 +1,27 @@
 # -*- coding: utf-8 -*-
 
+import pandas
+
 from Simulation_engine.simulate_pop_from_reform import (
+    load_data,
     adjustment,
     adjust_total,
     adjust_deciles,
 )
+
+
+def test_load_data_when_h5(mocker):
+    with mocker.patch.object(pandas, "read_hdf"):
+        filename = "data.h5"
+        load_data(filename)
+        pandas.read_hdf.assert_called_once()
+
+
+def test_load_data_when_not_h5(mocker):
+    with mocker.patch.object(pandas, "read_csv"):
+        filename = "data.zip"
+        load_data(filename)
+        pandas.read_csv.assert_called_once()
 
 
 def test_adjustement():
