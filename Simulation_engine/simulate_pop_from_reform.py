@@ -246,12 +246,7 @@ def compare(
                     df["avant"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                     kk += 1
 
-    dic_res = {
-        "total": {
-            "avant": res[0],
-            "apres": res[1],
-        }
-    }
+    dic_res = {"total": {"avant": res[0], "apres": res[1]}}
 
     if compute_deciles:
         print("Computing Deciles")

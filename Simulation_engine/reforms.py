@@ -45,12 +45,8 @@ def decote(args: tuple) -> tuple:
     if verbose:
         print("decote avant modif : ")
         print(
-            parameters.impot_revenu.decote.seuil_celib.get_at_instant(
-                instant
-            ),
-            parameters.impot_revenu.decote.seuil_couple.get_at_instant(
-                instant
-            ),
+            parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
+            parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
         )
     parameters.impot_revenu.decote.seuil_celib.update(
         period=reform_period, value=float(seuil_celib)
@@ -61,12 +57,8 @@ def decote(args: tuple) -> tuple:
     if verbose:
         print("decote apres modif : ")
         print(
-            parameters.impot_revenu.decote.seuil_celib.get_at_instant(
-                instant
-            ),
-            parameters.impot_revenu.decote.seuil_couple.get_at_instant(
-                instant
-            ),
+            parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
+            parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
         )
 
     return parameters, dir, instant, reform_period, verbose
@@ -94,9 +86,7 @@ def plafond_qf(args: tuple) -> tuple:
         "reduc_postplafond_veuf",
     ]:
         if var_name in dirr:
-            pp = eval(
-                "parameters.impot_revenu.plafond_qf.{}".format(var_name)
-            )
+            pp = eval("parameters.impot_revenu.plafond_qf.{}".format(var_name))
             pp.update(period=reform_period, value=float(dirr[var_name]))
 
     if "abat_dom" in dirr:
@@ -136,9 +126,7 @@ def plafond_qf(args: tuple) -> tuple:
                         var_name
                     )
                 )
-                pp.update(
-                    period=reform_period, value=float(dirrr[var_name])
-                )
+                pp.update(period=reform_period, value=float(dirrr[var_name]))
 
     if verbose:
         print("plaf qf après :")
@@ -148,8 +136,4 @@ def plafond_qf(args: tuple) -> tuple:
 
 
 def mapping() -> dict:
-    return {
-        "decote": decote,
-        "bareme": bareme,
-        "plafond_qf": plafond_qf,
-    }
+    return {"decote": decote, "bareme": bareme, "plafond_qf": plafond_qf}
