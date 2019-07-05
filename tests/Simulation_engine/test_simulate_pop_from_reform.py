@@ -24,8 +24,10 @@ def test_load_data_when_not_h5(mocker):
         pandas.read_csv.assert_called_once()
 
 
-def test_adjustement():
-    assert adjustment(4, 2) == 2
+def test_adjustment():
+    empiric = 4
+    baseline = 2
+    assert adjustment(empiric, baseline) == 2
 
 
 def test_adjust_total():

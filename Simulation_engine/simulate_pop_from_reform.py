@@ -13,8 +13,9 @@ from openfisca_france import FranceTaxBenefitSystem
 from openfisca_core import periods
 from openfisca_france.model.base import Reform
 
-
+# Config
 version_beta_sans_simu_pop = True
+adjust_results = True
 
 
 def load_data(filename: str):
@@ -245,6 +246,7 @@ def compare(
 ):
     res = []
     kk = 0
+
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
         if not kk:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
@@ -281,10 +283,14 @@ def compare(
                 else:
                     df["avant"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                     kk += 1
-    dic_res = {}
-    dic_res["total"] = {}
-    dic_res["total"]["avant"] = res[0]
-    dic_res["total"]["apres"] = res[1]
+
+    dic_res = {
+        "total": {
+            "avant": res[0],
+            "apres": res[1],
+        }
+    }
+
     if compute_deciles:
         print("Computing Deciles")
         totweight = dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
@@ -325,46 +331,47 @@ def compare(
         print("mes valeurs diff deciles :", decdiffres)
         # TODO : interpolate quantiles instead of doing the granular approach
         # This is the only TODO part in this code, I highly doubt it's the most pressing matter
-        adjustResultsToConstant = True
 
-        if adjustResultsToConstant:
-            adjust = adjustment(78 * 10 ** 9, dic_res["total"]["avant"])
-            dic_res["total"] = adjust_total(adjust, dic_res["total"])
-            dic_res["deciles"] = adjust_deciles(adjust, decdiffres)
+        if adjust_results:
+            empiric = 78 * 10 ** 9
+            factor = adjustment(empiric, dic_res["total"]["avant"])
+            dic_res["total"] = adjust_total(factor, dic_res["total"])
+            dic_res["deciles"] = adjust_deciles(factor, decdiffres)
         else:
             dic_res["deciles"] = decdiffres
 
     else:  # This only interests us for the castypes
         dic_res["res_brut"] = df.to_dict()
+
     print(dic_res)
     return dic_res
 
 
-def adjustment(result_base: int, avant: int):
-    return result_base / avant
+def adjustment(empiric: int, baseline: int):
+    """Facteur d'ajustement à partir d'un benchmark empirique"""
+    return empiric / baseline
 
 
-def adjust_total(adjustment: int, total: dict):
-    # Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
-    # C'est pour permettre d'obtenir des résultats réalistes sans données
-    # Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
-    # Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
-    avant = total["avant"] * adjustment
-    apres = total["apres"] * adjustment
+def adjust_total(factor: int, total: dict):
+    """
+    Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
 
-    return {"avant": avant, "apres": apres}
+    C'est pour permettre d'obtenir des résultats réalistes sans données.
+    Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
+    Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    """
+    return {key: value * factor for (key, value) in total.items()}
 
 
-def adjust_deciles(adjustment: int, deciles: List[dict]):
-    # Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
-    # C'est pour permettre d'obtenir des résultats réalistes sans données
-    # Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
-    # Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
-    for k in range(len(deciles)):
-        for i in deciles[k]:
-            deciles[k][i] = deciles[k][i] * adjustment
+def adjust_deciles(factor: int, deciles: List[dict]):
+    """
+    Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
 
-    return deciles
+    C'est pour permettre d'obtenir des résultats réalistes sans données.
+    Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
+    Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    """
+    return [adjust_total(factor, decile) for decile in deciles]
 
 
 PERIOD = "2018"
