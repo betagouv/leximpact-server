@@ -27,7 +27,7 @@ setup(
         "openfisca-core >= 34.2.8, < 35.0.0",
         "openfisca-france >= 48.0.0, < 49.0.0",
         "pandas >= 0.24.0, < 0.25.0",
-        "flask_cors >= 3.0.2, < 3.1",
+        "toolz >= 0.9.0, < 1.0.0",
     ],
     extras_require={
         "dev": [
