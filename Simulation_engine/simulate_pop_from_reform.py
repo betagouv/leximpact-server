@@ -2,6 +2,7 @@
 
 
 from functools import partial
+from typing import List
 
 import pandas
 import time
@@ -12,8 +13,9 @@ from openfisca_france import FranceTaxBenefitSystem
 from openfisca_core import periods
 from openfisca_france.model.base import Reform
 
-
+# Config
 version_beta_sans_simu_pop = True
+adjust_results = True
 
 
 def load_data(filename: str):
@@ -244,6 +246,7 @@ def compare(
 ):
     res = []
     kk = 0
+
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
         if not kk:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
@@ -280,10 +283,14 @@ def compare(
                 else:
                     df["avant"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                     kk += 1
-    dic_res = {}
-    dic_res["total"] = {}
-    dic_res["total"]["avant"] = res[0]
-    dic_res["total"]["apres"] = res[1]
+
+    dic_res = {
+        "total": {
+            "avant": res[0],
+            "apres": res[1],
+        }
+    }
+
     if compute_deciles:
         print("Computing Deciles")
         totweight = dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
@@ -303,28 +310,68 @@ def compare(
         print(decilweights, dfv[0], totweight)
         print(dfv[1])
         eps = 0.0001
+        keysdicres = ["poids", "avant", "apres"]
         for v in dfv:
             currw += v[0]
-            currb += v[1] * v[0]
-            curra += v[2] * v[0]
+            currb += -v[1] * v[0]
+            curra += -v[2] * v[0]
             if currw >= decilweights[numdecile] - eps:
                 decilesres += [[currw, currb, curra]]
                 decdiffres += [
-                    [
-                        decilesres[numdecile][k] - decilesres[numdecile - 1][k]
+                    {
+                        keysdicres[k]: decilesres[numdecile][k]
+                        - decilesres[numdecile - 1][k]
                         for k in range(3)
-                    ]
+                    }
                 ]
                 numdecile += 1
+
         print("In fine ", currw, currb, curra)
         print("mes valeurs agreg deciles :", decilesres)
         print("mes valeurs diff deciles :", decdiffres)
         # TODO : interpolate quantiles instead of doing the granular approach
-        dic_res["deciles"] = decdiffres
+        # This is the only TODO part in this code, I highly doubt it's the most pressing matter
+
+        if adjust_results:
+            empiric = 78 * 10 ** 9
+            factor = adjustment(empiric, dic_res["total"]["avant"])
+            dic_res["total"] = adjust_total(factor, dic_res["total"])
+            dic_res["deciles"] = adjust_deciles(factor, decdiffres)
+        else:
+            dic_res["deciles"] = decdiffres
+
     else:  # This only interests us for the castypes
         dic_res["res_brut"] = df.to_dict()
+
     print(dic_res)
     return dic_res
+
+
+def adjustment(empiric: int, baseline: int):
+    """Facteur d'ajustement à partir d'un benchmark empirique"""
+    return empiric / baseline
+
+
+def adjust_total(factor: int, total: dict):
+    """
+    Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
+
+    C'est pour permettre d'obtenir des résultats réalistes sans données.
+    Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
+    Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    """
+    return {key: value * factor for (key, value) in total.items()}
+
+
+def adjust_deciles(factor: int, deciles: List[dict]):
+    """
+    Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
+
+    C'est pour permettre d'obtenir des résultats réalistes sans données.
+    Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
+    Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    """
+    return [adjust_total(factor, decile) for decile in deciles]
 
 
 PERIOD = "2018"
@@ -341,7 +388,7 @@ if not version_beta_sans_simu_pop:
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
     # Keeping computations short with option to keep file under 1000 FF
-    # DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
+    DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
 
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
