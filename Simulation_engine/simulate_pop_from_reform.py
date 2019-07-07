@@ -1,17 +1,17 @@
 from functools import partial
-from toolz.functoolz import pipe  # type: ignore
 from typing import Dict, List
-
-import pandas  # type: ignore
 import time
 import os
+
+import pandas  # type: ignore
+from toolz.functoolz import compose  # type: ignore
 
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 from openfisca_core import periods  # type: ignore
 from openfisca_france.model.base import Reform  # type: ignore
 
-from Simulation_engine.reforms import mapping
+from Simulation_engine.reforms import ParametricReform, reforms
 
 # Config
 version_beta_sans_simu_pop = True
@@ -48,8 +48,8 @@ def reform_generique(tbs, dictparams, period):
 
         if "impot_revenu" in dictparams:
             dir = dictparams["impot_revenu"]
-            args = (parameters, dir, instant, reform_period, verbose)
-            parameters, *_ = pipe(args, *(mapping()[param] for param in tuple(dir)))
+            args = (parameters, dir, instant, reform_period)
+            parameters, *_ = compose(*reforms(dir))(ParametricReform(*args))
 
         return parameters
 
