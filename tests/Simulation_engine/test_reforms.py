@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 
-import pytest
+from pytest import fixture  # type: ignore
 
 from openfisca_core import periods  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
@@ -19,17 +19,17 @@ from Simulation_engine.reforms import (  # type: ignore
 TBS = lru_cache()(FranceTaxBenefitSystem)
 
 
-@pytest.fixture
+@fixture
 def parameters():
     return TBS().parameters
 
 
-@pytest.fixture
+@fixture
 def instant():
     return periods.instant("2018")
 
 
-@pytest.fixture
+@fixture
 def period():
     return periods.period("year:1900:200")
 

@@ -4,14 +4,11 @@ import time
 import os
 
 import pandas  # type: ignore
-from toolz.functoolz import compose  # type: ignore
 
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
-from openfisca_core import periods  # type: ignore
-from openfisca_france.model.base import Reform  # type: ignore
 
-from Simulation_engine.reforms import ParametricReform, reforms
+from Simulation_engine.reforms import IncomeTaxReform
 
 # Config
 version_beta_sans_simu_pop = True
@@ -29,76 +26,6 @@ def load_data(filename: str):
         return pandas.read_hdf(path)
 
     return pandas.read_csv(path)
-
-
-def reform_generique(tbs, dictparams, period):
-    class apply_reform(Reform):
-        def apply(self):
-            self.modify_parameters(modifier_function=reform)
-
-    def reform(parameters, verbose=False):
-        if verbose:
-            print("Oui je suis censé passer par là")
-
-        instant = periods.instant(period)
-        # Pour le moment mes réformes sont sur l'éternité
-        reform_period = periods.period("year:1900:200")
-
-        if verbose:
-            print(dictparams)
-
-        if "impot_revenu" in dictparams:
-            dir = dictparams["impot_revenu"]
-            args = (parameters, dir, instant, reform_period)
-            parameters, *_ = compose(*reforms(dir))(ParametricReform(*args))
-
-        return parameters
-
-    return apply_reform(tbs)
-
-
-# Deprecated function
-def reform_from_bareme(tbs, seuils, taux, period):
-    class apply_reform(Reform):
-        def apply(self):
-            self.modify_parameters(modifier_function=reform)
-
-    def reform(parameters):
-        print("Non je ne suis plus censé passer par là")
-        assert 1 == 0  # Le script doit désormais utiliser une autre fonction
-
-    #     instant = periods.instant(period)
-    #
-    #     print("bareme avant modif :")
-    #     print(parameters.impot_revenu.bareme.get_at_instant(instant))
-    #     reform_period = periods.period(
-    #         "year:1900:200"
-    #     )  # Pour le moment mes réformes sont sur l'éternité
-    #     for i in range(len(seuils)):
-    #         parameters.impot_revenu.bareme.brackets[i].threshold.update(
-    #             period=reform_period, value=seuils[i]
-    #         )
-    #         parameters.impot_revenu.bareme.brackets[i].rate.update(
-    #             period=reform_period, value=taux[i] * 0.01
-    #         )
-    #
-    #     for i in range(len(seuils), 15):
-    #         try:
-    #             parameters.impot_revenu.bareme.brackets[i].threshold.update(
-    #                 period=reform_period, value=seuils[-1] + i
-    #             )
-    #             parameters.impot_revenu.bareme.brackets[i].rate.update(
-    #                 period=reform_period, value=taux[-1] * 0.01
-    #             )
-    #         except (Exception):
-    #             break
-    #
-    #     print("bareme après modif :")
-    #     print(parameters.impot_revenu.bareme.get_at_instant(instant))
-    #
-    #     return parameters
-    #
-    # return apply_reform(tbs)
 
 
 def simulation(period, data, tbs, timer=None):
@@ -338,9 +265,6 @@ def adjust_deciles(factor: int, deciles: List[dict]):
 
 PERIOD = "2018"
 TBS = FranceTaxBenefitSystem()
-# REFORM = partial(reform_from_bareme, period=PERIOD, tbs=TBS)
-REFORM = partial(reform_generique, period=PERIOD, tbs=TBS)
-
 CAS_TYPE = load_data("DCT.csv")
 SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs=TBS)
@@ -645,7 +569,8 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
                 }
             }
         }
-    reform = reform_generique(TBS, dictreform, PERIOD)
+
+    reform = IncomeTaxReform(TBS, dictreform, PERIOD)
     #   reform = reform_from_bareme(
     #       TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
     #   )
@@ -664,7 +589,7 @@ if __name__ == "__main__":
             "decote": {"seuil_celib": 1000, "seuil_couple": 2000},
         }
     }
-    reform = reform_generique(TBS, dictreform, PERIOD)
+    reform = IncomeTaxReform(TBS, dictreform, PERIOD)
     # reform = reform_from_bareme(
     #     TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
     # )

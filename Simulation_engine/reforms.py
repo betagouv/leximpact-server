@@ -4,12 +4,32 @@ from toolz.functoolz import compose  # type: ignore
 
 from openfisca_core.parameters import ParameterNode  # type: ignore
 from openfisca_core import periods  # type: ignore
+from openfisca_france import FranceTaxBenefitSystem  # type: ignore
+from openfisca_france.model.base import Reform  # type: ignore
 
 T = TypeVar("T", bound="ParametricReform")
 
 
+class IncomeTaxReform(Reform):
+    """Une réforme de l'impôt sur le revenu"""
+
+    def __init__(self, tbs: FranceTaxBenefitSystem, payload: dict, period: str) -> None:
+        self.payload = payload.get("impot_revenu", {})
+        self.instant = periods.instant(period)
+        self.period = periods.period("year:1900:200")
+        super().__init__(tbs)
+
+    def modifier(self, parameters: ParameterNode) -> ParameterNode:
+        reform = ParametricReform(parameters, self.payload, self.instant, self.period)
+        parameters, *_ = compose(*reforms(mapping(), self.payload))(reform)
+        return parameters
+
+    def apply(self) -> None:
+        self.modify_parameters(modifier_function=self.modifier)
+
+
 class ParametricReform(NamedTuple):
-    """Une réforme fiscale"""
+    """Une réforme paramétrique"""
 
     parameters: ParameterNode
     payload: dict
@@ -20,15 +40,17 @@ class ParametricReform(NamedTuple):
         return function(self)
 
 
-def reforms(payload: dict) -> tuple:
-    mapping = {
+def reforms(mapping: dict, payload: dict) -> tuple:
+    return tuple(mapping[reform] for reform in tuple(payload) if reform in mapping)
+
+
+def mapping() -> dict:
+    return {
         "decote": decote,
         "bareme": bareme,
         "abattements_rni": abattements_rni,
         "plafond_qf": compose(plafond_qf, abat_dom, reduction_ss_condition_revenus),
     }
-
-    return tuple(mapping[reform] for reform in tuple(payload) if reform in mapping)
 
 
 def update(items, keys, node, period):
