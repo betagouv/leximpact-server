@@ -39,10 +39,11 @@ def reform_generique(tbs, dictparams, period):
     def reform(parameters, verbose=False):
         if verbose:
             print("Oui je suis censé passer par là")
+
         instant = periods.instant(period)
-        reform_period = periods.period(
-            "year:1900:200"
-        )  # Pour le moment mes réformes sont sur l'éternité
+        # Pour le moment mes réformes sont sur l'éternité
+        reform_period = periods.period("year:1900:200")
+
         if verbose:
             print(dictparams)
 
