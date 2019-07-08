@@ -132,5 +132,44 @@ def plafond_qf(args: tuple) -> tuple:
     return parameters, dir, instant, reform_period, verbose
 
 
+def abattements_rni(args: tuple) -> tuple:
+    parameters, dir, instant, reform_period, verbose = args
+    verbose = True
+    if verbose:
+        print("abattements_rni :")
+        print(parameters.impot_revenu.abattements_rni.get_at_instant(instant))
+    try:
+        dirr = dir["abattements_rni"]["personne_agee_ou_invalide"]
+    except KeyError:
+        dirr = {}
+    print(dirr)
+    print("au cas ou", dir)
+    # if "maries_ou_pacses" in requete["impot_revenu"]["plafond_qf"]:
+    #     parameters.impot_revenu.plafond_qf.maries_ou_pacses.update(
+    #         period=reform_period,
+    #         value=requete["impot_revenu"]["plafond_qf"]["maries_ou_pacses"],
+    #     )
+
+    for var_name in ["montant_1", "montant_2", "plafond_1", "plafond_2"]:
+        if var_name in dirr:
+            pp = eval(
+                "parameters.impot_revenu.abattements_rni.personne_agee_ou_invalide.{}".format(
+                    var_name
+                )
+            )
+            pp.update(period=reform_period, value=float(dirr[var_name]))
+
+    if verbose:
+        print("abattements_rni après :")
+        print(parameters.impot_revenu.abattements_rni.get_at_instant(instant))
+
+    return parameters, dir, instant, reform_period, verbose
+
+
 def mapping() -> dict:
-    return {"decote": decote, "bareme": bareme, "plafond_qf": plafond_qf}
+    return {
+        "decote": decote,
+        "bareme": bareme,
+        "plafond_qf": plafond_qf,
+        "abattements_rni": abattements_rni,
+    }
