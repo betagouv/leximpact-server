@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from functools import partial
 from toolz.functoolz import pipe  # type: ignore
 from typing import List

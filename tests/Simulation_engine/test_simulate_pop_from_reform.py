@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pandas
 
 from Simulation_engine.simulate_pop_from_reform import (

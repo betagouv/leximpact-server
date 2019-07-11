@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 def bareme(args: tuple) -> tuple:
     parameters, dir, instant, reform_period, verbose = args
 

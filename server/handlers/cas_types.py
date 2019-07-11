@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from server.services import OpenFisca
 from Simulation_engine.simulate_pop_from_reform import (
     desc_cas_types,
