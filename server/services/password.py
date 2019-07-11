@@ -1,35 +1,19 @@
-from binascii import hexlify
-from hashlib import sha512
-from os import urandom
+from hashlib import sha3_512
+from secrets import randbelow, token_bytes
 from scrypt import hash as encrypt  # type: ignore
 from toolz.functoolz import pipe
 
-SALT_SIZE = 128
-
-
-def create_password(passphrase: str) -> str:
-    """Create a password from a passphrase"""
-    salt = create_salt()
-    hashed = hash_passphrase(passphrase, salt)
-    concat = salt + hashed
-    return concat.decode("ascii")
-
-
-def verify_password(password: str, passphrase: str):
-    """Check actual password against expected human passphrase"""
-    salt = password[:SALT_SIZE].encode("ascii")
-    actual = password[SALT_SIZE:]
-    expected = hash_passphrase(passphrase, salt).decode("ascii")
-    return actual == expected
-
 
 def create_salt() -> bytes:
-    """Creates a salt hash to hash the password"""
-    return pipe(SALT_SIZE, urandom, sha512).hexdigest().encode("ascii")
+    """Creates a 64 bytes salt hash to hash the password"""
+    return pipe(512, randbelow, token_bytes, sha3_512).digest()
 
 
-def hash_passphrase(passphrase: str, salt: bytes) -> bytes:
-    """Hashes a human passphrase with a salt hash"""
-    humanized = passphrase.encode("utf-8")
-    encrypted = encrypt(humanized, salt)
-    return hexlify(encrypted)
+def create_password(passphrase: str, salt: bytes) -> bytes:
+    """Create a password from a passphrase"""
+    return encrypt(passphrase, salt)
+
+
+def verify_password(password: bytes, passphrase: str, salt: bytes) -> bool:
+    """Check actual password against expected human passphrase"""
+    return password == create_password(passphrase, salt)

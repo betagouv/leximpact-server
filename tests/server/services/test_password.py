@@ -1,16 +1,15 @@
 import pytest
 
 from server.services.password import (  # type: ignore
+    create_salt,
     create_password,
     verify_password,
-    create_salt,
-    hash_passphrase,
 )
 
 
 @pytest.fixture
 def passphrase():
-    return "Coucou Richard !"
+    return "Ô combien !"
 
 
 @pytest.fixture
@@ -19,26 +18,14 @@ def salt():
 
 
 @pytest.fixture
-def hashed(passphrase, salt):
-    return hash_passphrase(passphrase, salt)
-
-
-def test_create_password(passphrase, salt, hashed):
-    password = create_password(passphrase)
-    assert isinstance(password, str)
-    assert len(password) == len(salt + hashed)
-
-
-def test_verify_password(passphrase):
-    password = create_password(passphrase)
-    assert verify_password(password, passphrase)
+def password(passphrase, salt):
+    return create_password(passphrase, salt)
 
 
 def test_create_salt():
-    salt = create_salt()
-    assert isinstance(salt, bytes)
+    assert len(create_salt()) == 64
 
 
-def test_hash_passphrase(passphrase, salt):
-    hashed = hash_passphrase(passphrase, salt)
-    assert isinstance(hashed, bytes)
+def test_verify_password(passphrase, salt):
+    password = create_password(passphrase, salt)
+    assert verify_password(password, passphrase, salt)
