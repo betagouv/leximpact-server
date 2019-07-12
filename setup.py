@@ -25,7 +25,7 @@ setup(
         "openfisca-core >= 34.2.8, < 35.0.0",
         "openfisca-france >= 48.0.0, < 49.0.0",
         "pandas >= 0.24.0, < 0.25.0",
-        "scrypt >= 0.8.13, < 1.0.0",
+        "pyjwt >= 1.7.1, < 2.0.0",
         "toolz >= 0.9.0, < 1.0.0",
     ],
     extras_require={
