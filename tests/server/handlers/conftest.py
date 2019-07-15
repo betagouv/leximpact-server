@@ -1,6 +1,6 @@
-import pytest
+import pytest  # type: ignore
 
-from server.app import app
+from server.app import app  # type: ignore
 
 
 @pytest.fixture

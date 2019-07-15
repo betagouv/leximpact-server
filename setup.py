@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages  # type: ignore
 
 setup(
     name="LexImpact Server",
@@ -35,6 +35,7 @@ setup(
             "flake8 >= 3.7.0, < 3.8.0",
             "flake8-bugbear >= 19.3.0, < 20.0.0",
             "mock >= 3.0.5, < 4.0.0",
+            "mypy >= 0.720, < 1.0.0",
             "pytest >= 4.0.0, < 5.0.0",
             "pytest-mock >= 1.10.4, < 2.0.0",
             "python-dotenv >= 0.10.3, < 1.0.0",

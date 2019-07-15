@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from hashlib import sha3_512
 from jwt import encode, decode
 from secrets import randbelow, token_bytes
-from toolz.functoolz import compose
+from toolz.functoolz import compose  # type: ignore
 from typing import Dict, Tuple, Union
 
 Payload = Dict[str, Union[bytes, datetime, str]]
