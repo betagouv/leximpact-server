@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
-import connexion
 import os
 
-from flask_cors import CORS
+import connexion  # type: ignore
+from flask_cors import CORS  # type: ignore
 
 con = connexion.App("server", specification_dir=".")
 con.add_api("api.yaml")

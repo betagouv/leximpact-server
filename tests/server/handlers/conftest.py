@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
+import pytest  # type: ignore
 
-import pytest
-
-from server.app import app
+from server.app import app  # type: ignore
 
 
 @pytest.fixture

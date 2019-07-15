@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
+import pandas  # type: ignore
 
-import pandas
-
-from Simulation_engine.simulate_pop_from_reform import (
+from Simulation_engine.simulate_pop_from_reform import (  # type: ignore
     load_data,
     adjustment,
     adjust_total,

@@ -65,7 +65,19 @@ Félicitations :tada: LexImpact-Server est prêt à être utilisé !
 
 ## Lancez l'API LexImpact
 
-**Mode demo**
+### Fichier de configuration `.env`
+
+Pour lancer LexImpact-Server, vous devez tout d'abord créer un fichier de configuration `.env`. Dans votre fenêtre de terminal :
+
+```sh
+echo JWT_AUDIENCE=\"Toi\" >> .env
+echo JWT_ISSUER=\"Moi\" >> .env
+echo JWT_SECRET=\"$(python -c 'from server.services.auth import create_nonce; print(create_nonce().decode("ascii"))')\" >> .env
+```
+
+Regardez le fichier `.env.example` pour avoir un exemple de fichier de configuration `.env`.
+
+### Mode demo
 
 Pour lancer LexImpact-Server, dans votre fenêtre de terminal :
 

@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
 from functools import partial
 from toolz.functoolz import pipe  # type: ignore
-from typing import List
+from typing import Dict, List
 
-import pandas
+import pandas  # type: ignore
 import time
 import os
 
@@ -18,6 +16,10 @@ from Simulation_engine.reforms import mapping
 # Config
 version_beta_sans_simu_pop = True
 adjust_results = True
+
+# Types
+Total = Dict[str, float]
+Deciles = List[Dict[str, float]]
 
 
 def load_data(filename: str):
@@ -206,7 +208,7 @@ def simulation(period, data, tbs, timer=None):
 def compare(
     period: str, simulation_base, simulation_reform, compute_deciles=True, timer=None
 ):
-    res = []
+    res: List[float] = []
     kk = 0
 
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
@@ -246,7 +248,7 @@ def compare(
                     df["avant"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                     kk += 1
 
-    dic_res = {"total": {"avant": res[0], "apres": res[1]}}
+    total: Total = {"avant": res[0], "apres": res[1]}
 
     if compute_deciles:
         print("Computing Deciles")
@@ -263,7 +265,7 @@ def compare(
         curra = 0
         dfv = df.values
         decilesres = [[0, 0, 0]]
-        decdiffres = []
+        decdiffres: Deciles = []
         print(decilweights, dfv[0], totweight)
         print(dfv[1])
         eps = 0.0001
@@ -291,20 +293,22 @@ def compare(
 
         if adjust_results:
             empiric = 78 * 10 ** 9
-            factor = adjustment(empiric, dic_res["total"]["avant"])
-            dic_res["total"] = adjust_total(factor, dic_res["total"])
-            dic_res["deciles"] = adjust_deciles(factor, decdiffres)
+            factor = adjustment(empiric, total["avant"])
+            total = adjust_total(factor, total)
+            deciles: Deciles = adjust_deciles(factor, decdiffres)
         else:
-            dic_res["deciles"] = decdiffres
+            deciles = decdiffres
+
+        resultat = {"total": total, "deciles": deciles}
 
     else:  # This only interests us for the castypes
-        dic_res["res_brut"] = df.to_dict()
+        resultat = {"total": total, "res_brut": df.to_dict()}
 
-    print(dic_res)
-    return dic_res
+    print(resultat)
+    return resultat
 
 
-def adjustment(empiric: int, baseline: int):
+def adjustment(empiric: int, baseline: float):
     """Facteur d'ajustement à partir d'un benchmark empirique"""
     return empiric / baseline
 

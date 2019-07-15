@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
-
 from functools import partial
 import json
 
-import pytest
+import pytest  # type: ignore
 
 
 @pytest.fixture
-def payload() -> str:
+def payload() -> dict:
     return {
         "reforme": {
             "impot_revenu": {

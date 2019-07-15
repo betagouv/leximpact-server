@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas as pd  # type: ignore
 
 
 def inflate(inputfile, outputfile=None):

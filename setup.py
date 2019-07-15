@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages  # type: ignore
 
 setup(
     name="LexImpact Server",
@@ -27,6 +25,7 @@ setup(
         "openfisca-core >= 34.2.8, < 35.0.0",
         "openfisca-france >= 48.0.0, < 49.0.0",
         "pandas >= 0.24.0, < 0.25.0",
+        "pyjwt >= 1.7.1, < 2.0.0",
         "toolz >= 0.9.0, < 1.0.0",
     ],
     extras_require={
@@ -36,8 +35,10 @@ setup(
             "flake8 >= 3.7.0, < 3.8.0",
             "flake8-bugbear >= 19.3.0, < 20.0.0",
             "mock >= 3.0.5, < 4.0.0",
+            "mypy >= 0.720, < 1.0.0",
             "pytest >= 4.0.0, < 5.0.0",
             "pytest-mock >= 1.10.4, < 2.0.0",
+            "python-dotenv >= 0.10.3, < 1.0.0",
             "snakeviz >= 2.0.0, < 3.0.0",
             "tables >= 3.4.0, < 3.5.0",
         ]
