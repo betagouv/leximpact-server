@@ -1,4 +1,4 @@
-from server.services.auth import (  # type: ignore
+from server.services.token import (  # type: ignore
     create_nonce,
     create_token,
     decode_token,
@@ -12,7 +12,7 @@ def test_decode_token():
     iss = "Moi"
     aud = "Vous"
     payload = create_payload(user, uuid, iss, aud)
-    secret = create_nonce()
+    secret = "asdf1234"
     algo = "HS256"
     token = create_token(payload, secret, algo)
     assert decode_token(token, secret, iss, aud, algo) == (user, uuid)
