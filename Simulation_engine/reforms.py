@@ -35,7 +35,6 @@ def bareme(args: tuple) -> tuple:
 
 def decote(args: tuple) -> tuple:
     parameters, dir, instant, reform_period, verbose = args
-    verbose = True
     dird = dir["decote"]
     seuil_celib = dird["seuil_celib"]
     seuil_couple = dird["seuil_couple"]
