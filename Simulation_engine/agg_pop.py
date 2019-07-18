@@ -130,8 +130,8 @@ def reform_from_bareme(tbs, seuils, taux, period):
     return apply_reform(tbs)
 
 
-def simulation(period, data, tbs, timer=None):
-    if timer is not None:
+def simulation(period, data, tbs, timer=None, verbose=False):
+    if verbose and timer is not None:
         starttime = timer.time()
         print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
@@ -212,11 +212,12 @@ def simulation(period, data, tbs, timer=None):
                         colonne
                     ],
                 )
-                print(
-                    "{} was attributed to {}".format(
-                        colonne, tbs.get_variable(colonne).entity.key
+                if verbose:
+                    print(
+                        "{} was attributed to {}".format(
+                            colonne, tbs.get_variable(colonne).entity.key
+                        )
                     )
-                )
 
             except (Exception):
                 try:
@@ -229,7 +230,7 @@ def simulation(period, data, tbs, timer=None):
                     print("{} was attributed to NOUGHT".format(colonne))
                 raise
 
-    if timer is not None:
+    if verbose and timer is not None:
         print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
     return simulation, dictionnaire_datagrouped
@@ -249,7 +250,7 @@ def compare(
 
             dictionnaire_datagrouped["foyer_fiscal"][
                 nomvariable
-            ] = simulation.calculate(nomvariable, period, max_nb_cycles=1)
+            ] = simulation.calculate(nomvariable, period)
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = (
                 dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                 * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
@@ -323,27 +324,36 @@ def compare(
     return dic_res
 
 
-def aggregats_ff(period: str, simulation_base):
+def aggregats_ff(
+    period: str, simulation_base, name_variables=["rfr", "irpp", "nbptr"], verbose=False
+):
     res = []
     for simulation, dictionnaire_datagrouped in [simulation_base]:
         df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
-        for nomvariable in ["rfr", "irpp", "nbptr"]:
+        for nomvariable in name_variables:
             dictionnaire_datagrouped["foyer_fiscal"][
                 nomvariable
-            ] = simulation.calculate(nomvariable, period, max_nb_cycles=1)
+            ] = simulation.calculate(nomvariable, period)
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = (
                 dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                 * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
             )
-
-            print(
-                "{} sum : {}  mean : {}".format(
-                    nomvariable,
-                    dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum(),
-                    dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum()
-                    / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum(),
+            if verbose:
+                print(
+                    "{} sum : {}  mean : {} nb nonzero : {}".format(
+                        nomvariable,
+                        dictionnaire_datagrouped["foyer_fiscal"][
+                            nomvariable + "w"
+                        ].sum(),
+                        dictionnaire_datagrouped["foyer_fiscal"][
+                            nomvariable + "w"
+                        ].sum()
+                        / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum(),
+                        dictionnaire_datagrouped["foyer_fiscal"][
+                            dictionnaire_datagrouped["foyer_fiscal"][nomvariable] != 0
+                        ]["wprm"].sum(),
+                    )
                 )
-            )
     return dictionnaire_datagrouped["foyer_fiscal"]
 
 
@@ -381,6 +391,9 @@ def reverseCDF(calibratedso):
 
 
 def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
+    errs = {
+        var: [] for var in ["nombre_ff", "rfr", "irpp"]
+    }  # absolute value of percentage differences
     totw = df[nameweight].sum()
     decilesagg = [(0, 0)]  # poids, rfr
     nbdec = 10
@@ -460,27 +473,96 @@ def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
             (res[tranches[k]][i] - valeursref[k][i]) * 100 / valeursref[k][i]
             for i in range(3)
         ]
+        errs["nombre_ff"] += [res[tranches[k]][3] / 100]
+        errs["rfr"] += [res[tranches[k]][4] / 100]
+        errs["irpp"] += [res[tranches[k]][5] / 100]
         res[tranches[k]] += [nbp[k + 1] - nbp[k]]
         print(
             "{} : {:.2f} \t{:.2f}\t{:.2f}\t{:.2f}%\t{:.2f}%\t{:.2f}%\t{}".format(
                 tranches[k], *res[tranches[k]]
             )
         )
+    print("MY ERRORS")
+    res_to_return = {}
+    for k in errs:
+        print(k, errs[k])
+        err_moyenne = sum(
+            [abs(errs[k][i] * res[tranches[i]][0]) for i in range(len(errs[k]))]
+        ) / sum([res[tranches[i]][0] for i in range(len(errs[k]))])
+        print(k, err_moyenne)
+        # Erreur moyenne de rfr moye
+        res_to_return[k] = err_moyenne
+    print("returning", res_to_return)
+    return res_to_return
 
 
-def test_h5_input(input_h5="./Simulation_engine/dummy_data.h5"):
+def test_h5_input(
+    input_h5="./Simulation_engine/dummy_data.h5",
+    name_variables=["rfr", "irpp", "nbptr"],
+    aggfunc="sum",
+    compdic=None,
+):
     PERIOD = "2018"
     TBS = FranceTaxBenefitSystem()
     DUMMY_DATA = load_data(input_h5)
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
-    df = aggregats_ff(PERIOD, simulation_base_deciles).sort_values(by="rfr")
-    testerrorvalues(df)
-    aggs_to_compute = ["wprm", "salaire_de_base", "retraite_brute", "rfr", "irpp"]
+    df = aggregats_ff(PERIOD, simulation_base_deciles, name_variables).sort_values(
+        by="rfr"
+    )
+    if aggfunc == "sum":  # Pour la somme, on calcule les % d'erreur sur la répartition.
+        testerrorvalues(df)
+    aggs_to_compute = ["wprm", "salaire_de_base", "retraite_brute"] + name_variables
+    val_donnees_pac_agg = 0
+    trpac_agg = [
+        compdic[ag]
+        for ag in ["nbF", "nbG", "nbH", "nbJ", "nbR"]
+        if compdic is not None and ag in compdic
+    ]
+    val_reelle_pac_agg = sum(trpac_agg) if len(trpac_agg) else None
     for ag in aggs_to_compute:
-        if ag != "wprm":
-            print("Total aggrégé {} : {}".format(ag, (df[ag] * df["wprm"]).sum()))
+        if aggfunc == "sum":
+            nom_a_afficher = "Total aggrégé"
+            if ag != "wprm":
+                val_donnees = (df[ag] * df["wprm"]).sum()
+            else:
+                val_donnees = (df[ag]).sum()
+        elif aggfunc == "countnonzero":
+            if ag != "wprm":
+                nom_a_afficher = "Non nuls"
+                val_donnees = (df[df[ag] != 0]["wprm"]).sum()
+            else:
+                nom_a_afficher = "Nombre FF (c'est comme ça le count sur wprm)"
+                val_donnees = df[ag].count()
         else:
-            print("Total aggrégé {} : {}".format(ag, df[ag].sum()))
+            raise (
+                "Only aggregation functions supported are sum and countnonzero. The rest is not very good if you want my opinion"
+            )
+        val_reelle = compdic[ag] if compdic is not None and ag in compdic else None
+        print(
+            "{} {} : {:.0f} {} {}".format(
+                nom_a_afficher,
+                ag,
+                val_donnees,
+                val_reelle if val_reelle is not None else "",
+                "{:.2f}%".format((val_donnees / val_reelle - 1) * 100)
+                if val_reelle is not None
+                else "",
+            )
+        )
+        if ag in ["nbF", "nbG", "nbH", "nbJ", "nbR"]:
+            val_donnees_pac_agg += val_donnees
+    if val_reelle_pac_agg is not None:
+        print(
+            "{} {} : {:.0f} {} {}".format(
+                nom_a_afficher,
+                "Enfants cumules",
+                val_donnees_pac_agg,
+                val_reelle_pac_agg if val_reelle_pac_agg is not None else "",
+                "{:.2f}%".format((val_donnees_pac_agg / val_reelle_pac_agg - 1) * 100)
+                if val_reelle_pac_agg is not None
+                else "",
+            )
+        )
 
 
 def ajustement_h5(
@@ -591,7 +673,8 @@ def ajustement_h5(
     ### End of step 2.
 
     testerrorvalues(df, "rfr", "wprm")
-    testerrorvalues(df, "realrfr", "realwprm")
+    aa = testerrorvalues(df, "realrfr", "realwprm")
+    print("Aggregated Error % after calibration :", aa)
     # OKOK bon maintenant mon df contient le bon rfr et le bon realwprm
     df["total_ajust_revenu"] = 1
     df.loc[df["rfr"] > 0, "total_ajust_revenu"] = df["realrfr"] / df["rfr"]
@@ -628,5 +711,72 @@ if __name__ == "__main__":
     ajustement_h5()
     print("before adj :")
     test_h5_input()
+
+    theoric_values = {  # source : stats impots 2018 (sur revenu 2017)
+        "sum": {
+            "rfr": 985_934_421,
+            "irpp": -78000000000,
+            "wprm": 38332977,
+            "nbG": 244715,
+            "nbF": 15748883,
+            "nbH": 972058,
+            "nbJ": 1906364,
+            "nbR": 52124,
+        },
+        "countnonzero": {
+            "maries_ou_pacses": 12990578,
+            "celibataire_ou_divorce": 21388331,
+            "veuf": 3954068,
+            "nbF": 9088622,
+            "nbH": 642590,
+            "nbJ": 1630205,
+            "nbR": 50091,
+            "nbG": 232088,
+        },
+    }
+
     print("after adj :")
-    test_h5_input("./Simulation_engine/dummy_data_ajuste.h5")
+    test_h5_input(
+        "./Simulation_engine/dummy_data_ajuste.h5",
+        name_variables=[
+            "rfr",
+            "irpp",
+            "nbptr",
+            "maries_ou_pacses",
+            "celibataire_ou_divorce",
+            "veuf",
+            "nbF",
+            "nbG",
+            "nbH",
+            "nbJ",
+            "nbR",
+        ],
+        aggfunc="sum",
+        compdic=theoric_values["sum"],
+    )
+    print("And now, the counts : ")
+
+    test_h5_input(
+        "./Simulation_engine/dummy_data_ajuste.h5",
+        name_variables=[
+            "rfr",
+            "irpp",
+            "nbptr",
+            "maries_ou_pacses",
+            "celibataire_ou_divorce",
+            "veuf",
+            "nbF",
+            "nbG",
+            "nbH",
+            "nbJ",
+            "nbR",
+        ],
+        aggfunc="countnonzero",
+        compdic=theoric_values["countnonzero"],
+    )
+
+
+# ToDo : Le test doit retourner True si :
+#  - On a Une erreur totale sur la distrib de rfr < 2.5% après ajustement
+#  - nb maries & co : 25% ecart maximum
+#  - Enfants cumulés : 25% ecart?
