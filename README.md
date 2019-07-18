@@ -70,12 +70,25 @@ Félicitations :tada: LexImpact-Server est prêt à être utilisé !
 Pour lancer LexImpact-Server, vous devez tout d'abord créer un fichier de configuration `.env`. Dans votre fenêtre de terminal :
 
 ```sh
+echo DATABASE_USER=\"asdf\" >> .env
+echo DATABASE_PASS=\"1234\" >> .env
+echo DATABASE_HOST=\"localhost\" >> .env
+echo DATABASE_PORT=\"5432\" >> .env
+echo DATABASE_NAME=\"leximpact\" >> .env
 echo JWT_AUDIENCE=\"Toi\" >> .env
 echo JWT_ISSUER=\"Moi\" >> .env
 echo JWT_SECRET=\"$(python -c 'from server.services.auth import create_nonce; print(create_nonce().decode("ascii"))')\" >> .env
 ```
 
 Regardez le fichier `.env.example` pour avoir un exemple de fichier de configuration `.env`.
+
+### Base de données et migrations
+
+Pour créer la base de données, et exécuter toutes les migrations, dans votre fenêtre de terminal :
+
+```sh
+make migrate
+```
 
 ### Mode demo
 

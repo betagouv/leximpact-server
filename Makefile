@@ -26,6 +26,11 @@ format-style:
 	autopep8 `git ls-files | grep "\.py$$"`
 	black `git ls-files | grep "\.py$$"`
 
+migrate:
+	python repo/create_db.py
+	alembic upgrade head
+	alembic -x env=test upgrade head
+
 run:
 	FLASK_ENV=development PORT=5000 python ./server/app.py
 
