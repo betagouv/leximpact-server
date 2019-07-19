@@ -1,4 +1,3 @@
-from server.services.openfisca import cas_types
 from Simulation_engine.simulate_pop_from_reform import (
     desc_cas_types,
     CompareOldNew,
@@ -7,10 +6,6 @@ from Simulation_engine.simulate_pop_from_reform import (
 
 
 class CasTypes(object):
-    def calculate(**params: dict) -> tuple:
-        """Pour gérer les requêtes et envoyer de résultats"""
-        return cas_types(**params["body"]), 201
-
     def revenus(**params: dict) -> tuple:
         rct = revenus_cas_types()
         return {int(k): int(v) for k, v in rct.items()}, 201

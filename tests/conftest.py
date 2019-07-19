@@ -29,7 +29,7 @@ def engine():
 
 
 @pytest.fixture
-def dbsession(engine):
+def session(engine):
     connection = engine.connect()
     session = scoped_session(sessionmaker(bind=engine))
     yield session
