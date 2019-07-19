@@ -15,5 +15,7 @@ def find_user(session, email: str) -> Optional[User]:
     return session.query(User).get(email)
 
 
-def create_user(session, user: User) -> User:
-    return session.add(user)
+def create_user(session, user: User) -> bool:
+    session.add(user)
+    session.commit()
+    return True

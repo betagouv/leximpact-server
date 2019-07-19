@@ -12,7 +12,7 @@ def test_find_user(session, user):
 
 
 def test_create_user(session, user):
-    create_user(session, user)
+    assert create_user(session, user)
     assert find_user(session, user.email).email == user.email
 
 
