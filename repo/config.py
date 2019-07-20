@@ -9,6 +9,7 @@ ENV = [
     "DATABASE_HOST",
     "DATABASE_PORT",
     "DATABASE_NAME",
+    "DATABASE_URL",
 ]
 
 
@@ -17,5 +18,5 @@ def database_config():
 
 
 def database_url(env: str) -> str:
-    user, pswd, host, port, name = database_config()
-    return f"postgresql://{user}:{pswd}@{host}:{port}/{name}_{env}"
+    user, pswd, host, port, name, url = database_config()
+    return url if url else f"postgresql://{user}:{pswd}@{host}:{port}/{name}_{env}"
