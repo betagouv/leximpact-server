@@ -13,7 +13,7 @@ def payload() -> dict:
                     "seuils": [9964, 27519, 73779, 156244],
                     "taux": [12, 30, 41, 45],
                 },
-                "decote": {"seuil_celib": 1196, "seuil_couple": 1970},
+                "decote": {"seuil_celib": 1196, "seuil_couple": 1970, "taux": 50},
                 "plafond_qf": {
                     "abat_dom": {
                         "taux_GuadMarReu": 0.3,

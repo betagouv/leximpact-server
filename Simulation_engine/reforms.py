@@ -52,7 +52,9 @@ def decote(args: tuple) -> tuple:
     parameters.impot_revenu.decote.seuil_couple.update(
         period=reform_period, value=float(seuil_couple)
     )
-    parameters.impot_revenu.decote.taux.update(period=reform_period, value=float(taux))
+    parameters.impot_revenu.decote.taux.update(
+        period=reform_period, value=float(taux) * 0.01
+    )
     if verbose:
         print("decote apres modif : ")
         print(
