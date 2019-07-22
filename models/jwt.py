@@ -1,11 +1,17 @@
+from datetime import datetime, timedelta
+from hashlib import sha3_512
+from secrets import randbelow, token_bytes
+from typing import Dict, Optional, TypeVar, Union
 from os import getenv
+
 from dotenv import load_dotenv
-from typing import Optional, TypeVar
-from lib import create_nonce, create_payload, create_token, decode_token  # type: ignore
+from jwt import encode, decode
+from toolz.functoolz import compose  # type: ignore
 
 load_dotenv(dotenv_path=".env")
 
 T = TypeVar("T", bound="JWT")
+Payload = Dict[str, Union[bytes, datetime, str]]
 
 
 class JWT:
@@ -20,13 +26,41 @@ class JWT:
         self.decoded: Optional[dict] = None
 
 
-def encode(jwt: T, email: str) -> T:
+def encode_jwt(jwt: T, email: str) -> T:
     nonce = create_nonce()
     payload = create_payload(email, nonce, jwt.iss, jwt.aud)
     jwt.encoded = create_token(payload, jwt.secret, jwt.algo)
     return jwt
 
 
-def decode(jwt: T) -> T:
+def decode_jwt(jwt: T) -> T:
     jwt.decoded = decode_token(jwt.encoded, jwt.secret, jwt.iss, jwt.aud, jwt.algo)
     return jwt
+
+
+def create_nonce() -> str:
+    """Creates a 128 string nonce hash"""
+    return compose(sha3_512, token_bytes, randbelow)(512).hexdigest()
+
+
+def create_token(payload: Payload, secret: str, algo: str) -> str:
+    """Generates a token"""
+    return encode(payload, secret, algorithm=algo).decode("ascii")
+
+
+def decode_token(token: str, secret: str, iss: str, aud: str, algo: str) -> Payload:
+    """Check the token and returns the user"""
+    return decode(
+        token.encode("ascii"), secret, issuer=iss, audience=aud, algorithms=[algo]
+    )
+
+
+def create_payload(user: str, nonce: str, iss: str, aud: str) -> Payload:
+    return {
+        "sub": user,
+        "jti": nonce,
+        "exp": datetime.utcnow() + timedelta(hours=1),
+        "iat": datetime.utcnow(),
+        "iss": iss,
+        "aud": aud,
+    }
