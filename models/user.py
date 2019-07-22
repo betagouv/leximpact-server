@@ -6,7 +6,7 @@ Base: Any = declarative_base()
 
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     email = Column(String(), primary_key=True)
     token = Column(String())
 

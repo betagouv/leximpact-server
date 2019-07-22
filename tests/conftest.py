@@ -1,4 +1,4 @@
-import pytest  # type: ignore
+from pytest import fixture  # type: ignore
 
 from server.app import app  # type: ignore
 from sqlalchemy import create_engine  # type: ignore
@@ -7,34 +7,47 @@ from repo.config import database_url  # type: ignore
 from models import User  # type: ignore
 
 
-@pytest.fixture
+@fixture
 def client():
     app.config["TESTING"] = True
     client = app.test_client()
     return client
 
 
-@pytest.fixture
+@fixture
 def mimetype() -> str:
     return "application/json"
 
 
-@pytest.fixture
+@fixture
 def headers(mimetype: str) -> dict:
     return {"Content-Type": mimetype, "Accept": mimetype}
 
 
-@pytest.fixture
-def engine():
-    return create_engine(database_url("test"))
+@fixture
+def setup():
+    def _setup():
+        engine = create_engine(database_url("test"))
+        connection = engine.connect()
+        session = scoped_session(sessionmaker(bind=engine))
+        return engine, connection, session
+
+    return _setup
 
 
-@pytest.fixture
-def session(engine):
-    connection = engine.connect()
-    session = scoped_session(sessionmaker(bind=engine))
+@fixture
+def cleanup():
+    def _cleanup(session, connection):
+        session.query(User).delete()
+        session.commit()
+        session.close()
+        connection.close()
+
+    return _cleanup
+
+
+@fixture
+def session(setup, cleanup):
+    engine, connection, session = setup()
     yield session
-    session.query(User).delete()
-    session.commit()
-    session.close()
-    connection.close()
+    cleanup(session, connection)

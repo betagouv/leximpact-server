@@ -3,11 +3,13 @@ from typing import Any
 from sqlalchemy import Column, String  # type: ignore
 from sqlalchemy.ext.declarative import declarative_base  # type: ignore
 from server.services import with_session  # type: ignore
-from server.services import database_services  # type: ignore
+
+SETUP = "server.services.database_services.setup"
 
 
-def test_with_session(engine):
-    database_services.DB_ENGINE = engine
+def test_with_session(mocker, setup):
+    mocker.patch(SETUP, return_value=setup())
+
     Base: Any = declarative_base()
 
     class User(Base):
