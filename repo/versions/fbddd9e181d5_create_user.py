@@ -18,9 +18,7 @@ depends_on = None
 
 def upgrade():
     create_table(
-        "users",
-        Column("email", String(), primary_key=True),
-        Column("token", String()),
+        "users", Column("email", String(), primary_key=True), Column("token", String())
     )
 
 
