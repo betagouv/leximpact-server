@@ -33,9 +33,7 @@ def engine():
 def session(engine):
     connection = engine.connect()
     session = scoped_session(sessionmaker(bind=engine))
-    session.begin_nested()
     yield session
-    session.rollback()
     session.query(User).delete()
     session.commit()
     session.close()
