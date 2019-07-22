@@ -138,6 +138,57 @@ components:
                       type: integer
                     seuil_couple:
                       type: integer
+                    taux:
+                      type: integer
+                plafond_qf:
+                  type: object
+                  properties:
+                    maries_ou_pacses:
+                      type: integer
+                    celib_enf:
+                      type: integer
+                    celib:
+                      type: integer
+                    reduc_postplafond:
+                      type: integer
+                    reduc_postplafond_veuf:
+                      type: integer
+                    abat_dom:
+                      type: object
+                      properties:
+                        taux_GuadMarReu:
+                          type: number
+                        plaf_GuadMarReu:
+                          type: integer
+                        taux_GuyMay:
+                          type: number
+                        plaf_GuyMay:
+                          type: integer
+                    reduction_ss_condition_revenus:
+                      type: object
+                      properties:
+                        seuil_maj_enf:
+                          type: integer
+                        seuil1:
+                          type: integer
+                        seuil2:
+                          type: integer
+                        taux:
+                          type: number
+                abattements_rni:
+                  type: object
+                  properties:
+                    personne_agee_ou_invalide:
+                      type: object
+                      properties:
+                        montant_1:
+                          type: integer
+                        montant_2:
+                          type: integer
+                        plafond_1:
+                          type: integer
+                        plafond_2:
+                          type: integer
         description_cas_types:
           type: array
           items:

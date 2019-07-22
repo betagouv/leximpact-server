@@ -33,6 +33,14 @@ def payload() -> dict:
                         "taux": 0.20,
                     },
                 },
+                "abattements_rni": {
+                    "personne_agee_ou_invalide": {
+                        "montant_1": 1,
+                        "montant_2": 2,
+                        "plafond_1": 3,
+                        "plafond_2": 4,
+                    }
+                },
             }
         },
         "deciles": False,
