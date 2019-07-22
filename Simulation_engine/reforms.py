@@ -35,15 +35,16 @@ def bareme(args: tuple) -> tuple:
 
 def decote(args: tuple) -> tuple:
     parameters, dir, instant, reform_period, verbose = args
-
     dird = dir["decote"]
     seuil_celib = dird["seuil_celib"]
     seuil_couple = dird["seuil_couple"]
+    taux = dird["taux"]
     if verbose:
         print("decote avant modif : ")
         print(
             parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
             parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
+            parameters.impot_revenu.decote.taux.get_at_instant(instant),
         )
     parameters.impot_revenu.decote.seuil_celib.update(
         period=reform_period, value=float(seuil_celib)
@@ -51,11 +52,15 @@ def decote(args: tuple) -> tuple:
     parameters.impot_revenu.decote.seuil_couple.update(
         period=reform_period, value=float(seuil_couple)
     )
+    parameters.impot_revenu.decote.taux.update(
+        period=reform_period, value=float(taux) * 0.01
+    )
     if verbose:
         print("decote apres modif : ")
         print(
             parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
             parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
+            parameters.impot_revenu.decote.taux.get_at_instant(instant),
         )
 
     return parameters, dir, instant, reform_period, verbose
@@ -132,5 +137,43 @@ def plafond_qf(args: tuple) -> tuple:
     return parameters, dir, instant, reform_period, verbose
 
 
+def abattements_rni(args: tuple) -> tuple:
+    parameters, dir, instant, reform_period, verbose = args
+    if verbose:
+        print("abattements_rni :")
+        print(parameters.impot_revenu.abattements_rni.get_at_instant(instant))
+    try:
+        dirr = dir["abattements_rni"]["personne_agee_ou_invalide"]
+    except KeyError:
+        dirr = {}
+    print(dirr)
+    print("au cas ou", dir)
+    # if "maries_ou_pacses" in requete["impot_revenu"]["plafond_qf"]:
+    #     parameters.impot_revenu.plafond_qf.maries_ou_pacses.update(
+    #         period=reform_period,
+    #         value=requete["impot_revenu"]["plafond_qf"]["maries_ou_pacses"],
+    #     )
+
+    for var_name in ["montant_1", "montant_2", "plafond_1", "plafond_2"]:
+        if var_name in dirr:
+            pp = eval(
+                "parameters.impot_revenu.abattements_rni.personne_agee_ou_invalide.{}".format(
+                    var_name
+                )
+            )
+            pp.update(period=reform_period, value=float(dirr[var_name]))
+
+    if verbose:
+        print("abattements_rni après :")
+        print(parameters.impot_revenu.abattements_rni.get_at_instant(instant))
+
+    return parameters, dir, instant, reform_period, verbose
+
+
 def mapping() -> dict:
-    return {"decote": decote, "bareme": bareme, "plafond_qf": plafond_qf}
+    return {
+        "decote": decote,
+        "bareme": bareme,
+        "plafond_qf": plafond_qf,
+        "abattements_rni": abattements_rni,
+    }

@@ -13,7 +13,7 @@ def payload() -> dict:
                     "seuils": [9964, 27519, 73779, 156244],
                     "taux": [12, 30, 41, 45],
                 },
-                "decote": {"seuil_celib": 1196, "seuil_couple": 1970},
+                "decote": {"seuil_celib": 1196, "seuil_couple": 1970, "taux": 50},
                 "plafond_qf": {
                     "abat_dom": {
                         "taux_GuadMarReu": 0.3,
@@ -32,6 +32,14 @@ def payload() -> dict:
                         "seuil2": 21036,
                         "taux": 0.20,
                     },
+                },
+                "abattements_rni": {
+                    "personne_agee_ou_invalide": {
+                        "montant_1": 1,
+                        "montant_2": 2,
+                        "plafond_1": 3,
+                        "plafond_2": 4,
+                    }
                 },
             }
         },
