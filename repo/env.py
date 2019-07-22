@@ -27,7 +27,7 @@ target_metadata = None
 
 
 # set database url
-env = context.get_x_argument(as_dictionary=True).get("env", "development")
+env = context.get_x_argument(as_dictionary=True).get("env")
 config.set_main_option("sqlalchemy.url", database_url(env))
 
 

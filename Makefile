@@ -28,7 +28,7 @@ format-style:
 
 migrate:
 	python repo/create_db.py
-	alembic upgrade head
+	alembic -x env=development upgrade head
 	alembic -x env=test upgrade head
 
 run:
