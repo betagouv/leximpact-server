@@ -19,3 +19,14 @@ def create_user(session, user: User) -> bool:
     session.add(user)
     session.commit()
     return True
+
+
+def update_user_token(session, email: str, token: str) -> Optional[User]:
+    user = find_user(session, email)
+
+    if user:
+        user.token = token
+        session.commit()
+        return user
+    else:
+        return None

@@ -4,6 +4,7 @@ from server.app import app  # type: ignore
 from sqlalchemy import create_engine  # type: ignore
 from sqlalchemy.orm import scoped_session, sessionmaker  # type: ignore
 from repo.config import database_url  # type: ignore
+from models import User  # type: ignore
 
 
 @pytest.fixture
@@ -35,5 +36,7 @@ def session(engine):
     session.begin_nested()
     yield session
     session.rollback()
+    session.query(User).delete()
+    session.commit()
     session.close()
     connection.close()

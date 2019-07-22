@@ -1,4 +1,4 @@
-from server.services.token_services import (  # type: ignore
+from server.tools.tokens import (  # type: ignore
     create_nonce,
     create_token,
     decode_token,
