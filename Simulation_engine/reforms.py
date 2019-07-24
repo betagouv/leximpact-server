@@ -12,7 +12,7 @@ def bareme(args: tuple) -> tuple:
             period=reform_period, value=seuils[i]
         )
         parameters.impot_revenu.bareme.brackets[i].rate.update(
-            period=reform_period, value=taux[i] * 0.01
+            period=reform_period, value=taux[i]
         )
 
     for i in range(len(seuils), 15):
@@ -21,7 +21,7 @@ def bareme(args: tuple) -> tuple:
                 period=reform_period, value=seuils[-1] + i
             )
             parameters.impot_revenu.bareme.brackets[i].rate.update(
-                period=reform_period, value=taux[-1] * 0.01
+                period=reform_period, value=taux[-1]
             )
         except (Exception):
             break

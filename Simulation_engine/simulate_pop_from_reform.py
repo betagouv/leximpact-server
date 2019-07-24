@@ -653,7 +653,7 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
 
 
 if __name__ == "__main__":
-    taux = [9964, 27159, 73779, 156244, 14, 30, 41, 45]
+    taux = [9964, 27159, 73779, 156244, 0.14, 0.30, 0.41, 0.45]
     dictreform = {
         "impot_revenu": {
             "bareme": {
