@@ -3,6 +3,16 @@ jobs:
   build:
     docker:
       - image: python:3.7
+        environment:
+          DATABASE_URL: postgres://root@127.0.0.1/leximpact_circleci
+          JWT_SECRET: asdf1234
+          JWT_AUDIENCE: Toi
+          JWT_ISSUER: Moi
+
+      - image: postgres:9.6.7
+        environment:
+          POSTGRES_USER: root
+          POSTGRES_DB: leximpact_circleci
 
     steps:
       - checkout
@@ -17,7 +27,7 @@ jobs:
           name: Install required libraries
           command: |
             apt-get update
-            apt-get -y install libyaml-dev libhdf5-serial-dev
+            apt-get -y install libyaml-dev libhdf5-serial-dev postgresql-client
 
       - run:
           name: Create a virtualenv
@@ -32,6 +42,10 @@ jobs:
       - run:
           name: Install dependencies
           command: make install
+
+      - run:
+          name: Run migrations
+          command: alembic upgrade head
 
       - save_cache:
           key: v1-py3-venv-{{ .Branch }}-{{ checksum "setup.py" }}
