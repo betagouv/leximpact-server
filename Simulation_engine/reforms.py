@@ -1,177 +1,141 @@
-def bareme(args: tuple) -> tuple:
-    parameters, dir, instant, reform_period, verbose = args
+from typing import Callable, NamedTuple, TypeVar
 
-    dirb = dir["bareme"]
-    seuils = dirb["seuils"]
-    taux = dirb["taux"]
-    if verbose:
-        print("bareme avant modif :")
-        print(parameters.impot_revenu.bareme.get_at_instant(instant))
-    for i in range(len(seuils)):
-        parameters.impot_revenu.bareme.brackets[i].threshold.update(
-            period=reform_period, value=seuils[i]
-        )
-        parameters.impot_revenu.bareme.brackets[i].rate.update(
-            period=reform_period, value=taux[i] * 0.01
-        )
+from toolz.functoolz import compose  # type: ignore
 
-    for i in range(len(seuils), 15):
-        try:
-            parameters.impot_revenu.bareme.brackets[i].threshold.update(
-                period=reform_period, value=seuils[-1] + i
-            )
-            parameters.impot_revenu.bareme.brackets[i].rate.update(
-                period=reform_period, value=taux[-1] * 0.01
-            )
-        except (Exception):
-            break
+from openfisca_core.parameters import ParameterNode  # type: ignore
+from openfisca_core import periods  # type: ignore
+from openfisca_france import FranceTaxBenefitSystem  # type: ignore
+from openfisca_france.model.base import Reform  # type: ignore
 
-    if verbose:
-        print("bareme après modif :")
-        print(parameters.impot_revenu.bareme.get_at_instant(instant))
-
-    return parameters, dir, instant, reform_period, verbose
+T = TypeVar("T", bound="ParametricReform")
 
 
-def decote(args: tuple) -> tuple:
-    parameters, dir, instant, reform_period, verbose = args
-    dird = dir["decote"]
-    seuil_celib = dird["seuil_celib"]
-    seuil_couple = dird["seuil_couple"]
-    taux = dird["taux"]
-    if verbose:
-        print("decote avant modif : ")
-        print(
-            parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
-            parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
-            parameters.impot_revenu.decote.taux.get_at_instant(instant),
-        )
-    parameters.impot_revenu.decote.seuil_celib.update(
-        period=reform_period, value=float(seuil_celib)
-    )
-    parameters.impot_revenu.decote.seuil_couple.update(
-        period=reform_period, value=float(seuil_couple)
-    )
-    parameters.impot_revenu.decote.taux.update(period=reform_period, value=float(taux))
-    if verbose:
-        print("decote apres modif : ")
-        print(
-            parameters.impot_revenu.decote.seuil_celib.get_at_instant(instant),
-            parameters.impot_revenu.decote.seuil_couple.get_at_instant(instant),
-            parameters.impot_revenu.decote.taux.get_at_instant(instant),
-        )
+class IncomeTaxReform(Reform):
+    """Une réforme de l'impôt sur le revenu"""
 
-    return parameters, dir, instant, reform_period, verbose
+    def __init__(self, tbs: FranceTaxBenefitSystem, payload: dict, period: str) -> None:
+        self.payload = payload.get("impot_revenu", {})
+        self.instant = periods.instant(period)
+        self.period = periods.period("year:1900:200")
+        super().__init__(tbs)
+
+    def modifier(self, parameters: ParameterNode) -> ParameterNode:
+        reform = ParametricReform(parameters, self.payload, self.instant, self.period)
+        parameters, *_ = compose(*reforms(mapping(), self.payload))(reform)
+        return parameters
+
+    def apply(self) -> None:
+        self.modify_parameters(modifier_function=self.modifier)
 
 
-def plafond_qf(args: tuple) -> tuple:
-    parameters, dir, instant, reform_period, verbose = args
+class ParametricReform(NamedTuple):
+    """Une réforme paramétrique"""
 
-    if verbose:
-        print("plaf qf avant :")
-        print(parameters.impot_revenu.plafond_qf.get_at_instant(instant))
-    dirr = dir["plafond_qf"]
+    parameters: ParameterNode
+    payload: dict
+    instant: periods.Instant
+    period: periods.Period
 
-    # if "maries_ou_pacses" in requete["impot_revenu"]["plafond_qf"]:
-    #     parameters.impot_revenu.plafond_qf.maries_ou_pacses.update(
-    #         period=reform_period,
-    #         value=requete["impot_revenu"]["plafond_qf"]["maries_ou_pacses"],
-    #     )
-
-    for var_name in [
-        "maries_ou_pacses",
-        "celib_enf",
-        "celib",
-        "reduc_postplafond",
-        "reduc_postplafond_veuf",
-    ]:
-        if var_name in dirr:
-            pp = eval("parameters.impot_revenu.plafond_qf.{}".format(var_name))
-            pp.update(period=reform_period, value=float(dirr[var_name]))
-
-    if "abat_dom" in dirr:
-        paramstoprint = [
-            parameters.impot_revenu.plafond_qf.abat_dom.taux_GuadMarReu,
-            parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuadMarReu,
-            parameters.impot_revenu.plafond_qf.abat_dom.taux_GuyMay,
-            parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuyMay,
-        ]
-        if verbose:
-            print("abat_dom avant modif : ")
-            for pp in paramstoprint:
-                print(pp.get_at_instant(instant))
-        dirrr = dirr["abat_dom"]
-        taux_GuadMarReu = dirrr["taux_GuadMarReu"]
-        parameters.impot_revenu.plafond_qf.abat_dom.taux_GuadMarReu.update(
-            period=reform_period, value=float(taux_GuadMarReu)
-        )
-        plaf_GuadMarReu = dirrr["plaf_GuadMarReu"]
-        parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuadMarReu.update(
-            period=reform_period, value=float(plaf_GuadMarReu)
-        )
-        taux_GuyMay = dirrr["taux_GuyMay"]
-        parameters.impot_revenu.plafond_qf.abat_dom.taux_GuyMay.update(
-            period=reform_period, value=float(taux_GuyMay)
-        )
-        plaf_GuyMay = dirrr["plaf_GuyMay"]
-        parameters.impot_revenu.plafond_qf.abat_dom.plaf_GuyMay.update(
-            period=reform_period, value=float(plaf_GuyMay)
-        )
-    if "reduction_ss_condition_revenus" in dirr:
-        dirrr = dirr["reduction_ss_condition_revenus"]
-        for var_name in ["seuil_maj_enf", "seuil1", "seuil2", "taux"]:
-            if var_name in dirrr:
-                pp = eval(
-                    "parameters.impot_revenu.plafond_qf.reduction_ss_condition_revenus.{}".format(
-                        var_name
-                    )
-                )
-                pp.update(period=reform_period, value=float(dirrr[var_name]))
-
-    if verbose:
-        print("plaf qf après :")
-        print(parameters.impot_revenu.plafond_qf.get_at_instant(instant))
-
-    return parameters, dir, instant, reform_period, verbose
+    def __call__(self: T, function: Callable[[T], T]) -> T:
+        return function(self)
 
 
-def abattements_rni(args: tuple) -> tuple:
-    parameters, dir, instant, reform_period, verbose = args
-    if verbose:
-        print("abattements_rni :")
-        print(parameters.impot_revenu.abattements_rni.get_at_instant(instant))
-    try:
-        dirr = dir["abattements_rni"]["personne_agee_ou_invalide"]
-    except KeyError:
-        dirr = {}
-    print(dirr)
-    print("au cas ou", dir)
-    # if "maries_ou_pacses" in requete["impot_revenu"]["plafond_qf"]:
-    #     parameters.impot_revenu.plafond_qf.maries_ou_pacses.update(
-    #         period=reform_period,
-    #         value=requete["impot_revenu"]["plafond_qf"]["maries_ou_pacses"],
-    #     )
-
-    for var_name in ["montant_1", "montant_2", "plafond_1", "plafond_2"]:
-        if var_name in dirr:
-            pp = eval(
-                "parameters.impot_revenu.abattements_rni.personne_agee_ou_invalide.{}".format(
-                    var_name
-                )
-            )
-            pp.update(period=reform_period, value=float(dirr[var_name]))
-
-    if verbose:
-        print("abattements_rni après :")
-        print(parameters.impot_revenu.abattements_rni.get_at_instant(instant))
-
-    return parameters, dir, instant, reform_period, verbose
+def reforms(mapping: dict, payload: dict) -> tuple:
+    return tuple(mapping[reform] for reform in tuple(payload) if reform in mapping)
 
 
 def mapping() -> dict:
     return {
         "decote": decote,
         "bareme": bareme,
-        "plafond_qf": plafond_qf,
         "abattements_rni": abattements_rni,
+        "plafond_qf": compose(plafond_qf, abat_dom, reduction_ss_condition_revenus),
     }
+
+
+def update(items, keys, node, period):
+    for (key, value) in items:
+        if key in keys:
+            parameter = getattr(node, key)
+            parameter.update(period=period, value=float(value))
+
+
+def bareme(reform: T) -> T:
+    seuils = reform.payload.get("bareme", {}).get("seuils")
+    taux = reform.payload.get("bareme", {}).get("taux")
+    node = reform.parameters.impot_revenu.bareme.brackets
+
+    if seuils:
+        for i in range(len(seuils)):
+            node[i].threshold.update(period=reform.period, value=seuils[i])
+
+        for i in range(len(seuils), len(node) - 1):
+            node[i].threshold.update(period=reform.period, value=seuils[-1] + i)
+
+    if taux:
+        for i in range(len(taux)):
+            node[i].rate.update(period=reform.period, value=taux[i] * 0.01)
+
+        for i in range(len(taux), len(node) - 1):
+            node[i].rate.update(period=reform.period, value=taux[-1] * 0.01)
+
+    return type(reform)(*reform)
+
+
+def decote(reform: T) -> T:
+    seuil_couple = reform.payload.get("decote", {}).get("seuil_couple")
+    seuil_celib = reform.payload.get("decote", {}).get("seuil_celib")
+    taux = reform.payload.get("decote", {}).get("taux")
+    node = reform.parameters.impot_revenu.decote
+
+    if seuil_couple:
+        node.seuil_couple.update(period=reform.period, value=float(seuil_couple))
+
+    if seuil_celib:
+        node.seuil_celib.update(period=reform.period, value=float(seuil_celib))
+
+    if taux:
+        node.seuil_celib.update(period=reform.period, value=float(taux))
+
+    return type(reform)(*reform)
+
+
+def abattements_rni(reform: T) -> T:
+    abattements_rni = reform.payload.get("abattements_rni", {})
+    payload = abattements_rni.get("personne_agee_ou_invalide", {})
+    node = reform.parameters.impot_revenu.abattements_rni.personne_agee_ou_invalide
+    keys = ["montant_1", "montant_2", "plafond_1", "plafond_2"]
+    update(payload.items(), keys, node, reform.period)
+    return type(reform)(*reform)
+
+
+def plafond_qf(reform: T) -> T:
+    payload = reform.payload.get("plafond_qf", {})
+    node = reform.parameters.impot_revenu.plafond_qf
+    keys = [
+        "maries_ou_pacses",
+        "celib_enf",
+        "celib",
+        "reduc_postplafond",
+        "reduc_postplafond_veuf",
+    ]
+    update(payload.items(), keys, node, reform.period)
+    return type(reform)(*reform)
+
+
+def abat_dom(reform: T) -> T:
+    plafond_qf = reform.payload.get("plafond_qf", {})
+    payload = plafond_qf.get("abat_dom", {})
+    node = reform.parameters.impot_revenu.plafond_qf.abat_dom
+    keys = ["taux_GuadMarReu", "plaf_GuadMarReu", "taux_GuyMay", "plaf_GuyMay"]
+    update(payload.items(), keys, node, reform.period)
+    return type(reform)(*reform)
+
+
+def reduction_ss_condition_revenus(reform: T) -> T:
+    plafond_qf = reform.payload.get("plafond_qf", {})
+    payload = plafond_qf.get("reduction_ss_condition_revenus", {})
+    node = reform.parameters.impot_revenu.plafond_qf.reduction_ss_condition_revenus
+    keys = ["seuil_maj_enf", "seuil1", "seuil2", "taux"]
+    update(payload.items(), keys, node, reform.period)
+    return type(reform)(*reform)
