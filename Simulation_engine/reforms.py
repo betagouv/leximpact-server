@@ -88,15 +88,14 @@ def decote(reform: T) -> T:
     taux = reform.payload.get("decote", {}).get("taux")
     node = reform.parameters.impot_revenu.decote
 
-    if seuil_couple:
+    if seuil_couple is not None:
         node.seuil_couple.update(period=reform.period, value=float(seuil_couple))
 
-    if seuil_celib:
+    if seuil_celib is not None:
         node.seuil_celib.update(period=reform.period, value=float(seuil_celib))
 
-    if taux:
-        node.seuil_celib.update(period=reform.period, value=float(taux))
-
+    if taux is not None:
+        node.taux.update(period=reform.period, value=float(taux))
     return type(reform)(*reform)
 
 
