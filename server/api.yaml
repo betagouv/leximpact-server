@@ -139,7 +139,7 @@ components:
                     seuil_couple:
                       type: integer
                     taux:
-                      type: integer
+                      type: number
                 plafond_qf:
                   type: object
                   properties:
