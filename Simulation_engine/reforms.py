@@ -83,7 +83,6 @@ def bareme(reform: T) -> T:
 
 
 def decote(reform: T) -> T:
-    print("mon payload : ", reform.payload.get("decote", {}))
     seuil_couple = reform.payload.get("decote", {}).get("seuil_couple")
     seuil_celib = reform.payload.get("decote", {}).get("seuil_celib")
     taux = reform.payload.get("decote", {}).get("taux")
