@@ -64,6 +64,19 @@ paths:
       responses:
           '201':
             description: Qu'est ce que c'est description
+  /calculate/simpop:
+    post:
+      summary: Calcule l'impact d'une loi sur la population (nécessite des données)
+      operationId: server.handlers.SimulationRunner.simuledeciles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/compareoldnew'
+      responses:
+          '201':
+            description: Impact de la loi sur les recettes de l'Etat et les déciles.
   /auth/login:
     post:
       summary: Authentifie l'usager
@@ -107,6 +120,8 @@ components:
     compareoldnew:
       type: object
       properties:
+        token:
+          type: string
         deciles:
           type: boolean
         reforme:
