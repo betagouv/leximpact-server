@@ -57,7 +57,7 @@ def noise(inputfile, outputfile=None): #add gaussian noise
 
     for var_noised in to_noise:
         print("noising {}".format(var_noised))
-        noise = np.random.normal(mu, sigma, [2,2]) 
+        noise = np.random.normal(0, sigma, [2,2]) 
         sig=df[var_noised]
         noise=np.random.lognormal(-sigma*sigma/2,sigma,[len(df)])
         adjed=sig*noise
