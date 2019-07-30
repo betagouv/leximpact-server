@@ -3,7 +3,7 @@ from Simulation_engine.simulate_pop_from_reform import (
     CompareOldNew,
     revenus_cas_types,
 )
-from server.services import login_user, check_user,with_session,send_mail
+from server.services import login_user, check_user,with_session,send_mail, create_request
 
 
 class CasTypes(object):
@@ -51,7 +51,8 @@ class SimulationRunner(object):
     @with_session
     def simuledeciles(session,**params: dict) -> tuple:
         dbod = params["body"]
-        if "token" in dbod and check_user(session,dbod["token"]):
+        email=check_user(session,dbod["token"]) if "token" in dbod else None
+        if "token" in dbod and email is not None:
             dct = None
             if "description_cas_types" in dbod:
                 return "bad request, no description_cas_types should be there",401
