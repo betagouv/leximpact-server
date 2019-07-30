@@ -54,6 +54,7 @@ class SimulationRunner(object):
         email=check_user(session,dbod["token"]) if "token" in dbod else None
         if "token" in dbod and email is not None:
             dct = None
+            create_request(session,email)
             if "description_cas_types" in dbod:
                 return "bad request, no description_cas_types should be there",401
             return (
