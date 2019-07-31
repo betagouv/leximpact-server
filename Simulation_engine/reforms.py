@@ -74,10 +74,10 @@ def bareme(reform: T) -> T:
 
     if taux:
         for i in range(len(taux)):
-            node[i].rate.update(period=reform.period, value=taux[i] * 0.01)
+            node[i].rate.update(period=reform.period, value=taux[i])
 
         for i in range(len(taux), len(node) - 1):
-            node[i].rate.update(period=reform.period, value=taux[-1] * 0.01)
+            node[i].rate.update(period=reform.period, value=taux[-1])
 
     return type(reform)(*reform)
 

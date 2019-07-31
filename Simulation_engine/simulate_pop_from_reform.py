@@ -565,7 +565,7 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
             "impot_revenu": {
                 "bareme": {
                     "seuils": [0] + taux[: len(taux) // 2],
-                    "taux": [0] + taux[len(taux) // 2 :],
+                    "taux": [0.0] + taux[len(taux) // 2 :],
                 }
             }
         }
@@ -579,20 +579,16 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
 
 
 if __name__ == "__main__":
-    taux = [9964, 27159, 73779, 156244, 14, 30, 41, 45]
     dictreform = {
         "impot_revenu": {
             "bareme": {
-                "seuils": [0] + taux[: len(taux) // 2],
-                "taux": [0] + taux[len(taux) // 2 :],
+                "seuils": [0, 9964, 27159, 73779, 156244],
+                "taux": [0, 0.14, 0.30, 0.41, 0.45]
             },
             "decote": {"seuil_celib": 1000, "seuil_couple": 2000},
         }
     }
     reform = IncomeTaxReform(TBS, dictreform, PERIOD)
-    # reform = reform_from_bareme(
-    #     TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
-    # )
     if version_beta_sans_simu_pop:
         simulation_reform = simulation(PERIOD, CAS_TYPE, reform, timer=time)
         compare(

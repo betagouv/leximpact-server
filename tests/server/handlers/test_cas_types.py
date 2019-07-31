@@ -11,7 +11,7 @@ def payload() -> dict:
             "impot_revenu": {
                 "bareme": {
                     "seuils": [9964, 27519, 73779, 156244],
-                    "taux": [12, 30, 41, 45],
+                    "taux": [0.12, 0.30, 0.41, 0.45],
                 },
                 "decote": {"seuil_celib": 1196, "seuil_couple": 1970, "taux": 50},
                 "plafond_qf": {
