@@ -640,7 +640,7 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
             "impot_revenu": {
                 "bareme": {
                     "seuils": [0] + taux[: len(taux) // 2],
-                    "taux": [0] + taux[len(taux) // 2 :],
+                    "taux": [0.0] + taux[len(taux) // 2 :],
                 }
             }
         }
