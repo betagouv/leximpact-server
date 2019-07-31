@@ -653,12 +653,11 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
 
 
 if __name__ == "__main__":
-    taux = [9964, 27159, 73779, 156244, 0.14, 0.30, 0.41, 0.45]
     dictreform = {
         "impot_revenu": {
             "bareme": {
-                "seuils": [0] + taux[: len(taux) // 2],
-                "taux": [0] + taux[len(taux) // 2 :],
+                "seuils": [0,9964, 27159, 73779, 156244],
+                "taux": [0, 0.14, 0.30, 0.41, 0.45]
             },
             "decote": {"seuil_celib": 1000, "seuil_couple": 2000},
         }
