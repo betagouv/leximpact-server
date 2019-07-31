@@ -43,7 +43,7 @@ def test_bareme_taux(parameters, instant, period, mocker):
     with mocker.patch.object(node, "update"):
         reform = ParametricReform(parameters, payload, instant, period)
         reform(bareme)
-        node.update.assert_called_once_with(period=period, value=taux )
+        node.update.assert_called_once_with(period=period, value=taux)
 
 
 def test_bareme_seuil(parameters, instant, period, mocker):
