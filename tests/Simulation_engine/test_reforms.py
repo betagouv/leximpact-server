@@ -36,14 +36,14 @@ def period():
 
 
 def test_bareme_taux(parameters, instant, period, mocker):
-    taux = 10
+    taux = 0.1
     payload = {"bareme": {"taux": [taux]}}
     node = parameters.impot_revenu.bareme.brackets[0].rate
 
     with mocker.patch.object(node, "update"):
         reform = ParametricReform(parameters, payload, instant, period)
         reform(bareme)
-        node.update.assert_called_once_with(period=period, value=taux * 0.01)
+        node.update.assert_called_once_with(period=period, value=taux )
 
 
 def test_bareme_seuil(parameters, instant, period, mocker):
