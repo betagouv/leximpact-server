@@ -21,3 +21,13 @@ def create_suspension(session, email, delay_hours=1):
     session.add(suspended)
     session.commit()
     return True
+
+
+def count_active_suspensions(session, email):
+    return (
+        session.query(Suspended)
+        .filter(
+            Suspended.email == email, Suspended.end_suspension > datetime.datetime.now()
+        )
+        .count()
+    )
