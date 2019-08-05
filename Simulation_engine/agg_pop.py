@@ -496,6 +496,42 @@ def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
     return res_to_return
 
 
+def compare_input_data(
+    input_h5="./Simulation_engine/dummy_data.h5",
+    input_h5_b="./Simulation_engine/dummy_data.h5",
+    name_variables=["rfr", "irpp", "nbptr"],
+):
+    list_useless_variables = []
+    PERIOD = "2018"
+    TBS = FranceTaxBenefitSystem()
+    DUMMY_DATA = load_data(input_h5)
+    simulation_base_deciles, dictionnaire_datagrouped = simulation(
+        PERIOD, DUMMY_DATA, TBS, timer=time
+    )
+    df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
+    for nv in name_variables:
+        df["{}_base".format(nv)] = simulation_base_deciles.calculate(nv, PERIOD)
+    isdif = False
+    data2 = load_data(input_h5_b)
+    col = "b"
+    newsim, ddg2 = simulation(PERIOD, data2, TBS, timer=time)
+    for nv in name_variables:
+        df["{}_{}".format(nv, col)] = newsim.calculate(nv, PERIOD)
+        # print(col,nv,resvar[nv]["countdif"])
+        # print(df[df["{}_{}".format(nv,col)]!=df["{}_base".format(nv)]],len(df[df["{}_{}".format(nv,col)]!=df["{}_base".format(nv)]]))
+        print(
+            nv,
+            len(df[df["{}_{}".format(nv, col)] != df["{}_base".format(nv)]]),
+            len(df[df["{}_{}".format(nv, col)] - df["{}_base".format(nv)] > 0.01])
+            + len(df[df["{}_{}".format(nv, col)] - df["{}_base".format(nv)] < -0.01]),
+        )
+        isdif |= len(
+            df[df["{}_{}".format(nv, col)] - df["{}_base".format(nv)] > 0.01]
+        ) + len(df[df["{}_{}".format(nv, col)] - df["{}_base".format(nv)] < -0.01])
+    df.to_csv("compa2.csv")
+    return isdif
+
+
 def test_useless_variables(
     input_h5="./Simulation_engine/dummy_data.h5",
     name_variables=["rfr", "irpp", "nbptr"],
@@ -847,6 +883,11 @@ def adjustment_example():
 #  - Enfants cumulés : 25% ecart?
 
 
-if __name__ == "__main__":
+def test_uselessness():
     pandas.options.mode.chained_assignment = None
     print("Useless variables are", test_useless_variables("dummy_data.h5"))
+
+
+if __name__ == "__main__":
+    pandas.options.mode.chained_assignment = None
+    compare_input_data("dummy_data_useful.h5", "dummy_data_useful_hachee.h5")
