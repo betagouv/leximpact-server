@@ -202,18 +202,10 @@ def compare_input_data(
     newsim, ddg2 = simulation(PERIOD, data2, TBS, timer=time)
     for nv in name_variables:
         df["{}_{}".format(nv, col)] = newsim.calculate(nv, PERIOD)
-        # print(col,nv,resvar[nv]["countdif"])
-        # print(df[df["{}_{}".format(nv,col)]!=df["{}_base".format(nv)]],len(df[df["{}_{}".format(nv,col)]!=df["{}_base".format(nv)]]))
-        print(
-            nv,
-            len(df[df["{}_{}".format(nv, col)] != df["{}_base".format(nv)]]),
-            len(df[df["{}_{}".format(nv, col)] - df["{}_base".format(nv)] > 0.01])
-            + len(df[df["{}_{}".format(nv, col)] - df["{}_base".format(nv)] < -0.01]),
-        )
+
         isdif |= len(
             df[df["{}_{}".format(nv, col)] - df["{}_base".format(nv)] > 0.01]
         ) + len(df[df["{}_{}".format(nv, col)] - df["{}_base".format(nv)] < -0.01])
-    df.to_csv("compa2.csv")
     return not isdif
 
 
