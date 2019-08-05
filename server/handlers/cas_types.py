@@ -3,10 +3,18 @@ from Simulation_engine.simulate_pop_from_reform import (
     CompareOldNew,
     revenus_cas_types,
 )
-from server.services import login_user, check_user,with_session,send_mail, create_request
+from server.services import (
+    login_user,
+    check_user,
+    with_session,
+    send_mail,
+    create_request,
+)
+
 
 def error_as_dict(errormessage):
-    return {"Error":errormessage}
+    return {"Error": errormessage}
+
 
 class CasTypes(object):
     def revenus(**params: dict) -> tuple:
@@ -49,29 +57,32 @@ class SimulationRunner(object):
             201,
         )
 
-
     @with_session
-    def simuledeciles(session,**params: dict) -> tuple:
+    def simuledeciles(session, **params: dict) -> tuple:
         dbod = params["body"]
         if "token" not in dbod:
-            return error_as_dict("missing token : necessary for this request"),200
-        CU=check_user(session, dbod["token"])
+            return error_as_dict("missing token : necessary for this request"), 200
+        CU = check_user(session, dbod["token"])
         if CU["success"] is False:
-            return error_as_dict(CU["error"]),200
-        email=CU["email"]
+            return error_as_dict(CU["error"]), 200
+        email = CU["email"]
         dct = None
-        create_request(session,email)
+        create_request(session, email)
         if "description_cas_types" in dbod:
-            return error_as_dict("bad request, no description_cas_types should appear"),200
-        
-        return error_as_dict("Request was valid, but population comparison not yet implemented on server side"),200
+            return (
+                error_as_dict("bad request, no description_cas_types should appear"),
+                200,
+            )
+
         return (
-            CompareOldNew(
-                taux=None,
-                isdecile=True,
-                dictreform=dbod["reforme"],
-                castypedesc=None,
+            error_as_dict(
+                "Request was valid, but population comparison not yet implemented on server side"
             ),
             200,
         )
-        
+        return (
+            CompareOldNew(
+                taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
+            ),
+            200,
+        )

@@ -18,4 +18,3 @@ def create_user(session, user: User) -> bool:
     session.add(user)
     session.commit()
     return True
-
