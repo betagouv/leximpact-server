@@ -1,23 +1,43 @@
 from typing import Optional
-from models.user import find_user, update_user_token
+from models.user import find_user
 from models.request import create_request
 from models.jwt import JWT, encode_jwt, decode_jwt
-from jwt.exceptions import InvalidSignatureError
+from jwt.exceptions import InvalidSignatureError, ExpiredSignatureError, DecodeError
 from datetime import datetime
 
-def check_user(session,tokenencoded:str) -> Optional[str]:
+#Now returns a dict : {"success" : boolean stating if the token is valid, 
+# "email" : {if success, email of user}, 
+# "error" : {if not success, reason for error}}
+def check_user(session,tokenencoded:str) -> dict:
     checkjwt=JWT()
     checkjwt.encoded=tokenencoded
+    resultat={}
     try:
         decode_jwt(checkjwt)
         user=find_user(session,checkjwt.decoded["sub"])
-        if user is not None and datetime.utcnow().timestamp()<checkjwt.decoded["exp"]:
-            return checkjwt.decoded["sub"]
-        else:
-            return None
+        if user is None:
+            resultat["success"]=False
+            resultat["error"]="User not found in email database"
+            return resultat
+        if datetime.utcnow().timestamp()>checkjwt.decoded["exp"]:
+            resultat["success"]=False
+            resultat["error"]="Token has expired!"
+        resultat["success"]=True
+        resultat["email"]=checkjwt.decoded["sub"]
+        return resultat
     except InvalidSignatureError:
-        return None
-
+        resultat["success"]=False
+        resultat["error"]="Token signature was invalid"
+        return resultat
+    except ExpiredSignatureError:
+        resultat["success"]=False
+        resultat["error"]="Token has expired"
+        return resultat
+    except DecodeError:
+        resultat["success"]=False
+        resultat["error"]="Token invalid : not Decodable"
+        return resultat
+    
 def login_user(session, email: str) -> str:#Optional[User]:
     user = find_user(session, email)
 
