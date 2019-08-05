@@ -18,3 +18,13 @@ def create_request(session, email):
     session.add(request)
     session.commit()
     return True
+
+
+def count_requests(session, email, since=datetime.timedelta(minutes=-1)):
+    return (
+        session.query(Request)
+        .filter(
+            Request.email == email, Request.timestamp > datetime.datetime.now() + since
+        )
+        .count()
+    )
