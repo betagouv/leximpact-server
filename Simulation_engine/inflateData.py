@@ -34,7 +34,7 @@ def inflate(inputfile, outputfile=None):
     final.to_hdf(outputfile, key="input")
 
 
-def noise(inputfile, outputfile=None): #add gaussian noise
+def noise(inputfile, outputfile=None):  # add gaussian noise
     if outputfile is None:
         outputfile = inputfile
     df = pd.read_hdf(inputfile)
@@ -57,12 +57,12 @@ def noise(inputfile, outputfile=None): #add gaussian noise
 
     for var_noised in to_noise:
         print("noising {}".format(var_noised))
-        noise = np.random.normal(0, sigma, [2,2]) 
-        sig=df[var_noised]
-        noise=np.random.lognormal(-sigma*sigma/2,sigma,[len(df)])
-        adjed=sig*noise
-        print(sum(sig),sum(noise)/len(noise),sum(adjed))
-        df[var_noised]=adjed
+        noise = np.random.normal(0, sigma, [2, 2])
+        sig = df[var_noised]
+        noise = np.random.lognormal(-sigma * sigma / 2, sigma, [len(df)])
+        adjed = sig * noise
+        print(sum(sig), sum(noise) / len(noise), sum(adjed))
+        df[var_noised] = adjed
     df.to_hdf(outputfile, key="input")
 
 
