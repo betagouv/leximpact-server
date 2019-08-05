@@ -496,6 +496,71 @@ def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
     return res_to_return
 
 
+def test_useless_variables(
+    input_h5="./Simulation_engine/dummy_data.h5",
+    name_variables=["rfr", "irpp", "nbptr"],
+):
+    list_useless_variables = []
+    PERIOD = "2018"
+    TBS = FranceTaxBenefitSystem()
+    DUMMY_DATA = load_data(input_h5)
+    simulation_base_deciles, dictionnaire_datagrouped = simulation(
+        PERIOD, DUMMY_DATA, TBS, timer=time
+    )
+    df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
+    for nv in name_variables:
+        df["{}_base".format(nv)] = simulation_base_deciles.calculate(nv, PERIOD)
+    for col in DUMMY_DATA.columns:
+        if col == "wprm":  # we don't want to remove this one
+            continue
+        isdif = False
+        data_wo_column = DUMMY_DATA[[k for k in DUMMY_DATA.columns if k != col]]
+        try:
+            newsim, ddg2 = simulation(PERIOD, data_wo_column, TBS, timer=time)
+            resvar = {nv: {} for nv in name_variables}
+            for nv in name_variables:
+                df["{}_{}".format(nv, col)] = newsim.calculate(nv, PERIOD)
+                resvar[nv]["countdif"] = len(
+                    df[df["{}_{}".format(nv, col)] != df["{}_base".format(nv)]]
+                )
+                # print(col,nv,resvar[nv]["countdif"])
+                # print(df[df["{}_{}".format(nv,col)]!=df["{}_base".format(nv)]],len(df[df["{}_{}".format(nv,col)]!=df["{}_base".format(nv)]]))
+                isdif |= resvar[nv]["countdif"]
+            if not isdif:
+                list_useless_variables += [col]
+            print(
+                col,
+                "is",
+                "not" if isdif else "",
+                "useless",
+                "{}".format([resvar[nv]["countdif"] for nv in name_variables])
+                if isdif
+                else "",
+            )
+        except:
+            print(col, "is definitely not useless")
+    data_wo_useless = DUMMY_DATA[
+        [k for k in DUMMY_DATA.columns if k not in list_useless_variables]
+    ]
+    newsim, ddg2 = simulation(PERIOD, data_wo_column, TBS, timer=time)
+    isdif = False
+    for nv in name_variables:
+        # print(col,nv,resvar[nv]["countdif"])
+        # print(df[df["{}_{}".format(nv,col)]!=df["{}_base".format(nv)]],len(df[df["{}_{}".format(nv,col)]!=df["{}_base".format(nv)]]))
+        isdif |= len(df[df["{}_{}".format(nv, col)] != df["{}_base".format(nv)]])
+    if isdif:
+        print("Removing all variables at once didn't work, good luck with that")
+    else:
+        outfile_path = input_h5.replace(".h5", "_useful.h5")
+        data_wo_useless.to_hdf(outfile_path, key="input")
+        print(
+            "It seems lots of columns don't do anything. Data with only useful columns was exported to {}".format(
+                outfile_path
+            )
+        )
+    return list_useless_variables
+
+
 def test_h5_input(
     input_h5="./Simulation_engine/dummy_data.h5",
     name_variables=["rfr", "irpp", "nbptr"],
@@ -707,7 +772,7 @@ def ajustement_h5(
     # J'ai ajusté le h5
 
 
-if __name__ == "__main__":
+def adjustment_example():
     ajustement_h5()
     print("before adj :")
     test_h5_input()
@@ -780,3 +845,8 @@ if __name__ == "__main__":
 #  - On a Une erreur totale sur la distrib de rfr < 2.5% après ajustement
 #  - nb maries & co : 25% ecart maximum
 #  - Enfants cumulés : 25% ecart?
+
+
+if __name__ == "__main__":
+    pandas.options.mode.chained_assignment = None
+    print("Useless variables are", test_useless_variables("dummy_data.h5"))
