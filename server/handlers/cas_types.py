@@ -4,10 +4,8 @@ from Simulation_engine.simulate_pop_from_reform import (
     revenus_cas_types,
 )
 from server.services import (
-    login_user,
     check_user,
     with_session,
-    send_mail,
     create_request,
 )
 
@@ -66,7 +64,6 @@ class SimulationRunner(object):
         if CU["success"] is False:
             return error_as_dict(CU["error"]), 200
         email = CU["email"]
-        dct = None
         create_request(session, email)
         if "description_cas_types" in dbod:
             return (

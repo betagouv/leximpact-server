@@ -1,9 +1,8 @@
-from typing import Optional
 from models.user import find_user
-from models.request import create_request
 from models.jwt import JWT, encode_jwt, decode_jwt
 from jwt.exceptions import InvalidSignatureError, ExpiredSignatureError, DecodeError
 from datetime import datetime
+
 
 # Now returns a dict : {"success" : boolean stating if the token is valid,
 # "email" : {if success, email of user},

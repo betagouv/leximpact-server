@@ -1,6 +1,4 @@
 from mailjet_rest import Client
-import os
-import sys
 from os import getenv
 from dotenv import load_dotenv
 
