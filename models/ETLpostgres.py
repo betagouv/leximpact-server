@@ -1,6 +1,6 @@
-import sqlalchemy
+import sqlalchemy  # type: ignore
 from repo.config import database_config, database_url
-import pandas
+import pandas  # type: ignore
 import os
 
 user, pswd, host, port, name, _ = database_config()
@@ -15,10 +15,10 @@ def load_data(filename: str):
     return pandas.read_csv(path)
 
 
-def to_postgres(filepath, tablename):
+def to_postgres(filepath, tablename, if_exists="append"):
     engine = sqlalchemy.create_engine(database_url())  # connect to server
     df = load_data(filepath)
-    df.to_sql(tablename, engine, index=False)
+    df.to_sql(tablename, engine, if_exists=if_exists, index=False)
 
 
 def from_postgres(tablename):

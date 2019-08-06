@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Dict, List
+from typing import Dict, List, Optional
 import time
 import os
 
@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
 
-data_path = os.getenv("DATA_PATH")
+data_path = os.getenv("DATA_PATH")  # type: Optional[str]
 # Config
 version_beta_sans_simu_pop = True
 adjust_results = True
@@ -24,12 +24,13 @@ Total = Dict[str, float]
 Deciles = List[Dict[str, float]]
 
 
-def load_data(filename: str):
+def load_data(filename: Optional[str]):
+    assert filename is not None
     path = os.path.join(os.path.dirname(__file__), filename)
 
     if filename[-3:] == ".h5":
         return pandas.read_hdf(path)
-    if filename[-4:] == ".csv":
+    if "." in filename:
         return pandas.read_csv(path)
     return from_postgres(filename)
 
