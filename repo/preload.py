@@ -1,4 +1,4 @@
-from ETLpostgres import to_postgres
+from models import to_postgres
 import os
 
 
