@@ -1,4 +1,4 @@
-from mailjet_rest import Client
+from mailjet_rest import Client  # type: ignore
 from os import getenv
 from dotenv import load_dotenv
 

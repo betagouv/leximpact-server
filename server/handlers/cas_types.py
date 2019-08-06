@@ -3,11 +3,8 @@ from Simulation_engine.simulate_pop_from_reform import (
     CompareOldNew,
     revenus_cas_types,
 )
-from server.services import (
-    check_user,
-    with_session,
-    create_request,
-)
+from server.services import check_user, with_session
+from models.request import create_request
 
 
 def error_as_dict(errormessage):

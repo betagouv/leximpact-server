@@ -1,16 +1,21 @@
 from models.user import find_user
 from models.jwt import JWT, encode_jwt, decode_jwt
-from jwt.exceptions import InvalidSignatureError, ExpiredSignatureError, DecodeError
+from jwt.exceptions import (  # type: ignore
+    InvalidSignatureError,
+    ExpiredSignatureError,
+    DecodeError,
+)
 from datetime import datetime
+from typing import Dict, Optional, Any
 
 
 # Now returns a dict : {"success" : boolean stating if the token is valid,
 # "email" : {if success, email of user},
 # "error" : {if not success, reason for error}}
-def check_user(session, tokenencoded: str) -> dict:
+def check_user(session, tokenencoded: str) -> Dict[str, Any]:
     checkjwt = JWT()
     checkjwt.encoded = tokenencoded
-    resultat = {}
+    resultat = {}  # type: Dict[str, Any]
     try:
         decode_jwt(checkjwt)
         user = find_user(session, checkjwt.decoded["sub"])
@@ -38,7 +43,7 @@ def check_user(session, tokenencoded: str) -> dict:
         return resultat
 
 
-def login_user(session, email: str) -> str:  # Optional[User]:
+def login_user(session, email: str) -> Optional[JWT]:  # Optional[User]:
     user = find_user(session, email)
 
     if not user:
