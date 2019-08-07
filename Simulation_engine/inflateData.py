@@ -66,7 +66,8 @@ def noise(inputfile, outputfile=None):  # add gaussian noise
             print(sum(sig), sum(noise) / len(noise), sum(adjed))
             df[var_noised] = adjed
     import os
-    print(inputfile,outputfile,os.listdir("."))
+
+    print(inputfile, outputfile, os.listdir("."))
     df.to_hdf(outputfile, key="input")
 
 
