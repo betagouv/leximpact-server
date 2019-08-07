@@ -7,19 +7,17 @@ import os
 import math
 
 from openfisca_france import FranceTaxBenefitSystem
-from simulate_pop_from_reform import reform_generique, simulation, compare
+from simulate_pop_from_reform import simulation
 
 
 def aggregats_ff(
-    period: str, simulation_base, name_variables=["rfr", "irpp", "nbptr"], verbose=False
+    period: str, simulation_base, name_variables=("rfr", "irpp", "nbptr"), verbose=False
 ):
-    res = []
-    for simulation, dictionnaire_datagrouped in [simulation_base]:
-        df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
+    for sim, dictionnaire_datagrouped in [simulation_base]:
         for nomvariable in name_variables:
             dictionnaire_datagrouped["foyer_fiscal"][
                 nomvariable
-            ] = simulation.calculate(nomvariable, period)
+            ] = sim.calculate(nomvariable, period)
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = (
                 dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                 * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
@@ -185,9 +183,8 @@ def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
 def compare_input_data(
     input_h5="./Simulation_engine/dummy_data.h5",
     input_h5_b="./Simulation_engine/dummy_data.h5",
-    name_variables=["rfr", "irpp", "nbptr"],
+    name_variables=("rfr", "irpp", "nbptr"),
 ):
-    list_useless_variables = []
     PERIOD = "2018"
     TBS = FranceTaxBenefitSystem()
     DUMMY_DATA = pandas.read_hdf(input_h5)
@@ -213,7 +210,7 @@ def compare_input_data(
 def test_useless_variables(
     input_h5="./Simulation_engine/dummy_data.h5",
     outfile_path=None,
-    name_variables=["rfr", "irpp", "nbptr"],
+    name_variables=("rfr", "irpp", "nbptr"),
 ):
     pandas.options.mode.chained_assignment = None
     list_useless_variables = []
@@ -253,7 +250,7 @@ def test_useless_variables(
                 if isdif
                 else "",
             )
-        except:
+        except Exception:
             print(col, "is definitely not useless")
     data_wo_useless = DUMMY_DATA[
         [k for k in DUMMY_DATA.columns if k not in list_useless_variables]
@@ -280,7 +277,7 @@ def test_useless_variables(
 
 def test_h5_input(
     input_h5="./Simulation_engine/dummy_data.h5",
-    name_variables=["rfr", "irpp", "nbptr"],
+    name_variables=("rfr", "irpp", "nbptr"),
     aggfunc="sum",
     compdic=None,
 ):
@@ -453,7 +450,7 @@ def ajustement_h5(
     # OK now that this great function works (does it? Why not try it? comparing it now to the original function??)
     # I can generate the REAL rfr
 
-    ### End of step 2.
+    # End of step 2.
 
     testerrorvalues(df, "rfr", "wprm")
     aa = testerrorvalues(df, "realrfr", "realwprm")
