@@ -16,7 +16,7 @@ load_dotenv(dotenv_path=".env")
 
 data_path = os.getenv("DATA_PATH")  # type: Optional[str]
 # Config
-version_beta_sans_simu_pop = True
+version_beta_sans_simu_pop = False
 adjust_results = True
 
 # Types
@@ -282,6 +282,7 @@ if not version_beta_sans_simu_pop:
     SIMPOP_BASE = SIMPOP(tbs=TBS)
     # Keeping computations short with option to keep file under 1000 FF
     DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
+    print("Dummy Data loaded", len(DUMMY_DATA), "lines")
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
 
