@@ -25,9 +25,9 @@ Deciles = List[Dict[str, float]]
 
 
 def load_data(filename: Optional[str]):
-    assert filename is not None
+    if filename is None:
+        filename = "DCT.csv"
     path = os.path.join(os.path.dirname(__file__), filename)
-
     if filename[-3:] == ".h5":
         return pandas.read_hdf(path)
     if "." in filename:
