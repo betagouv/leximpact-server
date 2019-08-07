@@ -27,7 +27,8 @@ def inflate(inputfile, outputfile=None):
     final = df.copy()
     adjrate = pow(1 + rateinfla, endp - startp)
     for vartoinflate in to_inflate:
-        final[vartoinflate] = final[vartoinflate] * adjrate
+        if vartoinflate in final.columns:
+            final[vartoinflate] = final[vartoinflate] * adjrate
     InflaFF = 1.03181
     # augmentation du nombre de FF de 2012 à 2016.
     final["wprm"] = final["wprm"] * InflaFF
@@ -56,13 +57,16 @@ def noise(inputfile, outputfile=None):  # add gaussian noise
     sigma = 0.02
 
     for var_noised in to_noise:
-        print("noising {}".format(var_noised))
-        noise = np.random.normal(0, sigma, [2, 2])
-        sig = df[var_noised]
-        noise = np.random.lognormal(-sigma * sigma / 2, sigma, [len(df)])
-        adjed = sig * noise
-        print(sum(sig), sum(noise) / len(noise), sum(adjed))
-        df[var_noised] = adjed
+        if var_noised in df.columns:
+            print("noising {}".format(var_noised))
+            noise = np.random.normal(0, sigma, [2, 2])
+            sig = df[var_noised]
+            noise = np.random.lognormal(-sigma * sigma / 2, sigma, [len(df)])
+            adjed = sig * noise
+            print(sum(sig), sum(noise) / len(noise), sum(adjed))
+            df[var_noised] = adjed
+    import os
+    print(inputfile,outputfile,os.listdir("."))
     df.to_hdf(outputfile, key="input")
 
 

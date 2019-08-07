@@ -6,7 +6,8 @@ import time
 import os
 import math
 
-from simulate_pop_from_reform import load_data, reform_generique, simulation, compare
+from openfisca_france import FranceTaxBenefitSystem
+from simulate_pop_from_reform import reform_generique, simulation, compare
 
 
 def aggregats_ff(
@@ -189,7 +190,7 @@ def compare_input_data(
     list_useless_variables = []
     PERIOD = "2018"
     TBS = FranceTaxBenefitSystem()
-    DUMMY_DATA = load_data(input_h5)
+    DUMMY_DATA = pandas.read_hdf(input_h5)
     simulation_base_deciles, dictionnaire_datagrouped = simulation(
         PERIOD, DUMMY_DATA, TBS, timer=time
     )
@@ -197,7 +198,7 @@ def compare_input_data(
     for nv in name_variables:
         df["{}_base".format(nv)] = simulation_base_deciles.calculate(nv, PERIOD)
     isdif = False
-    data2 = load_data(input_h5_b)
+    data2 = pandas.read_hdf(input_h5_b)
     col = "b"
     newsim, ddg2 = simulation(PERIOD, data2, TBS, timer=time)
     for nv in name_variables:
@@ -211,12 +212,14 @@ def compare_input_data(
 
 def test_useless_variables(
     input_h5="./Simulation_engine/dummy_data.h5",
+    outfile_path=None,
     name_variables=["rfr", "irpp", "nbptr"],
 ):
+    pandas.options.mode.chained_assignment = None
     list_useless_variables = []
     PERIOD = "2018"
     TBS = FranceTaxBenefitSystem()
-    DUMMY_DATA = load_data(input_h5)
+    DUMMY_DATA = pandas.read_hdf(input_h5)
     simulation_base_deciles, dictionnaire_datagrouped = simulation(
         PERIOD, DUMMY_DATA, TBS, timer=time
     )
@@ -264,7 +267,8 @@ def test_useless_variables(
     if isdif:
         print("Removing all variables at once didn't work, good luck with that")
     else:
-        outfile_path = input_h5.replace(".h5", "_useful.h5")
+        if outfile_path is None:
+            outfile_path = input_h5.replace(".h5", "_useful.h5")
         data_wo_useless.to_hdf(outfile_path, key="input")
         print(
             "It seems lots of columns don't do anything. Data with only useful columns was exported to {}".format(
@@ -282,7 +286,7 @@ def test_h5_input(
 ):
     PERIOD = "2018"
     TBS = FranceTaxBenefitSystem()
-    DUMMY_DATA = load_data(input_h5)
+    DUMMY_DATA = pandas.read_hdf(input_h5)
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
     df = aggregats_ff(PERIOD, simulation_base_deciles, name_variables).sort_values(
         by="rfr"
@@ -348,10 +352,11 @@ def ajustement_h5(
     output_h5="./Simulation_engine/dummy_data_ajuste.h5",
     distribution_rfr_population="./Simulation_engine/Calib/ResFinalCalibSenat.csv",
 ):
+    print("puréé", os.listdir("."))
     PERIOD = "2018"
     ajuste_h5 = output_h5
     TBS = FranceTaxBenefitSystem()
-    DUMMY_DATA = load_data(input_h5)
+    DUMMY_DATA = pandas.read_hdf(input_h5)
     # Keeping computations short with option to keep file under 1000 FF
     # DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
@@ -475,6 +480,7 @@ def ajustement_h5(
         # "loyer",
         # "taxe_habitation",
     ]
+    colsrevenus = [col for col in colsrevenus if col in to_transform.columns]
     for cp in colspoids:
         to_transform[cp] = to_transform[cp] * to_transform["total_ajust_poids"]
     for cp in colsrevenus:
