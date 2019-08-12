@@ -24,14 +24,20 @@ def user(mocker, setup, cleanup, email):
 def test_auth_login(user, client, headers, mimetype):
     data = {"email": user.email}
     response = client.post("auth/login", data=dumps(data), headers=headers)
-    assert loads(response.data) == ""
+    assert (
+        loads(response.data)
+        == "Bien reçu! Si l'email est valide, nous avons envoyé un mail de confirmation"
+    )
     assert response.content_type == mimetype
-    assert response.status_code == 201
+    assert response.status_code == 200
 
 
 def test_auth_login_when_no_user(client, headers, mimetype):
     data = {"email": "richard@leximpact.pop"}
     response = client.post("auth/login", data=dumps(data), headers=headers)
-    assert loads(response.data) == ""
+    assert (
+        loads(response.data)
+        == "Bien reçu! Si l'email est valide, nous avons envoyé un mail de confirmation"
+    )
     assert response.content_type == mimetype
-    assert response.status_code == 401
+    assert response.status_code == 200

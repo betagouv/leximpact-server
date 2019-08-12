@@ -14,10 +14,6 @@ def user(session, email):
     return find_user(session, email)
 
 
-def test_login_user(session, user):
-    assert login_user(session, user.email).token
-
-
 def test_login_user_when_not_in_list(session):
     assert not login_user(session, "malevolent@villain.hacker")
 

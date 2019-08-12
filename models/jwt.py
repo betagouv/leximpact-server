@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from hashlib import sha3_512
 from secrets import randbelow, token_bytes
-from typing import Dict, Optional, TypeVar, Union
+from typing import Dict, TypeVar, Union, Any
 from os import getenv
 
 from dotenv import load_dotenv
@@ -23,7 +23,7 @@ class JWT:
         self.aud: str = getenv("JWT_AUDIENCE")  # type: ignore
         self.secret: str = getenv("JWT_SECRET")  # type: ignore
         self.encoded: str = None  # type: ignore
-        self.decoded: Optional[dict] = None
+        self.decoded: Dict[str, Any] = None  # type: ignore
 
 
 def encode_jwt(jwt: T, email: str) -> T:

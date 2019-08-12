@@ -7,4 +7,5 @@ from .jwt import (  # noqa
     create_token,
     decode_token,
 )
-from .user import User, find_user, create_user, update_user_token  # noqa
+from .user import User, find_user, create_user  # noqa
+from .request import create_request  # noqa
