@@ -4,6 +4,7 @@ from Simulation_engine.simulate_pop_from_reform import (
     revenus_cas_types,
 )
 from server.services import check_user, with_session
+from datetime import datetime
 
 
 def error_as_dict(errormessage):
@@ -22,6 +23,7 @@ class CasTypes(object):
 
 class SimulationRunner(object):
     def simulereforme(**params: dict) -> tuple:
+        timestamprequest = datetime.now()
         dbod = params["body"]
         dct = None
         if "description_cas_types" in dbod:
@@ -29,18 +31,15 @@ class SimulationRunner(object):
             dct = dbod["description_cas_types"]
         else:
             isdecile = dbod["deciles"]
-        return (
-            CompareOldNew(
-                taux=None,
-                isdecile=isdecile,
-                dictreform=dbod["reforme"],
-                castypedesc=dct,
-            ),
-            201,
+        dic_resultat = CompareOldNew(
+            taux=None, isdecile=isdecile, dictreform=dbod["reforme"], castypedesc=dct
         )
+        dic_resultat["timestamp"] = timestamprequest
+        return (dic_resultat, 201)
 
     @with_session
     def simuledeciles(session, **params: dict) -> tuple:
+        timestamprequest = datetime.now()
         dbod = params["body"]
         if "token" not in dbod:
             return error_as_dict("missing token : necessary for this request"), 200
@@ -53,9 +52,8 @@ class SimulationRunner(object):
                 200,
             )
 
-        return (
-            CompareOldNew(
-                taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
-            ),
-            200,
+        dic_resultat = CompareOldNew(
+            taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
         )
+        dic_resultat["timestamp"] = timestamprequest
+        return (dic_resultat, 200)

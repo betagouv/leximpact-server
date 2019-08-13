@@ -53,5 +53,7 @@ def test_calculate_compare(client, payload, headers):
     payload_full = dict({**payload, "description_cas_types": cas_types})
     actual = json.loads(response(data=json.dumps(payload)).data)
     expected = json.loads(response(data=json.dumps(payload_full)).data)
-
+    # Equalizing timestamps, these should not be equal :)
+    actual.update({"timestamp": ""})
+    expected.update({"timestamp": ""})
     assert actual == expected
