@@ -20,7 +20,10 @@ def create_request(session, email):
     return True
 
 
-def count_requests(session, email, since=datetime.timedelta(minutes=-1)):
+defaultsince = datetime.timedelta(minutes=-1)
+
+
+def count_requests(session, email, since=defaultsince):
     return (
         session.query(Request)
         .filter(

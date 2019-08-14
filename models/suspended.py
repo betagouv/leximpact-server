@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, DateTime, Integer  # type: ignore
 from sqlalchemy.ext.declarative import declarative_base  # type: ignore
-from typing import Any, Optional
+from typing import Any
 import datetime
 
 Base: Any = declarative_base()
