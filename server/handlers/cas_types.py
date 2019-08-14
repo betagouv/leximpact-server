@@ -66,12 +66,6 @@ class SimulationRunner(object):
             )
 
         return (
-            error_as_dict(
-                "Request was valid, but population comparison not yet implemented on server side"
-            ),
-            200,
-        )
-        return (
             CompareOldNew(
                 taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
             ),
