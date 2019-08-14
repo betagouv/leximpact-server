@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Dict, List
+from typing import Dict, List, Optional
 import time
 import os
 
@@ -7,11 +7,16 @@ import pandas  # type: ignore
 
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
-
+from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
 
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=".env")
+
+data_path = os.getenv("DATA_PATH")  # type: Optional[str]
 # Config
-version_beta_sans_simu_pop = True
+version_beta_sans_simu_pop = False
 adjust_results = True
 
 # Types
@@ -19,13 +24,15 @@ Total = Dict[str, float]
 Deciles = List[Dict[str, float]]
 
 
-def load_data(filename: str):
+def load_data(filename: Optional[str]):
+    if filename is None:
+        filename = "DCT.csv"
     path = os.path.join(os.path.dirname(__file__), filename)
-
     if filename[-3:] == ".h5":
         return pandas.read_hdf(path)
-
-    return pandas.read_csv(path)
+    if "." in filename:
+        return pandas.read_csv(path)
+    return from_postgres(filename)
 
 
 def simulation(period, data, tbs, timer=None):
@@ -270,13 +277,13 @@ SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs=TBS)
 
 if not version_beta_sans_simu_pop:
-    DUMMY_DATA = load_data("dummy_data.h5")
+    DUMMY_DATA = load_data(data_path)
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
     # Keeping computations short with option to keep file under 1000 FF
     DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
+    print("Dummy Data loaded", len(DUMMY_DATA), "lines")
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
-
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
 
 
@@ -583,7 +590,7 @@ if __name__ == "__main__":
         "impot_revenu": {
             "bareme": {
                 "seuils": [0, 9964, 27159, 73779, 156244],
-                "taux": [0, 0.14, 0.30, 0.41, 0.45]
+                "taux": [0, 0.14, 0.30, 0.41, 0.45],
             },
             "decote": {"seuil_celib": 1000, "seuil_couple": 2000},
         }
