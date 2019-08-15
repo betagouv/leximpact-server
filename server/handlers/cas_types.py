@@ -21,18 +21,6 @@ class CasTypes(object):
 
 
 class SimulationRunner(object):
-    def compare(**params: dict) -> tuple:
-        dbod = params["body"]
-        return (
-            [
-                CompareOldNew(
-                    dbod["bareme_ir"]["seuils"] + dbod["bareme_ir"]["taux"],
-                    dbod["deciles"],
-                )
-            ],
-            201,
-        )
-
     def simulereforme(**params: dict) -> tuple:
         dbod = params["body"]
         dct = None

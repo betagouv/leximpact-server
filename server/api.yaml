@@ -38,19 +38,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/description_cas_types'
-  /calculate/compare_old:
-    post:
-      summary: Calcule l'impact d'une loi
-      operationId: server.handlers.SimulationRunner.compare
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/compareoldnew_old'
-      responses:
-          '201':
-            description: Qu'est ce que c'est description
   /calculate/compare:
     post:
       summary: Calcule l'impact d'une loi
