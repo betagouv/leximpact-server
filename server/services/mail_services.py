@@ -30,5 +30,6 @@ def send_mail(
         ]
     }
     result = mailjet.send.create(data=data)
-    print(result.status_code)
-    print(result.json())
+    assert result.status_code == 200
+    # print(result.status_code)
+    # print(result.json())
