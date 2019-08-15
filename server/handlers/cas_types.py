@@ -4,7 +4,6 @@ from Simulation_engine.simulate_pop_from_reform import (
     revenus_cas_types,
 )
 from server.services import check_user, with_session
-from models.request import create_request
 
 
 def error_as_dict(errormessage):
@@ -60,20 +59,12 @@ class SimulationRunner(object):
         CU = check_user(session, dbod["token"])
         if CU["success"] is False:
             return error_as_dict(CU["error"]), 200
-        email = CU["email"]
-        create_request(session, email)
         if "description_cas_types" in dbod:
             return (
                 error_as_dict("bad request, no description_cas_types should appear"),
                 200,
             )
 
-        return (
-            error_as_dict(
-                "Request was valid, but population comparison not yet implemented on server side"
-            ),
-            200,
-        )
         return (
             CompareOldNew(
                 taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
