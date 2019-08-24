@@ -27,12 +27,9 @@ class SimulationRunner(object):
         dbod = params["body"]
         dct = None
         if "description_cas_types" in dbod:
-            isdecile = False
             dct = dbod["description_cas_types"]
-        else:
-            isdecile = dbod["deciles"]
         dic_resultat = CompareOldNew(
-            taux=None, isdecile=isdecile, dictreform=dbod["reforme"], castypedesc=dct
+            taux=None, isdecile=False, dictreform=dbod["reforme"], castypedesc=dct
         )
         dic_resultat["timestamp"] = timestamprequest
         return (dic_resultat, 201)
