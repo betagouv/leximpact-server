@@ -110,22 +110,6 @@ def simulation(period, data, tbs):
                 period,
                 dictionnaire_datagrouped[tbs.get_variable(colonne).entity.key][colonne],
             )
-            # print(
-            #     "{} was attributed to {}".format(
-            #         colonne, tbs.get_variable(colonne).entity.key
-            #     )
-            # )
-
-            # except (Exception):
-            #     try:
-            #         print(
-            #             "{} failed to be attributed to {}".format(
-            #                 colonne, tbs.get_variable(colonne).entity.key
-            #             )
-            #         )
-            #     except (Exception):
-            #         print("{} was attributed to NOUGHT".format(colonne))
-            #     raise
     return simulation, dictionnaire_datagrouped
 
 
@@ -146,15 +130,6 @@ def compare(period: str, simulation_base, simulation_reform, compute_deciles=Tru
                 * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
             )
 
-            # print(
-            #     "{} sum : {}  mean : {}".format(
-            #         nomvariable,
-            #         dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum(),
-            #         dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum()
-            #         / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum(),
-            #     )
-            # )
-
             if nomvariable == "irpp":
                 res += [
                     -dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum()
@@ -168,7 +143,6 @@ def compare(period: str, simulation_base, simulation_reform, compute_deciles=Tru
     total: Total = {"avant": res[0], "apres": res[1]}
 
     if compute_deciles:
-        # print("Computing Deciles")
         totweight = dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
@@ -200,9 +174,6 @@ def compare(period: str, simulation_base, simulation_reform, compute_deciles=Tru
                 ]
                 numdecile += 1
 
-        # print("In fine ", currw, currb, curra)
-        # print("mes valeurs agreg deciles :", decilesres)
-        # print("mes valeurs diff deciles :", decdiffres)
         # TODO : interpolate quantiles instead of doing the granular approach
         # This is the only TODO part in this code, I highly doubt it's the most pressing matter
 
@@ -219,7 +190,6 @@ def compare(period: str, simulation_base, simulation_reform, compute_deciles=Tru
     else:  # This only interests us for the castypes
         resultat = {"total": total, "res_brut": df.to_dict()}
 
-    # print(resultat)
     return resultat
 
 
@@ -275,7 +245,6 @@ def foyertotexte(idfoy, data=None):
     if data is None:
         data = CAS_TYPE
     myct = data[data["idfoy"] == idfoy]
-    # print("Je fais un foyer to texte pour le foyer ",idfoy,myct)
     decl = myct[myct["quifoyof"] == "declarant_principal"]
     nbdecl = len(decl)
     nbpacs = len(myct) - nbdecl
@@ -576,7 +545,6 @@ if __name__ == "__main__":
         compare(
             PERIOD, simulation_base_castypes, simulation_reform, compute_deciles=False
         )
-        print("Et l'autre)")
         CompareOldNew("osef", False, dictreform, desc_cas_types())
     else:
         simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)

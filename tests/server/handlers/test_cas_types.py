@@ -54,6 +54,9 @@ def test_calculate_compare(client, payload, headers):
     actual = json.loads(response(data=json.dumps(payload)).data)
     expected = json.loads(response(data=json.dumps(payload_full)).data)
     # Equalizing timestamps, these should not be equal :)
-    actual.update({"timestamp": ""})
-    expected.update({"timestamp": ""})
-    assert actual == expected
+    assert actual.keys() == expected.keys()
+    assert actual['res_brut'] == expected['res_brut']
+    assert actual['total'] == expected['total']
+    actual_timestamp = datetime.strptime(actual['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
+    expected_timestamp = datetime.strptime(expected['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
+    assert actual_timestamp < expected_timestamp

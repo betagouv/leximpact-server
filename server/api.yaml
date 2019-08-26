@@ -88,22 +88,6 @@ components:
           type: string
     revenus:
       type: object
-    compareoldnew_old:
-      type: object
-      properties:
-        isdecile:
-          type: boolean
-        bareme_ir:
-          type: object
-          properties:
-            seuils:
-              type: array
-              items:
-                type: integer
-            taux:
-              type: array
-              items:
-                type: number
     compareoldnew:
       type: object
       properties:
