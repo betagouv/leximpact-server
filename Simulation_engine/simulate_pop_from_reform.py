@@ -313,7 +313,7 @@ def foyertodictcastype(idfoy, data=None):
                 (data["idfoy"] == idfoy)
                 & (
                     (data["retraite_brute"] > 0)
-                    | ((data["salaire_de_base"] < 1) & (data["age"] >= 55))
+                    | ((data["salaire_de_base"] < 1) & (data["age"] >= 65))
                 )
             ]
         )
@@ -326,12 +326,57 @@ def foyertodictcastype(idfoy, data=None):
     )
     assert not (outremer1 * outremer2)
 
+    nb_decl_parent_isole = (
+        1
+        if (
+            nbpr == 1
+            and (
+                (
+                    "caseL" in data
+                    and len(data[(data["idfoy"] == idfoy) & (data["caseL"])])
+                )
+                or (
+                    "caseT" in data
+                    and len(data[(data["idfoy"] == idfoy) & (data["caseT"])])
+                )
+            )
+        )
+        else 0
+    )
+    nbveuf = len(data[(data["idfoy"] == idfoy) & (data["statut_marital"] == 4)])
+    nb_decl_invalides = (
+        len(data[(data["idfoy"] == idfoy) & (data["quifoy"] <= 1) & (data["invalide"])])
+        if "invalide" in data
+        else 0
+    )
+    nb_pac_invalides = (
+        len(data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1) & (data["invalide"])])
+        if "invalide" in data
+        else 0
+    )
+    nb_anciens_combattants = (
+        1
+        if ("caseW" in data and len(data[(data["idfoy"] == idfoy) & (data["caseW"])]))
+        else 0
+    )
+    nb_pac_charge_partagee = (
+        len(data[(data["idfoy"] == idfoy) & (data["charge_alternee"])])
+        if "charge_alternee" in data
+        else 0
+    )
+
     dicres = {
         "revenu": int(revenu),
         "nombre_declarants": int(nbpr),
         "nombre_personnes_a_charge": int(nbpac),
         "nombre_declarants_retraites": int(nbret),
         "outre_mer": 1 * outremer1 + 2 * outremer2,
+        "nb_decl_veuf": nbveuf,
+        "nb_decl_parent_isole": nb_decl_parent_isole,
+        "nb_decl_invalides": nb_decl_invalides,
+        "nb_pac_invalides": nb_pac_invalides,
+        "nb_anciens_combattants": nb_anciens_combattants,
+        "nb_pac_charge_partagee": nb_pac_charge_partagee,
     }
     return dicres
 
@@ -404,7 +449,13 @@ def dataframe_from_cas_types_description(descriptions):
         "residence_fiscale_guyane",
         "quifoyof",
         "quifamof",
+        "caseL",
+        "caseT",
+        "caseW",
+        "garde_alternee",
+        "invalidite",
     ]
+
     # liste des cols valant 0
     zerocols = [
         "chomage_brut",
@@ -446,9 +497,23 @@ def dataframe_from_cas_types_description(descriptions):
     )  # vecteur nous informant si le ff est "retraité", i.e. plus de 65 ans. On mettra aussi le revenu
     # en "retraite brute"
 
+    # Si le dico est à l'ancien format, on l'accepte quand même, tout le monde est bienvenu chez nous
+
+    valeurs_zero_si_absentes = [
+        "nb_decl_parent_isole",
+        "nb_decl_veuf",
+        "nb_decl_invalides",
+        "nb_pac_invalides",
+        "nb_anciens_combattants",
+        "nb_pac_charge_partagee",
+    ]
+
     indexfoyer = 0
     indexpac = 2
     for ct in descriptions:
+        for to_zero in valeurs_zero_si_absentes:
+            if to_zero not in ct:
+                ct[to_zero] = 0
         nbd = ct["nombre_declarants"]
         nbc = ct["nombre_personnes_a_charge"]
         for colid in ["idfoy", "idmen", "idfam"]:
@@ -473,15 +538,38 @@ def dataframe_from_cas_types_description(descriptions):
         indexpac += nbc
         dres["residence_fiscale_guadeloupe"] += [ct["outre_mer"] == 1] * (nbd + nbc)
         dres["residence_fiscale_guyane"] += [ct["outre_mer"] == 2] * (nbd + nbc)
-        if ct["nombre_declarants_retraites"]:
+
+        # Ces variables s'appliquent au foyer fiscal. On applique donc la valeur à tout le cas type
+        dres["caseT"] += [1 if ct["nb_decl_parent_isole"] and nbc else 0] * (nbd + nbc)
+        dres["caseL"] += [1 if ct["nb_decl_parent_isole"] and not nbc else 0] * (
+            nbd + nbc
+        )
+        dres["caseW"] += [1 if ct["nb_anciens_combattants"] else 0] * (nbd + nbc)
+
+        # separe le revenu en 2 si il y a 2 déclarants:
+        if ct["nombre_declarants_retraites"] == nbd:
             dres["retraite_brute"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
             dres["salaire_de_base"] += [0] * (nbd + nbc)
             isretraite += [1] * (nbd) + [0] * (nbc)
+        elif ct["nombre_declarants_retraites"] == 1 and nbd == 2:
+            # On décrète que le retraité, c'est le 2ème !
+            dres["retraite_brute"] += [0] + [ct["revenu"] / nbd] + [0] * nbc
+            dres["salaire_de_base"] += [ct["revenu"] / nbd] + [0] + [0] * (nbc)
+            isretraite += [0] + [1] + [0] * (nbc)
         else:
             isretraite += [0] * (nbd + nbc)
             dres["salaire_de_base"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
             dres["retraite_brute"] += [0] * (nbd + nbc)
         indexfoyer += 1
+
+        dres["invalidite"] += [
+            1 if id_declarant < ct["nb_decl_invalides"] else 0
+            for id_declarant in range(nbd)
+        ] + [1 if id_pac < ct["nb_pac_invalides"] else 0 for id_pac in range(nbc)]
+        # TODO : be able to choose if garde_alternee personnes_a_charges are also the ones with invalidite or not
+        dres["garde_alternee"] += [0] * nbd + [
+            1 if id_pac < ct["nb_pac_invalides"] else 0 for id_pac in range(nbc)
+        ]
 
         for _ in range(nbd):
             dres["activite"] += [0] if not ct["nombre_declarants_retraites"] else [3]
@@ -491,7 +579,9 @@ def dataframe_from_cas_types_description(descriptions):
             dres["heures_remunerees_volume"] += (
                 [1200] if not ct["nombre_declarants_retraites"] else [0]
             )
-            dres["statut_marital"] += [5] if nbd > 1 else [2]
+            dres["statut_marital"] += (
+                [4 if ct["nb_decl_veuf"] else 5] if nbd > 1 else [2]
+            )
         for _ in range(nbc):
             dres["activite"] += [2]
             dres["contrat_de_travail"] += [6]
@@ -545,6 +635,22 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
 
 
 if __name__ == "__main__":
+    dicocases = [
+        {
+            "nombre_declarants": 1,
+            "nombre_declarants_retraites": 0,
+            "nombre_personnes_a_charge": 1,
+            "outre_mer": 0,
+            "revenu": 31200,
+            "nb_decl_parent_isole": 0,
+            "nb_decl_veuf": 0,
+            "nb_decl_invalides": 0,
+            "nb_pac_invalides": 0,
+            "nb_anciens_combattants": 0,
+            "nb_pac_charge_partagee": 0,
+        }
+    ]
+    df = dataframe_from_cas_types_description(dicocases)
     dictreform = {
         "impot_revenu": {
             "bareme": {
