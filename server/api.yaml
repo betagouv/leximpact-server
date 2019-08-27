@@ -95,6 +95,8 @@ components:
           type: string
         deciles:
           type: boolean
+        timestamp:
+          type: string
         reforme:
           type: object
           properties:
