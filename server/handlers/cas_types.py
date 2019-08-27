@@ -21,39 +21,25 @@ class CasTypes(object):
 
 
 class SimulationRunner(object):
-    def compare(**params: dict) -> tuple:
-        dbod = params["body"]
-        return (
-            [
-                CompareOldNew(
-                    dbod["bareme_ir"]["seuils"] + dbod["bareme_ir"]["taux"],
-                    dbod["deciles"],
-                )
-            ],
-            201,
-        )
-
     def simulereforme(**params: dict) -> tuple:
         dbod = params["body"]
         dct = None
         if "description_cas_types" in dbod:
-            isdecile = False
             dct = dbod["description_cas_types"]
-        else:
-            isdecile = dbod["deciles"]
-        return (
-            CompareOldNew(
-                taux=None,
-                isdecile=isdecile,
-                dictreform=dbod["reforme"],
-                castypedesc=dct,
-            ),
-            201,
+        if "reforme" not in dbod:
+            return error_as_dict("missing 'reforme' field in body of your request"), 200
+        dic_resultat = CompareOldNew(
+            taux=None, isdecile=False, dictreform=dbod["reforme"], castypedesc=dct
         )
+        if "timestamp" in dbod:
+            dic_resultat["timestamp"] = dbod["timestamp"]
+        return (dic_resultat, 201)
 
     @with_session
     def simuledeciles(session, **params: dict) -> tuple:
         dbod = params["body"]
+        if "reforme" not in dbod:
+            return error_as_dict("missing 'reforme' field in body of your request"), 200
         if "token" not in dbod:
             return error_as_dict("missing token : necessary for this request"), 200
         CU = check_user(session, dbod["token"])
@@ -65,9 +51,9 @@ class SimulationRunner(object):
                 200,
             )
 
-        return (
-            CompareOldNew(
-                taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
-            ),
-            200,
+        dic_resultat = CompareOldNew(
+            taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
         )
+        if "timestamp" in dbod:
+            dic_resultat["timestamp"] = dbod["timestamp"]
+        return (dic_resultat, 200)

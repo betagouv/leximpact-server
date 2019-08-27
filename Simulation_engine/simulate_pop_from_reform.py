@@ -1,6 +1,5 @@
 from functools import partial
 from typing import Dict, List, Optional
-import time
 import os
 
 import pandas  # type: ignore
@@ -35,11 +34,7 @@ def load_data(filename: Optional[str]):
     return from_postgres(filename)
 
 
-def simulation(period, data, tbs, timer=None):
-    if timer is not None:
-        starttime = timer.time()
-        print("Elapsed time : {:.2f}".format(timer.time() - starttime))
-
+def simulation(period, data, tbs):
     # Traduction des roles attribués au format openfisca
     data["quimenof"] = "enfant"
     data.loc[data["quifoy"] == 1, "quimenof"] = "conjoint"
@@ -109,40 +104,16 @@ def simulation(period, data, tbs, timer=None):
     # Attribution des variables à la bonne entité OpenFisca
     for colonne in data.columns:
         if colonne not in columns_not_OF_variables:
-            try:
-                simulation.set_input(
-                    colonne,
-                    period,
-                    dictionnaire_datagrouped[tbs.get_variable(colonne).entity.key][
-                        colonne
-                    ],
-                )
-                print(
-                    "{} was attributed to {}".format(
-                        colonne, tbs.get_variable(colonne).entity.key
-                    )
-                )
-
-            except (Exception):
-                try:
-                    print(
-                        "{} failed to be attributed to {}".format(
-                            colonne, tbs.get_variable(colonne).entity.key
-                        )
-                    )
-                except (Exception):
-                    print("{} was attributed to NOUGHT".format(colonne))
-                raise
-
-    if timer is not None:
-        print("Elapsed time : {:.2f}".format(timer.time() - starttime))
-
+            # try:
+            simulation.set_input(
+                colonne,
+                period,
+                dictionnaire_datagrouped[tbs.get_variable(colonne).entity.key][colonne],
+            )
     return simulation, dictionnaire_datagrouped
 
 
-def compare(
-    period: str, simulation_base, simulation_reform, compute_deciles=True, timer=None
-):
+def compare(period: str, simulation_base, simulation_reform, compute_deciles=True):
     res: List[float] = []
     kk = 0
 
@@ -150,8 +121,6 @@ def compare(
         if not kk:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
         for nomvariable in ["irpp", "nbptr"]:
-            if timer is not None:
-                starttime = timer.time()
 
             dictionnaire_datagrouped["foyer_fiscal"][
                 nomvariable
@@ -160,18 +129,6 @@ def compare(
                 dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                 * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
             )
-
-            print(
-                "{} sum : {}  mean : {}".format(
-                    nomvariable,
-                    dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum(),
-                    dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum()
-                    / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum(),
-                )
-            )
-
-            if timer is not None:
-                print("Elapsed time : {:.2f}".format(timer.time() - starttime))
 
             if nomvariable == "irpp":
                 res += [
@@ -186,7 +143,6 @@ def compare(
     total: Total = {"avant": res[0], "apres": res[1]}
 
     if compute_deciles:
-        print("Computing Deciles")
         totweight = dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
@@ -201,8 +157,6 @@ def compare(
         dfv = df.values
         decilesres = [[0, 0, 0]]
         decdiffres: Deciles = []
-        print(decilweights, dfv[0], totweight)
-        print(dfv[1])
         eps = 0.0001
         keysdicres = ["poids", "avant", "apres"]
         for v in dfv:
@@ -220,9 +174,6 @@ def compare(
                 ]
                 numdecile += 1
 
-        print("In fine ", currw, currb, curra)
-        print("mes valeurs agreg deciles :", decilesres)
-        print("mes valeurs diff deciles :", decdiffres)
         # TODO : interpolate quantiles instead of doing the granular approach
         # This is the only TODO part in this code, I highly doubt it's the most pressing matter
 
@@ -239,7 +190,6 @@ def compare(
     else:  # This only interests us for the castypes
         resultat = {"total": total, "res_brut": df.to_dict()}
 
-    print(resultat)
     return resultat
 
 
@@ -281,10 +231,10 @@ if not version_beta_sans_simu_pop:
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
     # Keeping computations short with option to keep file under 1000 FF
-    DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
+    # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
     print("Dummy Data loaded", len(DUMMY_DATA), "lines")
-    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
-simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS, timer=time)
+    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
+simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
 
 
 def foyertosomethingelse(idfoy):
@@ -295,7 +245,6 @@ def foyertotexte(idfoy, data=None):
     if data is None:
         data = CAS_TYPE
     myct = data[data["idfoy"] == idfoy]
-    # print("Je fais un foyer to texte pour le foyer ",idfoy,myct)
     decl = myct[myct["quifoyof"] == "declarant_principal"]
     nbdecl = len(decl)
     nbpacs = len(myct) - nbdecl
@@ -333,7 +282,6 @@ def foyertorevenu(idfoy, data=None):
         data[data["idfoy"] == idfoy]["salaire_de_base"].sum()
         + data[data["idfoy"] == idfoy]["retraite_brute"].sum()
     )
-    print(idfoy, "est mon idfoy et mon rev ", revenu)
     return revenu
 
 
@@ -374,7 +322,6 @@ def foyertodictcastype(idfoy, data=None):
         "nombre_declarants_retraites": int(nbret),
         "outre_mer": 1 * outremer1 + 2 * outremer2,
     }
-    print(dicres)
     return dicres
 
 
@@ -384,7 +331,6 @@ def revenus_cas_types(data=None):
     dic_res = {}
     for k in data["idfoy"].values:
         dic_res[k] = foyertorevenu(k, data)
-    print("dic_res ", dic_res)
     return dic_res
 
 
@@ -406,7 +352,7 @@ def texte_cas_types(data=None):
 
 def simulation_from_ct(descriptions):
     df = dataframe_from_ct_desc(descriptions)
-    return (df, simulation(PERIOD, df, TBS, timer=time))
+    return (df, simulation(PERIOD, df, TBS))
 
 
 # Transforme une description de cas types en un dataframe parsable. Good luck!
@@ -492,7 +438,6 @@ def dataframe_from_ct_desc(descriptions):
     indexfoyer = 0
     indexpac = 2
     for ct in descriptions:
-        print("myct : ", ct)
         nbd = ct["nombre_declarants"]
         nbc = ct["nombre_personnes_a_charge"]
         for colid in ["idfoy", "idmen", "idfam"]:
@@ -554,7 +499,6 @@ def dataframe_from_ct_desc(descriptions):
 
 
 def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
-    print("comparing old new, isdecile = {} ".format(isdecile))
     # if isdecile, we want the impact on the full population, while just a cas type on
     # the isdecile=False
     data, simulation_base = (
@@ -581,8 +525,8 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     #   reform = reform_from_bareme(
     #       TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
     #   )
-    simulation_reform = simulation(PERIOD, data, reform, timer=time)
-    return compare(PERIOD, simulation_base, simulation_reform, isdecile, timer=time)
+    simulation_reform = simulation(PERIOD, data, reform)
+    return compare(PERIOD, simulation_base, simulation_reform, isdecile)
 
 
 if __name__ == "__main__":
@@ -597,17 +541,12 @@ if __name__ == "__main__":
     }
     reform = IncomeTaxReform(TBS, dictreform, PERIOD)
     if version_beta_sans_simu_pop:
-        simulation_reform = simulation(PERIOD, CAS_TYPE, reform, timer=time)
+        simulation_reform = simulation(PERIOD, CAS_TYPE, reform)
         compare(
-            PERIOD,
-            simulation_base_castypes,
-            simulation_reform,
-            compute_deciles=False,
-            timer=time,
+            PERIOD, simulation_base_castypes, simulation_reform, compute_deciles=False
         )
-        print("Et l'autre)")
         CompareOldNew("osef", False, dictreform, desc_cas_types())
     else:
-        simulation_reform = simulation(PERIOD, DUMMY_DATA, reform, timer=time)
-        compare(PERIOD, simulation_base_deciles, simulation_reform, timer=time)
-        compare(PERIOD, None, simulation_reform, timer=time)
+        simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)
+        compare(PERIOD, simulation_base_deciles, simulation_reform)
+        compare(PERIOD, None, simulation_reform)

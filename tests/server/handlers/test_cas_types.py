@@ -1,6 +1,6 @@
 from functools import partial
 import json
-
+from datetime import datetime
 import pytest  # type: ignore
 
 
@@ -44,6 +44,7 @@ def payload() -> dict:
             }
         },
         "deciles": False,
+        "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
     }
 
 
@@ -53,5 +54,8 @@ def test_calculate_compare(client, payload, headers):
     payload_full = dict({**payload, "description_cas_types": cas_types})
     actual = json.loads(response(data=json.dumps(payload)).data)
     expected = json.loads(response(data=json.dumps(payload_full)).data)
-
-    assert actual == expected
+    # Equalizing timestamps, these should not be equal :)
+    assert actual.keys() == expected.keys()
+    assert actual["res_brut"] == expected["res_brut"]
+    assert actual["total"] == expected["total"]
+    assert actual["timestamp"] == expected["timestamp"]

@@ -38,19 +38,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/description_cas_types'
-  /calculate/compare_old:
-    post:
-      summary: Calcule l'impact d'une loi
-      operationId: server.handlers.SimulationRunner.compare
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/compareoldnew_old'
-      responses:
-          '201':
-            description: Qu'est ce que c'est description
   /calculate/compare:
     post:
       summary: Calcule l'impact d'une loi
@@ -101,22 +88,6 @@ components:
           type: string
     revenus:
       type: object
-    compareoldnew_old:
-      type: object
-      properties:
-        isdecile:
-          type: boolean
-        bareme_ir:
-          type: object
-          properties:
-            seuils:
-              type: array
-              items:
-                type: integer
-            taux:
-              type: array
-              items:
-                type: number
     compareoldnew:
       type: object
       properties:
@@ -124,6 +95,8 @@ components:
           type: string
         deciles:
           type: boolean
+        timestamp:
+          type: string
         reforme:
           type: object
           properties:

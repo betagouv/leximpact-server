@@ -30,5 +30,5 @@ def send_mail(
         ]
     }
     result = mailjet.send.create(data=data)
-    print(result.status_code)
-    print(result.json())
+    if result.status_code != 200:
+        print("Error in sending email : ", result.json())
