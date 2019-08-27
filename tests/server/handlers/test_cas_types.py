@@ -44,6 +44,7 @@ def payload() -> dict:
             }
         },
         "deciles": False,
+        "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
     }
 
 
@@ -57,8 +58,4 @@ def test_calculate_compare(client, payload, headers):
     assert actual.keys() == expected.keys()
     assert actual["res_brut"] == expected["res_brut"]
     assert actual["total"] == expected["total"]
-    actual_timestamp = datetime.strptime(actual["timestamp"], "%Y-%m-%dT%H:%M:%S.%f%z")
-    expected_timestamp = datetime.strptime(
-        expected["timestamp"], "%Y-%m-%dT%H:%M:%S.%f%z"
-    )
-    assert actual_timestamp < expected_timestamp
+    assert actual["timestamp"] == expected["timestamp"]
