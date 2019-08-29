@@ -152,19 +152,21 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         df = df.sort_values(
             by="keysort"
         )  # For now, deciles are organized by level of irpp
-        currw = 0
-        currd = {nom_sim: 0 for nom_sim in noms_simus}
+        running_sum_weights = 0
+        running_sums_irpp = {nom_sim: 0 for nom_sim in noms_simus}
         dfv = df[["wprm"] + noms_simus].values
         decilesres = [[0] * (1 + len(noms_simus))]
         decdiffres: Deciles = []
         eps = 0.0001
         keysdicres = ["poids"] + noms_simus
         for v in dfv:
-            currw += v[0]
+            running_sum_weights += v[0]
             for num_simu in range(len(noms_simus)):
-                currd[noms_simus[num_simu]] += v[num_simu + 1] * v[0]
-            if currw >= decilweights[numdecile] - eps:
-                decilesres += [[currw] + [currd[ns] for ns in noms_simus]]
+                running_sums_irpp[noms_simus[num_simu]] += v[num_simu + 1] * v[0]
+            if running_sum_weights >= decilweights[numdecile] - eps:
+                decilesres += [
+                    [running_sum_weights] + [running_sums_irpp[ns] for ns in noms_simus]
+                ]
                 decdiffres += [
                     {
                         keysdicres[k]: decilesres[numdecile][k]
@@ -357,13 +359,13 @@ def texte_cas_types(data=None):
     return dic_res
 
 
-def simulation_from_ct(descriptions):
-    df = dataframe_from_ct_desc(descriptions)
+def simulation_from_cas_types(descriptions):
+    df = dataframe_from_cas_types_description(descriptions)
     return (df, simulation(PERIOD, df, TBS), simulation(PERIOD, df, TBS_PLF))
 
 
 # Transforme une description de cas types en un dataframe parsable. Good luck!
-def dataframe_from_ct_desc(descriptions):
+def dataframe_from_cas_types_description(descriptions):
     cols = [
         "index",
         "activite",
@@ -514,7 +516,7 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
         else (
             (CAS_TYPE, simulation_base_castypes, simulation_plf_castypes)
             if castypedesc is None
-            else simulation_from_ct(castypedesc)
+            else simulation_from_cas_types(castypedesc)
         )
     )
     if dictreform is None:
