@@ -18,7 +18,6 @@ def login(session, **params: Dict[str, str]) -> Tuple[str, int]:
         mail_content = mail_content_initial.replace(
             "$INSERT_LINK_HERE",
             "https://leximpact.beta.gouv.fr/connection/{}".format(jwt.encoded),
-
         )
         send_mail(
             recipient=params["body"]["email"],
