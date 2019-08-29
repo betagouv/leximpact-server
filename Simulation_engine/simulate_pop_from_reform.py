@@ -8,7 +8,7 @@ from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
-
+from Simulation_engine.reformePLF import reformePLF
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
@@ -113,12 +113,15 @@ def simulation(period, data, tbs):
     return simulation, dictionnaire_datagrouped
 
 
-def compare(period: str, simulation_base, simulation_reform, compute_deciles=True):
-    res: List[float] = []
-    kk = 0
-
-    for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
-        if not kk:
+def compare(period: str, dictionnaire_simulations, compute_deciles=True):
+    res: Total = {}
+    noms_simus = list(dictionnaire_simulations.keys())
+    df = None
+    for (
+        nom_simulation,
+        (simulation, dictionnaire_datagrouped),
+    ) in dictionnaire_simulations.items():
+        if df is None:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
         for nomvariable in ["irpp"]:
 
@@ -131,17 +134,15 @@ def compare(period: str, simulation_base, simulation_reform, compute_deciles=Tru
             )
 
             if nomvariable == "irpp":
-                res += [
-                    -dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"].sum()
-                ]  # / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
-                if kk:
-                    df["apres"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
-                else:
-                    df["avant"] = dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
-                    kk += 1
+                res[nom_simulation] = -dictionnaire_datagrouped["foyer_fiscal"][
+                    nomvariable + "w"
+                ].sum()
+                # / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
+                df[nom_simulation] = dictionnaire_datagrouped["foyer_fiscal"][
+                    nomvariable
+                ]
 
-    total: Total = {"avant": res[0], "apres": res[1]}
-
+    total: Total = res
     if compute_deciles:
         totweight = dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
         nbd = 10
@@ -152,24 +153,23 @@ def compare(period: str, simulation_base, simulation_reform, compute_deciles=Tru
             by="keysort"
         )  # For now, deciles are organized by level of irpp
         currw = 0
-        currb = 0
-        curra = 0
-        dfv = df.values
-        decilesres = [[0, 0, 0]]
+        currd = {nom_sim: 0 for nom_sim in noms_simus}
+        dfv = df[["wprm"] + noms_simus].values
+        decilesres = [[0] * (1 + len(noms_simus))]
         decdiffres: Deciles = []
         eps = 0.0001
-        keysdicres = ["poids", "avant", "apres"]
+        keysdicres = ["poids"] + noms_simus
         for v in dfv:
             currw += v[0]
-            currb += -v[1] * v[0]
-            curra += -v[2] * v[0]
+            for num_simu in range(len(noms_simus)):
+                currd[noms_simus[num_simu]] += v[num_simu + 1] * v[0]
             if currw >= decilweights[numdecile] - eps:
-                decilesres += [[currw, currb, curra]]
+                decilesres += [[currw] + [currd[ns] for ns in noms_simus]]
                 decdiffres += [
                     {
                         keysdicres[k]: decilesres[numdecile][k]
                         - decilesres[numdecile - 1][k]
-                        for k in range(3)
+                        for k in range(len(v))
                     }
                 ]
                 numdecile += 1
@@ -222,6 +222,7 @@ def adjust_deciles(factor: int, deciles: List[dict]):
 
 PERIOD = "2018"
 TBS = FranceTaxBenefitSystem()
+TBS_PLF = IncomeTaxReform(TBS, reformePLF, PERIOD)
 CAS_TYPE = load_data("DCT.csv")
 SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs=TBS)
@@ -230,13 +231,17 @@ if not version_beta_sans_simu_pop:
     DUMMY_DATA = load_data(data_path)
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
+    SIMPOP_PLF = SIMPOP(tbs=TBS_PLF)
     # Keeping computations short with option to keep file under 1000 FF
     # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
     print("Dummy Data loaded", len(DUMMY_DATA), "lines")
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
     # precalcul cas de base sur la population pour le cache
     simulation_base_deciles[0].calculate("irpp", PERIOD)
+    simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
+    simulation_plf_deciles[0].calculate("irpp", PERIOD)
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
+simulation_plf_castypes = simulation(PERIOD, CAS_TYPE, TBS_PLF)
 
 
 def foyertosomethingelse(idfoy):
@@ -354,7 +359,7 @@ def texte_cas_types(data=None):
 
 def simulation_from_ct(descriptions):
     df = dataframe_from_ct_desc(descriptions)
-    return (df, simulation(PERIOD, df, TBS))
+    return (df, simulation(PERIOD, df, TBS), simulation(PERIOD,df, TBS_PLF))
 
 
 # Transforme une description de cas types en un dataframe parsable. Good luck!
@@ -503,11 +508,11 @@ def dataframe_from_ct_desc(descriptions):
 def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     # if isdecile, we want the impact on the full population, while just a cas type on
     # the isdecile=False
-    data, simulation_base = (
-        (DUMMY_DATA, simulation_base_deciles)
+    data, simulation_base,simulation_plf = (
+        (DUMMY_DATA, simulation_base_deciles, simulation_plf_deciles)
         if isdecile
         else (
-            (CAS_TYPE, simulation_base_castypes)
+            (CAS_TYPE, simulation_base_castypes, simulation_plf_castypes)
             if castypedesc is None
             else simulation_from_ct(castypedesc)
         )
@@ -528,7 +533,9 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     #       TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
     #   )
     simulation_reform = simulation(PERIOD, data, reform)
-    return compare(PERIOD, simulation_base, simulation_reform, isdecile)
+    return compare(
+        PERIOD, {"avant": simulation_base, "plf": simulation_plf, "apres": simulation_reform}, isdecile
+    )
 
 
 if __name__ == "__main__":
@@ -545,10 +552,12 @@ if __name__ == "__main__":
     if version_beta_sans_simu_pop:
         simulation_reform = simulation(PERIOD, CAS_TYPE, reform)
         compare(
-            PERIOD, simulation_base_castypes, simulation_reform, compute_deciles=False
+            PERIOD,
+            {"avant": simulation_base_castypes, "plf": simulation_plf_castypes, "apres": simulation_reform},
+            compute_deciles=False,
         )
         CompareOldNew("osef", False, dictreform, desc_cas_types())
     else:
         simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)
-        compare(PERIOD, simulation_base_deciles, simulation_reform)
-        compare(PERIOD, None, simulation_reform)
+        print(compare(PERIOD, {"avant": simulation_base_deciles, "plf":simulation_plf_deciles, "apres": simulation_reform}))
+        
