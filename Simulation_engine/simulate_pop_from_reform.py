@@ -164,7 +164,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         for _index_row, row in impots_par_reforme.iterrows():
             running_sum_weights += row["wprm"]
             for nom_simu in noms_simus:
-                running_sums_irpp[nom_simu] += row[nom_simu] * row["wprm"]
+                running_sums_irpp[nom_simu] -= row[nom_simu] * row["wprm"]
             if running_sum_weights >= decilweights[numdecile] - eps:
                 decilesres += [
                     [running_sum_weights] + [running_sums_irpp[ns] for ns in noms_simus]
