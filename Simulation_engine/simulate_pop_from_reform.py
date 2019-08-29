@@ -359,7 +359,7 @@ def texte_cas_types(data=None):
 
 def simulation_from_ct(descriptions):
     df = dataframe_from_ct_desc(descriptions)
-    return (df, simulation(PERIOD, df, TBS), simulation(PERIOD,df, TBS_PLF))
+    return (df, simulation(PERIOD, df, TBS), simulation(PERIOD, df, TBS_PLF))
 
 
 # Transforme une description de cas types en un dataframe parsable. Good luck!
@@ -508,7 +508,7 @@ def dataframe_from_ct_desc(descriptions):
 def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     # if isdecile, we want the impact on the full population, while just a cas type on
     # the isdecile=False
-    data, simulation_base,simulation_plf = (
+    data, simulation_base, simulation_plf = (
         (DUMMY_DATA, simulation_base_deciles, simulation_plf_deciles)
         if isdecile
         else (
@@ -534,7 +534,9 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     #   )
     simulation_reform = simulation(PERIOD, data, reform)
     return compare(
-        PERIOD, {"avant": simulation_base, "plf": simulation_plf, "apres": simulation_reform}, isdecile
+        PERIOD,
+        {"avant": simulation_base, "plf": simulation_plf, "apres": simulation_reform},
+        isdecile,
     )
 
 
@@ -553,11 +555,23 @@ if __name__ == "__main__":
         simulation_reform = simulation(PERIOD, CAS_TYPE, reform)
         compare(
             PERIOD,
-            {"avant": simulation_base_castypes, "plf": simulation_plf_castypes, "apres": simulation_reform},
+            {
+                "avant": simulation_base_castypes,
+                "plf": simulation_plf_castypes,
+                "apres": simulation_reform,
+            },
             compute_deciles=False,
         )
         CompareOldNew("osef", False, dictreform, desc_cas_types())
     else:
         simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)
-        print(compare(PERIOD, {"avant": simulation_base_deciles, "plf":simulation_plf_deciles, "apres": simulation_reform}))
-        
+        print(
+            compare(
+                PERIOD,
+                {
+                    "avant": simulation_base_deciles,
+                    "plf": simulation_plf_deciles,
+                    "apres": simulation_reform,
+                },
+            )
+        )
