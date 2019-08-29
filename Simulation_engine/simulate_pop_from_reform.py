@@ -116,13 +116,13 @@ def simulation(period, data, tbs):
 def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     res: Total = {}
     noms_simus = list(dictionnaire_simulations.keys())
-    df_exists = False  # type: ignore
+    impots_par_reforme_exists = False
     for (
         nom_simulation,
         (simulation, dictionnaire_datagrouped),
     ) in dictionnaire_simulations.items():
         if not df_exists:
-            df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
+            impots_par_reforme = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
         for nomvariable in ["irpp"]:
 
             dictionnaire_datagrouped["foyer_fiscal"][
@@ -138,7 +138,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
                     nomvariable + "w"
                 ].sum()
                 # / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
-                df[nom_simulation] = dictionnaire_datagrouped["foyer_fiscal"][
+                impots_par_reforme[nom_simulation] = dictionnaire_datagrouped["foyer_fiscal"][
                     nomvariable
                 ]
 
@@ -148,21 +148,21 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
         numdecile = 1
-        df["keysort"] = -df["avant"] - df["apres"]
-        df = df.sort_values(
+        impots_par_reforme["keysort"] = -impots_par_reforme["avant"] - impots_par_reforme["apres"]
+        impots_par_reforme = impots_par_reforme.sort_values(
             by="keysort"
         )  # For now, deciles are organized by level of irpp
         running_sum_weights = 0
         running_sums_irpp = {nom_sim: 0 for nom_sim in noms_simus}
-        dfv = df[["wprm"] + noms_simus].values
+        dfv = impots_par_reforme[["wprm"] + noms_simus].values
         decilesres = [[0] * (1 + len(noms_simus))]
         decdiffres: Deciles = []
         eps = 0.0001
         keysdicres = ["poids"] + noms_simus
-        for v in dfv:
-            running_sum_weights += v[0]
-            for num_simu in range(len(noms_simus)):
-                running_sums_irpp[noms_simus[num_simu]] += v[num_simu + 1] * v[0]
+        for row in impots_par_reforme.iterrows:
+            running_sum_weights += row["wprm"]
+            for nom_simu in range(noms_simus):
+                running_sums_irpp[nom_simu] += row[nom_simu] * row["wprm"]
             if running_sum_weights >= decilweights[numdecile] - eps:
                 decilesres += [
                     [running_sum_weights] + [running_sums_irpp[ns] for ns in noms_simus]
@@ -171,7 +171,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
                     {
                         keysdicres[k]: decilesres[numdecile][k]
                         - decilesres[numdecile - 1][k]
-                        for k in range(len(v))
+                        for k in range(len(row))
                     }
                 ]
                 numdecile += 1
@@ -190,7 +190,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         resultat = {"total": total, "deciles": deciles}
 
     else:  # This only interests us for the castypes
-        resultat = {"total": total, "res_brut": df.to_dict()}
+        resultat = {"total": total, "res_brut": impots_par_reforme.to_dict()}
 
     return resultat
 
