@@ -116,12 +116,12 @@ def simulation(period, data, tbs):
 def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     res: Total = {}
     noms_simus = list(dictionnaire_simulations.keys())
-    df = None
+    df_exists = False  # type: ignore
     for (
         nom_simulation,
         (simulation, dictionnaire_datagrouped),
     ) in dictionnaire_simulations.items():
-        if df is None:
+        if not df_exists:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
         for nomvariable in ["irpp"]:
 
