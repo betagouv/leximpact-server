@@ -121,7 +121,8 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         nom_simulation,
         (simulation, dictionnaire_datagrouped),
     ) in dictionnaire_simulations.items():
-        if not df_exists:
+        if not impots_par_reforme_exists:
+            impots_par_reforme_exists = True
             impots_par_reforme = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
         for nomvariable in ["irpp"]:
 
@@ -138,9 +139,9 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
                     nomvariable + "w"
                 ].sum()
                 # / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
-                impots_par_reforme[nom_simulation] = dictionnaire_datagrouped["foyer_fiscal"][
-                    nomvariable
-                ]
+                impots_par_reforme[nom_simulation] = dictionnaire_datagrouped[
+                    "foyer_fiscal"
+                ][nomvariable]
 
     total: Total = res
     if compute_deciles:
@@ -148,20 +149,21 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
         numdecile = 1
-        impots_par_reforme["keysort"] = -impots_par_reforme["avant"] - impots_par_reforme["apres"]
+        impots_par_reforme["keysort"] = (
+            -impots_par_reforme["avant"] - impots_par_reforme["apres"]
+        )
         impots_par_reforme = impots_par_reforme.sort_values(
             by="keysort"
         )  # For now, deciles are organized by level of irpp
         running_sum_weights = 0
         running_sums_irpp = {nom_sim: 0 for nom_sim in noms_simus}
-        dfv = impots_par_reforme[["wprm"] + noms_simus].values
         decilesres = [[0] * (1 + len(noms_simus))]
         decdiffres: Deciles = []
         eps = 0.0001
         keysdicres = ["poids"] + noms_simus
         for row in impots_par_reforme.iterrows:
             running_sum_weights += row["wprm"]
-            for nom_simu in range(noms_simus):
+            for nom_simu in noms_simus:
                 running_sums_irpp[nom_simu] += row[nom_simu] * row["wprm"]
             if running_sum_weights >= decilweights[numdecile] - eps:
                 decilesres += [
