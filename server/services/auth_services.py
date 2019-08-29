@@ -62,11 +62,7 @@ def check_user(session, tokenencoded: str) -> Dict[str, Any]:
 
 def login_user(session, email: str) -> Optional[JWT]:  # Optional[User]:
     email = email.lower()
-    domains = email.split("@")
-    if len(domains) == 2:
-        domain = email.split("@")[1]
-    else:
-        return None
+    domain = email.split("@")[1]
     # We accept login if email is in a collab domain (clb-an.fr or clb-dep.fr)
     # Or if it appears in our DB
     if domain not in ("clb-an.fr", "clb-dep.fr"):
