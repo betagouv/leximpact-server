@@ -120,7 +120,7 @@ def compare(period: str, simulation_base, simulation_reform, compute_deciles=Tru
     for simulation, dictionnaire_datagrouped in [simulation_base, simulation_reform]:
         if not kk:
             df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
-        for nomvariable in ["irpp", "nbptr"]:
+        for nomvariable in ["irpp"]:
 
             dictionnaire_datagrouped["foyer_fiscal"][
                 nomvariable
@@ -234,6 +234,8 @@ if not version_beta_sans_simu_pop:
     # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
     print("Dummy Data loaded", len(DUMMY_DATA), "lines")
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
+    # precalcul cas de base sur la population pour le cache
+    simulation_base_deciles[0].calculate("irpp", PERIOD)
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
 
 
