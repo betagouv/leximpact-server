@@ -48,25 +48,29 @@ def payload() -> dict:
     }
 
 
-def test_calculate_compare(client, payload, headers):
+def test_calculate_compare_with_cas_types(client, payload, headers):
     cas_types = json.loads(client.post("metadata/description_cas_types").data)
     response = partial(client.post, "calculate/compare", headers=headers)
     payload_full = dict({**payload, "description_cas_types": cas_types})
+
     actual = json.loads(response(data=json.dumps(payload)).data)
     expected = json.loads(response(data=json.dumps(payload_full)).data)
-    # Equalizing timestamps, these should not be equal :)
+
     assert actual.keys() == expected.keys()
+    for var_in_res_brut in ["avant", "apres", "plf"]:
+        assert var_in_res_brut in expected["res_brut"]
+        assert var_in_res_brut in expected["total"]
+
     assert actual["res_brut"] == expected["res_brut"]
     assert actual["total"] == expected["total"]
     assert actual["timestamp"] == expected["timestamp"]
 
 
-def test_plf(client, payload, headers):
+def test_calculate_compare_weights(client, payload, headers):
     response = partial(client.post, "calculate/compare", headers=headers)
     actual = json.loads(response(data=json.dumps(payload)).data)
+
     for var_in_res_brut in ["avant", "apres", "plf"]:
-        assert var_in_res_brut in actual["res_brut"]
-        assert var_in_res_brut in actual["total"]
         assert set(actual["res_brut"]["wprm"].keys()) == set(
             actual["res_brut"][var_in_res_brut].keys()
         )
