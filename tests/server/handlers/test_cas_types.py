@@ -59,3 +59,14 @@ def test_calculate_compare(client, payload, headers):
     assert actual["res_brut"] == expected["res_brut"]
     assert actual["total"] == expected["total"]
     assert actual["timestamp"] == expected["timestamp"]
+
+
+def test_plf(client, payload, headers):
+    response = partial(client.post, "calculate/compare", headers=headers)
+    actual = json.loads(response(data=json.dumps(payload)).data)
+    for var_in_res_brut in ["avant", "apres", "plf"]:
+        assert var_in_res_brut in actual["res_brut"]
+        assert var_in_res_brut in actual["total"]
+        assert set(actual["res_brut"]["wprm"].keys()) == set(
+            actual["res_brut"][var_in_res_brut].keys()
+        )
