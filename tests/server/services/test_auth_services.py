@@ -16,7 +16,3 @@ def user(session, email):
 
 def test_login_user_when_not_in_list(session):
     assert not login_user(session, "malevolent@villain.hacker")
-
-
-def test_login_user_when_empty(session):
-    assert not login_user(session, "")

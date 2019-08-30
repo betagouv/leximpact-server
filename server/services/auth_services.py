@@ -26,11 +26,6 @@ def check_user(session, tokenencoded: str) -> Dict[str, Any]:
     resultat = {}  # type: Dict[str, Any]
     try:
         decode_jwt(checkjwt)
-        user = find_user(session, checkjwt.decoded["sub"])
-        if user is None:
-            resultat["success"] = False
-            resultat["error"] = "User not found in email database"
-            return resultat
         if datetime.utcnow().timestamp() > checkjwt.decoded["exp"]:
             resultat["success"] = False
             resultat["error"] = "Token has expired!"
@@ -66,8 +61,12 @@ def check_user(session, tokenencoded: str) -> Dict[str, Any]:
 
 
 def login_user(session, email: str) -> Optional[JWT]:  # Optional[User]:
-    user = find_user(session, email)
-
-    if not user:
-        return None
-    return encode_jwt(JWT(), user.email)
+    email = email.lower()
+    domain = email.split("@")[1]
+    # We accept login if email is in a collab domain (clb-an.fr or clb-dep.fr)
+    # Or if it appears in our DB
+    if domain not in ("clb-an.fr", "clb-dep.fr"):
+        user = find_user(session, email)
+        if not user:
+            return None
+    return encode_jwt(JWT(), email)
