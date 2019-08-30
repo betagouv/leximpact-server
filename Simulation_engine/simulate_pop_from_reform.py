@@ -192,7 +192,12 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         resultat = {"total": total, "deciles": deciles}
 
     else:  # This only interests us for the castypes
-        resultat = {"total": total, "res_brut": impots_par_reforme.to_dict()}
+        # On arrondit les résultats des cas-types
+        dic_res_brut = impots_par_reforme.to_dict()
+        for simu in dic_res_brut:
+            for cas_type in dic_res_brut[simu]:
+                dic_res_brut[simu][cas_type] = int(dic_res_brut[simu][cas_type] + 0.5)
+        resultat = {"total": total, "res_brut": dic_res_brut}
 
     return resultat
 
@@ -462,7 +467,7 @@ def foyertodictcastype(idfoy, data=None):
     )
 
     dicres = {
-        "revenu": int(revenu),
+        "revenu": int(revenu + 0.5),
         "nombre_declarants": int(nbpr),
         "nombre_personnes_a_charge": int(nbpac),
         "nombre_declarants_retraites": int(nbret),
