@@ -224,6 +224,96 @@ def adjust_deciles(factor: int, deciles: List[dict]):
     return [adjust_total(factor, decile) for decile in deciles]
 
 
+# Inversion des fonctions net to brut pour après pouvoi
+
+
+def dataframebrutevals(brutevar, minv, maxv, pourcentage_hausse, valeur_hausse):
+    arr = []
+    s = minv
+    num_foy = 0
+    while s <= maxv:
+        arr += [[s] + [num_foy] * 3 + [0] * 3]
+        s = max(s + valeur_hausse, s * (1 + pourcentage_hausse))
+        num_foy += 1
+    df = pandas.DataFrame(
+        arr, columns=[brutevar, "idfam", "idfoy", "idmen", "quifam", "quifoy", "quimen"]
+    )
+    return df
+
+
+def scenar_values(
+    minv, maxv, var_brute, var_nette, pourcentage_hausse=0.01, valeur_hausse=100
+):
+    if "{}_to_{}.csv".format(var_brute, var_nette) not in os.listdir():
+        df = dataframebrutevals(
+            var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
+        )
+        PERIOD = "2018"
+        TBS = FranceTaxBenefitSystem()
+        sim = simulation(PERIOD, df, TBS)
+        net = var_nette
+        df[net] = sim[0].calculate(net, "2018-01") * 12
+        df[[var_brute, var_nette]].to_csv(
+            "{}_to_{}.csv".format(var_brute, var_nette), index=False
+        )
+
+
+def from_net_to_brut(val_nette, var_brute, var_nette):
+    namecsv = "{}_to_{}.csv".format(var_brute, var_nette)
+    df = pandas.read_csv(namecsv)
+    dfv = df.values
+    N = len(dfv)
+    tt = 1
+    while tt < N:
+        tt <<= 1
+    bestsol = -1
+    while tt:
+        if (bestsol + tt) < N and dfv[bestsol + tt][1] < val_nette:
+            bestsol += tt
+        tt >>= 1
+    if bestsol < 0:
+        bestsol = 0
+    if bestsol == N - 1:
+        bestsol = N - 2
+    # bestsolis the index of the highest value before val_nette
+    # We extrapolate a linear function on (bestsol, bestsol +1)
+    avanty = dfv[bestsol][1]
+    apresy = dfv[bestsol + 1][1]
+    avantx = dfv[bestsol][0]
+    apresx = dfv[bestsol + 1][0]
+    lambda_ = (val_nette - avanty) / (apresy - avanty)
+    return lambda_ * apresx + (1 - lambda_) * avantx
+
+
+def from_brut_to_net(val_brute, var_brute, var_nette):
+    namecsv = "{}_to_{}.csv".format(var_brute, var_nette)
+    df = pandas.read_csv(namecsv)
+    dfv = df.values
+    N = len(dfv)
+    tt = 1
+    while tt < N:
+        tt <<= 1
+    bestsol = -1
+    while tt:
+        if (bestsol + tt) < N and dfv[bestsol + tt][0] < val_brute:
+            bestsol += tt
+        tt >>= 1
+    if bestsol < 0:
+        bestsol = 0
+    if bestsol == N - 1:
+        bestsol = N - 2
+    avanty = dfv[bestsol][0]
+    apresy = dfv[bestsol + 1][0]
+    avantx = dfv[bestsol][1]
+    apresx = dfv[bestsol + 1][1]
+    lambda_ = (val_brute - avanty) / (apresy - avanty)
+    return lambda_ * apresx + (1 - lambda_) * avantx
+
+
+scenar_values(0, 12_000_000, "salaire_de_base", "salaire_imposable")
+scenar_values(0, 12_000_000, "retraite_brute", "retraite_imposable")
+
+
 PERIOD = "2018"
 TBS = FranceTaxBenefitSystem()
 TBS_PLF = IncomeTaxReform(TBS, reformePLF, PERIOD)
@@ -265,7 +355,7 @@ def foyertotexte(idfoy, data=None):
     revenu = myct["salaire_de_base"].sum()
     return "\n".join(
         [
-            u"{} déclarant{}, d'âge {}".format(
+            "{} déclarant{}, d'âge {}".format(
                 nbdecl,
                 "s" if nbdecl > 1 else "",
                 " et ".join([str(_) for _ in agedecl]),
@@ -299,9 +389,15 @@ def foyertorevenu(idfoy, data=None):
 def foyertodictcastype(idfoy, data=None):
     if data is None:
         data = CAS_TYPE
-    revenu = (
-        data[data["idfoy"] == idfoy]["salaire_de_base"].sum()
-        + data[data["idfoy"] == idfoy]["retraite_brute"].sum()
+    revenu = sum(
+        [
+            from_brut_to_net(sb, "salaire_de_base", "salaire_imposable")
+            for sb in data[data["idfoy"] == idfoy]["salaire_de_base"].values
+        ]
+        + [
+            from_brut_to_net(rb, "retraite_brute", "retraite_imposable")
+            for rb in data[data["idfoy"] == idfoy]["retraite_brute"].values
+        ]
     )
     nbpr = len(data[(data["idfoy"] == idfoy) & (data["quifoy"] <= 1)])
     nbpac = len(data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1)])
@@ -548,17 +644,41 @@ def dataframe_from_cas_types_description(descriptions):
 
         # separe le revenu en 2 si il y a 2 déclarants:
         if ct["nombre_declarants_retraites"] == nbd:
-            dres["retraite_brute"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
+            dres["retraite_brute"] += [
+                from_net_to_brut(
+                    ct["revenu"] / nbd, "retraite_brute", "retraite_imposable"
+                )
+            ] * nbd + [0] * nbc
             dres["salaire_de_base"] += [0] * (nbd + nbc)
             isretraite += [1] * (nbd) + [0] * (nbc)
         elif ct["nombre_declarants_retraites"] == 1 and nbd == 2:
             # On décrète que le retraité, c'est le 2ème !
-            dres["retraite_brute"] += [0] + [ct["revenu"] / nbd] + [0] * nbc
-            dres["salaire_de_base"] += [ct["revenu"] / nbd] + [0] + [0] * (nbc)
+            dres["retraite_brute"] += (
+                [0]
+                + [
+                    from_net_to_brut(
+                        ct["revenu"] / nbd, "retraite_brute", "retraite_imposable"
+                    )
+                ]
+                + [0] * nbc
+            )
+            dres["salaire_de_base"] += (
+                [
+                    from_net_to_brut(
+                        ct["revenu"] / nbd, "salaire_de_base", "salaire_imposable"
+                    )
+                ]
+                + [0]
+                + [0] * (nbc)
+            )
             isretraite += [0] + [1] + [0] * (nbc)
         else:
             isretraite += [0] * (nbd + nbc)
-            dres["salaire_de_base"] += [ct["revenu"] / nbd] * nbd + [0] * nbc
+            dres["salaire_de_base"] += [
+                from_net_to_brut(
+                    ct["revenu"] / nbd, "salaire_de_base", "salaire_imposable"
+                )
+            ] * nbd + [0] * nbc
             dres["retraite_brute"] += [0] * (nbd + nbc)
         indexfoyer += 1
 
