@@ -230,18 +230,23 @@ def adjust_deciles(factor: int, deciles: List[dict]):
 
 
 # Inversion des fonctions net to brut pour après pouvoi
+ 
 
-
-def dataframebrutevals(brutevar, minv, maxv, pourcentage_hausse, valeur_hausse):
+def calcule_maillage_intervalle(nom_colonne, minv, maxv, pourcentage_hausse, valeur_hausse):
+    '''
+    Crée un dataframe d'une colonne portant le nom nom_colonne
+    et contenant une progression entre [minv, maxv].
+    '''
     arr = []
     s = minv
     num_foy = 0
     while s <= maxv:
-        arr += [[s] + [num_foy] * 3 + [0] * 3]
+        arr += [[s]]
+        # suite récurrente définissant l'évolution de l'estimation de nom_colonne 
         s = max(s + valeur_hausse, s * (1 + pourcentage_hausse))
         num_foy += 1
     df = pandas.DataFrame(
-        arr, columns=[brutevar, "idfam", "idfoy", "idmen", "quifam", "quifoy", "quimen"]
+        arr, columns=[nom_colonne]
     )
     return df
 
@@ -249,12 +254,17 @@ def dataframebrutevals(brutevar, minv, maxv, pourcentage_hausse, valeur_hausse):
 def scenar_values(
     minv, maxv, var_brute, var_nette, pourcentage_hausse=0.01, valeur_hausse=100
 ):
+    '''
+    Calcule les valeurs de var_nette pour var_brute dans [minv, maxv]
+    et exporte dans un CSV avec les colonnes suivantes : var_brute,var_nette 
+    '''
     if "{}_to_{}.csv".format(var_brute, var_nette) not in os.listdir():
-        df = dataframebrutevals(
+        df = calcule_maillage_intervalle(
             var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
         )
         PERIOD = "2018"
         TBS = FranceTaxBenefitSystem()
+        # définit un ménage par ligne
         sim = simulation(PERIOD, df, TBS)
         net = var_nette
         df[net] = sim[0].calculate(net, "2018-01") * 12

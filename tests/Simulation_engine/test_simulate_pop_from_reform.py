@@ -7,7 +7,7 @@ from Simulation_engine.simulate_pop_from_reform import (  # type: ignore
     adjustment,
     adjust_total,
     adjust_deciles,
-    dataframebrutevals,
+    calcule_maillage_intervalle,
     dataframe_from_cas_types_description,
 )
 
@@ -68,19 +68,19 @@ def test_dataframe_from_cas_types_description():
     assert_frame_equal(simulation_data, expected_simulation_data)
 
 
-def test_dataframebrutevals():
-    revenus_bruts = 19219.327646
-    revenus_imposables = 15600
+def test_calcule_maillage_intervalle():
+    nom_colonne = 'salaire_de_base'
+    min_value_colonne = 15600
 
-    expected_data_columns = [revenus_bruts, "idfam", "idfoy", "idmen", "quifam", "quifoy", "quimen"]
-    expected_data = np.array([revenus_imposables, 0, 0, 0, 0, 0, 0], dtype='int64')
+    expected_data_columns = [nom_colonne]
+    expected_data = np.array([min_value_colonne, 17160, 18876, 20763.600, 22839.960, 25123.956], dtype='float64')
     expected = pandas.DataFrame(
-        [expected_data],
+        expected_data,
         columns=expected_data_columns)
 
-    maxv = 25405
-    pourcentage_hausse = 11
-    valeur_hausse = pourcentage_hausse * revenus_bruts / 100
-    revenus_bruts = dataframebrutevals(revenus_bruts, revenus_imposables, maxv, pourcentage_hausse, valeur_hausse)
+    max_value_colonne = 25405
+    pourcentage_hausse = 0.1
+    valeur_hausse = pourcentage_hausse * min_value_colonne
+    revenus_bruts = calcule_maillage_intervalle(nom_colonne, min_value_colonne, max_value_colonne, pourcentage_hausse, valeur_hausse)
 
     assert_frame_equal(revenus_bruts, expected)
