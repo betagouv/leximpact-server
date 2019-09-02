@@ -59,7 +59,7 @@ def create_payload(user: str, nonce: str, iss: str, aud: str) -> Payload:
     return {
         "sub": user,
         "jti": nonce,
-        "exp": datetime.utcnow() + timedelta(hours=1),
+        "exp": datetime.utcnow() + timedelta(hours=168),
         "iat": datetime.utcnow(),
         "iss": iss,
         "aud": aud,
