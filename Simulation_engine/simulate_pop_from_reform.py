@@ -229,8 +229,7 @@ def adjust_deciles(factor: int, deciles: List[dict]):
     return [adjust_total(factor, decile) for decile in deciles]
 
 
-# Inversion des fonctions net to brut pour après pouvoi
- 
+# Inversion des fonctions net to brut
 
 def calcule_maillage_intervalle(nom_colonne, minv, maxv, pourcentage_hausse, valeur_hausse):
     '''
@@ -242,7 +241,7 @@ def calcule_maillage_intervalle(nom_colonne, minv, maxv, pourcentage_hausse, val
     num_foy = 0
     while s <= maxv:
         arr += [[s]]
-        # suite récurrente définissant l'évolution de l'estimation de nom_colonne 
+        # suite récurrente définissant l'évolution de l'estimation de nom_colonne
         s = max(s + valeur_hausse, s * (1 + pourcentage_hausse))
         num_foy += 1
     df = pandas.DataFrame(
@@ -256,7 +255,7 @@ def scenar_values(
 ):
     '''
     Calcule les valeurs de var_nette pour var_brute dans [minv, maxv]
-    et exporte dans un CSV avec les colonnes suivantes : var_brute,var_nette 
+    et exporte dans un CSV avec les colonnes suivantes : var_brute,var_nette
     '''
     if "{}_to_{}.csv".format(var_brute, var_nette) not in os.listdir():
         df = calcule_maillage_intervalle(
