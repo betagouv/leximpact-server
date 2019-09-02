@@ -240,12 +240,12 @@ def calcule_maillage_intervalle(nom_colonne, minv, maxv, pourcentage_hausse, val
     s = minv
     num_foy = 0
     while s <= maxv:
-        arr += [[s]]
+        arr += [[s] + [num_foy] * 3 + [0] * 3]
         # suite récurrente définissant l'évolution de l'estimation de nom_colonne
         s = max(s + valeur_hausse, s * (1 + pourcentage_hausse))
         num_foy += 1
     df = pandas.DataFrame(
-        arr, columns=[nom_colonne]
+        arr, columns=[nom_colonne, "idfam", "idfoy", "idmen", "quifam", "quifoy", "quimen"]
     )
     return df
 

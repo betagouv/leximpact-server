@@ -75,8 +75,12 @@ def test_calcule_maillage_intervalle():
     expected_data_columns = [nom_colonne]
     expected_data = np.array([min_value_colonne, 17160, 18876, 20763.600, 22839.960, 25123.956], dtype='float64')
     expected = pandas.DataFrame(
-        expected_data,
+        [[x] for x in expected_data],
         columns=expected_data_columns)
+    for name in ["idfam", "idfoy", "idmen"]:
+        expected[name] = range(0, 6)
+    for name in ["quifam", "quifoy", "quimen"]:
+        expected[name] = 0
 
     max_value_colonne = 25405
     pourcentage_hausse = 0.1
