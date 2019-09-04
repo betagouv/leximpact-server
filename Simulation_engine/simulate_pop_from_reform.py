@@ -335,7 +335,15 @@ CAS_TYPE = load_data("DCT.csv")
 SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs=TBS)
 
-if not version_beta_sans_simu_pop:
+
+# Genere un csv contenant les résultats par défaut du PLF et du code existant.
+# A exécuter manuellement, puis uploader manuellement le fichier texte avec la fonction 
+# preload.py (i.e. comme nous faisons avec les données sources et les emails)
+
+from time import time
+
+def generate_default_results():  
+    start_time=time()
     DUMMY_DATA = load_data(data_path)
     SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
     SIMPOP_BASE = SIMPOP(tbs=TBS)
@@ -343,11 +351,38 @@ if not version_beta_sans_simu_pop:
     # Keeping computations short with option to keep file under 1000 FF
     # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
     print("Dummy Data loaded", len(DUMMY_DATA), "lines")
+    print(time()-start_time)
+    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
+    # precalcul cas de base sur la population pour le cache
+    df1 = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
+    df1["irpp_base"]=simulation_base_deciles[0].calculate("irpp", PERIOD)
+    simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
+    df1["irpp_plf"]=simulation_plf_deciles[0].calculate("irpp", PERIOD)
+    df1["idfoy"]=df1.index
+    df1.to_csv("base_results.csv",index=False)
+    print(DUMMY_DATA[DUMMY_DATA["idfoy"]==0])
+    return df1
+
+print(generate_default_results())
+
+
+if not version_beta_sans_simu_pop:
+    start_time=time()
+    DUMMY_DATA = load_data(data_path)
+    SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
+    SIMPOP_BASE = SIMPOP(tbs=TBS)
+    SIMPOP_PLF = SIMPOP(tbs=TBS_PLF)
+    # Keeping computations short with option to keep file under 1000 FF
+    # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
+    print("Dummy Data loaded", len(DUMMY_DATA), "lines")
+    print(time()-start_time)
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
     # precalcul cas de base sur la population pour le cache
     simulation_base_deciles[0].calculate("irpp", PERIOD)
+    print("sim1 done {:.2f}".format(time()-start_time))
     simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
     simulation_plf_deciles[0].calculate("irpp", PERIOD)
+    print("sims done {:.2f}".format(time()-start_time))
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
 simulation_plf_castypes = simulation(PERIOD, CAS_TYPE, TBS_PLF)
 
