@@ -116,36 +116,27 @@ def simulation(period, data, tbs):
 def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     res: Total = {}
     noms_simus = list(dictionnaire_simulations.keys())
-    impots_par_reforme_exists = False
-    for (
-        nom_simulation,
-        (simulation, dictionnaire_datagrouped),
-    ) in dictionnaire_simulations.items():
-        if not impots_par_reforme_exists:
-            impots_par_reforme_exists = True
-            impots_par_reforme = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
-        for nomvariable in ["irpp"]:
-
-            dictionnaire_datagrouped["foyer_fiscal"][
-                nomvariable
-            ] = simulation.calculate(nomvariable, period)
-            dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = (
-                dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
-                * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
-            )
-
-            if nomvariable == "irpp":
-                res[nom_simulation] = -dictionnaire_datagrouped["foyer_fiscal"][
-                    nomvariable + "w"
-                ].sum()
-                # / dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()]
-                impots_par_reforme[nom_simulation] = dictionnaire_datagrouped[
-                    "foyer_fiscal"
-                ][nomvariable]
-
+    if (
+        "avant" not in dictionnaire_simulations
+    ):  # Veut dire qu'on ne demande pas le calcul du avant
+        # Donc il doit déjà être dans resulats_de_base
+        impots_par_reforme = resultats_de_base.copy()
+    else:
+        impots_par_reforme = dictionnaire_simulations[noms_simus[0]][1]["foyer_fiscal"][
+            ["wprm"]
+        ]
+    for nom_simulation in dictionnaire_simulations:
+        simulation=dictionnaire_simulations[nom_simulation]
+        impots_par_reforme[nom_simulation] = simulation.calculate("irpp", period)
+    for nom_res_base in [
+        colonne_df for colonne_df in impots_par_reforme.columns if colonne_df != "wprm"
+    ]:
+        res[nom_res_base] = -(
+            impots_par_reforme[nom_res_base] * impots_par_reforme["wprm"]
+        ).sum()
     total: Total = res
     if compute_deciles:
-        totweight = dictionnaire_datagrouped["foyer_fiscal"]["wprm"].sum()
+        totweight = impots_par_reforme["wprm"].sum()
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
         numdecile = 1
@@ -182,7 +173,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         # This is the only TODO part in this code, I highly doubt it's the most pressing matter
 
         if adjust_results:
-            empiric = 78 * 10 ** 9
+            empiric = 73 * 10 ** 9
             factor = adjustment(empiric, total["avant"])
             total = adjust_total(factor, total)
             deciles: Deciles = adjust_deciles(factor, decdiffres)
@@ -231,11 +222,14 @@ def adjust_deciles(factor: int, deciles: List[dict]):
 
 # Inversion des fonctions net to brut
 
-def calcule_maillage_intervalle(nom_colonne, minv, maxv, pourcentage_hausse, valeur_hausse):
-    '''
+
+def calcule_maillage_intervalle(
+    nom_colonne, minv, maxv, pourcentage_hausse, valeur_hausse
+):
+    """
     Crée un dataframe d'une colonne portant le nom nom_colonne
     et contenant une progression entre [minv, maxv].
-    '''
+    """
     arr = []
     s = minv
     num_foy = 0
@@ -245,7 +239,8 @@ def calcule_maillage_intervalle(nom_colonne, minv, maxv, pourcentage_hausse, val
         s = max(s + valeur_hausse, s * (1 + pourcentage_hausse))
         num_foy += 1
     df = pandas.DataFrame(
-        arr, columns=[nom_colonne, "idfam", "idfoy", "idmen", "quifam", "quifoy", "quimen"]
+        arr,
+        columns=[nom_colonne, "idfam", "idfoy", "idmen", "quifam", "quifoy", "quimen"],
     )
     return df
 
@@ -253,10 +248,10 @@ def calcule_maillage_intervalle(nom_colonne, minv, maxv, pourcentage_hausse, val
 def scenar_values(
     minv, maxv, var_brute, var_nette, pourcentage_hausse=0.01, valeur_hausse=100
 ):
-    '''
+    """
     Calcule les valeurs de var_nette pour var_brute dans [minv, maxv]
     et exporte dans un CSV avec les colonnes suivantes : var_brute,var_nette
-    '''
+    """
     if "{}_to_{}.csv".format(var_brute, var_nette) not in os.listdir():
         df = calcule_maillage_intervalle(
             var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
@@ -337,52 +332,52 @@ SIMCAT_BASE = SIMCAT(tbs=TBS)
 
 
 # Genere un csv contenant les résultats par défaut du PLF et du code existant.
-# A exécuter manuellement, puis uploader manuellement le fichier texte avec la fonction 
+# A exécuter manuellement, puis uploader manuellement le fichier texte avec la fonction
 # preload.py (i.e. comme nous faisons avec les données sources et les emails)
 
-from time import time
 
-def generate_default_results():  
-    start_time=time()
+def generate_default_results():
     DUMMY_DATA = load_data(data_path)
-    SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
-    SIMPOP_BASE = SIMPOP(tbs=TBS)
-    SIMPOP_PLF = SIMPOP(tbs=TBS_PLF)
     # Keeping computations short with option to keep file under 1000 FF
     # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
-    print("Dummy Data loaded", len(DUMMY_DATA), "lines")
-    print(time()-start_time)
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
     # precalcul cas de base sur la population pour le cache
     df1 = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
-    df1["irpp_base"]=simulation_base_deciles[0].calculate("irpp", PERIOD)
+    df1["avant"] = simulation_base_deciles[0].calculate("irpp", PERIOD)
     simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
-    df1["irpp_plf"]=simulation_plf_deciles[0].calculate("irpp", PERIOD)
-    df1["idfoy"]=df1.index
-    df1.to_csv("base_results.csv",index=False)
-    print(DUMMY_DATA[DUMMY_DATA["idfoy"]==0])
+    df1["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
+    df1["idfoy"] = df1.index
+    df1[["idfoy", "avant", "plf", "wprm"]].to_csv("base_results.csv", index=False)
     return df1
-
-print(generate_default_results())
 
 
 if not version_beta_sans_simu_pop:
-    start_time=time()
+
+    # Initialisation des données utilisées pour le calcul sur la population
     DUMMY_DATA = load_data(data_path)
-    SIMPOP = partial(simulation, period=PERIOD, data=DUMMY_DATA)
-    SIMPOP_BASE = SIMPOP(tbs=TBS)
-    SIMPOP_PLF = SIMPOP(tbs=TBS_PLF)
-    # Keeping computations short with option to keep file under 1000 FF
-    # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
     print("Dummy Data loaded", len(DUMMY_DATA), "lines")
-    print(time()-start_time)
-    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
-    # precalcul cas de base sur la population pour le cache
-    simulation_base_deciles[0].calculate("irpp", PERIOD)
-    print("sim1 done {:.2f}".format(time()-start_time))
-    simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
-    simulation_plf_deciles[0].calculate("irpp", PERIOD)
-    print("sims done {:.2f}".format(time()-start_time))
+    # Resultats sur la population du code existant et du PLF. Ne change jamais donc pas besoin de fatiguer l'ordi à calculer
+    # Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
+    # sur le data_path
+    resultats_de_base = from_postgres("base_results")
+    if (
+        resultats_de_base is not None
+    ):  # Si la table n'existe pas dans le schéma SQL, ce sera None et on les calcule nous même
+        resultats_de_base = resultats_de_base.set_index("idfoy")
+    else:
+        simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
+        resultats_de_base = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
+        # precalcul cas de base sur la population pour le cache
+        resultats_de_base["avant"] = simulation_base_deciles[0].calculate(
+            "irpp", PERIOD
+        )
+        simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
+        resultats_de_base["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
+        print("precalc done {:.2f}".format(time() - start_time))
+
+
+print("init done : {}".format(time() - start_time))
+
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
 simulation_plf_castypes = simulation(PERIOD, CAS_TYPE, TBS_PLF)
 
@@ -843,14 +838,9 @@ if __name__ == "__main__":
         )
         CompareOldNew("osef", False, dictreform, desc_cas_types())
     else:
+        st_comput_time = time()
         simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)
-        print(
-            compare(
-                PERIOD,
-                {
-                    "avant": simulation_base_deciles,
-                    "plf": simulation_plf_deciles,
-                    "apres": simulation_reform,
-                },
-            )
-        )
+        print(compare(PERIOD, {"apres": simulation_reform}))
+
+        print("comp done : {}".format(time() - start_time))
+        print("comp time : {}".format(time() - st_comput_time))
