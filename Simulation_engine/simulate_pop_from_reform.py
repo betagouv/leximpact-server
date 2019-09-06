@@ -115,7 +115,7 @@ def simulation(period, data, tbs):
 
 def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     res: Total = {}
-    noms_simus = list(dictionnaire_simulations.keys())
+    noms_simus = list(set(dictionnaire_simulations.keys()) | set(["avant", "plf"]))
     if (
         "avant" not in dictionnaire_simulations
     ):  # Veut dire qu'on ne demande pas le calcul du avant
@@ -126,8 +126,9 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
             ["wprm"]
         ]
     for nom_simulation in dictionnaire_simulations:
-        simulation=dictionnaire_simulations[nom_simulation]
-        impots_par_reforme[nom_simulation] = simulation.calculate("irpp", period)
+        impots_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
+            0
+        ].calculate("irpp", period)
     for nom_res_base in [
         colonne_df for colonne_df in impots_par_reforme.columns if colonne_df != "wprm"
     ]:
@@ -767,7 +768,7 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     # if isdecile, we want the impact on the full population, while just a cas type on
     # the isdecile=False
     data, simulation_base, simulation_plf = (
-        (DUMMY_DATA, simulation_base_deciles, simulation_plf_deciles)
+        (DUMMY_DATA, None, None)
         if isdecile
         else (
             (CAS_TYPE, simulation_base_castypes, simulation_plf_castypes)
@@ -793,7 +794,13 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     simulation_reform = simulation(PERIOD, data, reform)
     return compare(
         PERIOD,
-        {"avant": simulation_base, "plf": simulation_plf, "apres": simulation_reform},
+        {"apres": simulation_reform}
+        if isdecile
+        else {
+            "avant": simulation_base,
+            "plf": simulation_plf,
+            "apres": simulation_reform,
+        },
         isdecile,
     )
 
