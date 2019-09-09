@@ -374,10 +374,6 @@ if not version_beta_sans_simu_pop:
         )
         simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
         resultats_de_base["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
-        print("precalc done {:.2f}".format(time() - start_time))
-
-
-print("init done : {}".format(time() - start_time))
 
 simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
 simulation_plf_castypes = simulation(PERIOD, CAS_TYPE, TBS_PLF)
@@ -828,7 +824,26 @@ if __name__ == "__main__":
                 "seuils": [0, 9964, 27159, 73779, 156244],
                 "taux": [0, 0.14, 0.30, 0.41, 0.45],
             },
-            "decote": {"seuil_celib": 1000, "seuil_couple": 2000},
+            "decote": {"seuil_celib": 1196, "seuil_couple": 1970, "taux": 0.75},
+            "plafond_qf": {
+                "abat_dom": {
+                    "taux_GuadMarReu": 0.3,
+                    "plaf_GuadMarReu": 2450,
+                    "taux_GuyMay": 0.4,
+                    "plaf_GuyMay": 4050,
+                },
+                "maries_ou_pacses": 1551,
+                "celib_enf": 3660,
+                "celib": 927,
+                "reduc_postplafond": 1547,
+                "reduc_postplafond_veuf": 1728,
+                "reduction_ss_condition_revenus": {
+                    "seuil_maj_enf": 3797,
+                    "seuil1": 18985,
+                    "seuil2": 21037,
+                    "taux": 0.20,
+                },
+            },
         }
     }
     reform = IncomeTaxReform(TBS, dictreform, PERIOD)
@@ -845,9 +860,5 @@ if __name__ == "__main__":
         )
         CompareOldNew("osef", False, dictreform, desc_cas_types())
     else:
-        st_comput_time = time()
         simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)
         print(compare(PERIOD, {"apres": simulation_reform}))
-
-        print("comp done : {}".format(time() - start_time))
-        print("comp time : {}".format(time() - st_comput_time))
