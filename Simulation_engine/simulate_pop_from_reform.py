@@ -115,16 +115,15 @@ def simulation(period, data, tbs):
 
 def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     res: Total = {}
-    noms_simus = list(set(dictionnaire_simulations.keys()) | set(["avant", "plf"]))
     if (
         "avant" not in dictionnaire_simulations
     ):  # Veut dire qu'on ne demande pas le calcul du avant
         # Donc il doit déjà être dans resulats_de_base
         impots_par_reforme = resultats_de_base.copy()
     else:
-        impots_par_reforme = dictionnaire_simulations[noms_simus[0]][1]["foyer_fiscal"][
-            ["wprm"]
-        ]
+        impots_par_reforme = next(iter(dictionnaire_simulations.values()))[1][
+            "foyer_fiscal"
+        ][["wprm"]]
     for nom_simulation in dictionnaire_simulations:
         impots_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
             0
@@ -137,6 +136,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         ).sum()
     total: Total = res
     if compute_deciles:
+        noms_simus = list(set(dictionnaire_simulations.keys()) | set(["avant", "plf"]))
         totweight = impots_par_reforme["wprm"].sum()
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
@@ -343,13 +343,15 @@ def generate_default_results():
     # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
     # precalcul cas de base sur la population pour le cache
-    df1 = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
-    df1["avant"] = simulation_base_deciles[0].calculate("irpp", PERIOD)
+    base_results = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
+    base_results["avant"] = simulation_base_deciles[0].calculate("irpp", PERIOD)
     simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
-    df1["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
-    df1["idfoy"] = df1.index
-    df1[["idfoy", "avant", "plf", "wprm"]].to_csv("base_results.csv", index=False)
-    return df1
+    base_results["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
+    base_results["idfoy"] = base_results.index
+    base_results[["idfoy", "avant", "plf", "wprm"]].to_csv(
+        "base_results.csv", index=False
+    )
+    return base_results
 
 
 if not version_beta_sans_simu_pop:
@@ -763,15 +765,21 @@ def dataframe_from_cas_types_description(descriptions):
 def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     # if isdecile, we want the impact on the full population, while just a cas type on
     # the isdecile=False
+
+    if isdecile:
+        data = DUMMY_DATA
+        reform = IncomeTaxReform(TBS, dictreform, PERIOD)
+        simulation_reform = simulation(PERIOD, data, reform)
+        return compare(PERIOD, {"apres": simulation_reform}, isdecile)
+
     data, simulation_base, simulation_plf = (
-        (DUMMY_DATA, None, None)
-        if isdecile
-        else (
-            (CAS_TYPE, simulation_base_castypes, simulation_plf_castypes)
-            if castypedesc is None
-            else simulation_from_cas_types(castypedesc)
-        )
+        (CAS_TYPE, simulation_base_castypes, simulation_plf_castypes)
+        if castypedesc is None
+        else simulation_from_cas_types(castypedesc)
     )
+    reform = IncomeTaxReform(TBS, dictreform, PERIOD)
+    simulation_reform = simulation(PERIOD, data, reform)
+
     if dictreform is None:
         assert taux is not None
         dictreform = {
@@ -783,20 +791,12 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
             }
         }
 
-    reform = IncomeTaxReform(TBS, dictreform, PERIOD)
     #   reform = reform_from_bareme(
     #       TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
     #   )
-    simulation_reform = simulation(PERIOD, data, reform)
     return compare(
         PERIOD,
-        {"apres": simulation_reform}
-        if isdecile
-        else {
-            "avant": simulation_base,
-            "plf": simulation_plf,
-            "apres": simulation_reform,
-        },
+        {"avant": simulation_base, "plf": simulation_plf, "apres": simulation_reform},
         isdecile,
     )
 
