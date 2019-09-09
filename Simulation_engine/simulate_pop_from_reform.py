@@ -136,6 +136,9 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         ).sum()
     total: Total = res
     if compute_deciles:
+        #On rajoute "avant"  et "plf" à la liste des colonnes sur lesquelles calculer les déciles, 
+        #On en a besoin si ces colonnes ne sont pas déjà dans le dictionnaire_simulations (par exemple 
+        # dans le cas d'un compare avec isdecile = True)
         noms_simus = list(set(dictionnaire_simulations.keys()) | set(["avant", "plf"]))
         totweight = impots_par_reforme["wprm"].sum()
         nbd = 10
@@ -174,6 +177,9 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         # This is the only TODO part in this code, I highly doubt it's the most pressing matter
 
         if adjust_results:
+            # empiric = valeur de base sur laquelle calibrer (pour prendre en compte, par
+            # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
+            #  prochaine dans le scénario "avant" (i.e. avec le code existant))
             empiric = 73 * 10 ** 9
             factor = adjustment(empiric, total["avant"])
             total = adjust_total(factor, total)
