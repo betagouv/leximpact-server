@@ -338,9 +338,7 @@ SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs=TBS)
 
 
-
 if not version_beta_sans_simu_pop:
-
     # Initialisation des données utilisées pour le calcul sur la population
     DUMMY_DATA = load_data(data_path)
     print("Dummy Data loaded", len(DUMMY_DATA), "lines")
