@@ -136,8 +136,8 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         ).sum()
     total: Total = res
     if compute_deciles:
-        #On rajoute "avant"  et "plf" à la liste des colonnes sur lesquelles calculer les déciles, 
-        #On en a besoin si ces colonnes ne sont pas déjà dans le dictionnaire_simulations (par exemple 
+        # On rajoute "avant"  et "plf" à la liste des colonnes sur lesquelles calculer les déciles,
+        # On en a besoin si ces colonnes ne sont pas déjà dans le dictionnaire_simulations (par exemple
         # dans le cas d'un compare avec isdecile = True)
         noms_simus = list(set(dictionnaire_simulations.keys()) | set(["avant", "plf"]))
         totweight = impots_par_reforme["wprm"].sum()
@@ -337,27 +337,6 @@ CAS_TYPE = load_data("DCT.csv")
 SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
 SIMCAT_BASE = SIMCAT(tbs=TBS)
 
-
-# Genere un csv contenant les résultats par défaut du PLF et du code existant.
-# A exécuter manuellement, puis uploader manuellement le fichier texte avec la fonction
-# preload.py (i.e. comme nous faisons avec les données sources et les emails)
-
-
-def generate_default_results():
-    DUMMY_DATA = load_data(data_path)
-    # Keeping computations short with option to keep file under 1000 FF
-    # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
-    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
-    # precalcul cas de base sur la population pour le cache
-    base_results = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
-    base_results["avant"] = simulation_base_deciles[0].calculate("irpp", PERIOD)
-    simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
-    base_results["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
-    base_results["idfoy"] = base_results.index
-    base_results[["idfoy", "avant", "plf", "wprm"]].to_csv(
-        "base_results.csv", index=False
-    )
-    return base_results
 
 
 if not version_beta_sans_simu_pop:
