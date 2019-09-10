@@ -1,5 +1,8 @@
+from pytest import fixture  # type: ignore
+
 import pandas  # type: ignore
 from pandas.util.testing import assert_frame_equal  # type: ignore
+
 import numpy as np  # type: ignore
 
 from Simulation_engine.simulate_pop_from_reform import (  # type: ignore
@@ -172,10 +175,14 @@ dictreform = {
         },
     }
 }
-reform = IncomeTaxReform(TBS, dictreform, PERIOD)
 
 
-def test_sim_pop_dict_content():
+@fixture
+def reform():
+    return IncomeTaxReform(TBS, dictreform, PERIOD)
+
+
+def test_sim_pop_dict_content(reform):
     simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)
     comp_result = compare(PERIOD, {"apres": simulation_reform})
     assert "total" in comp_result
@@ -186,7 +193,7 @@ def test_sim_pop_dict_content():
         assert key in comp_result["deciles"][0]
 
 
-def test_sim_base_cas_types_dict_content_ok():
+def test_sim_base_cas_types_dict_content_ok(reform):
     simulation_reform = simulation(PERIOD, CAS_TYPE, reform)
     comp_result = compare(
         PERIOD,
