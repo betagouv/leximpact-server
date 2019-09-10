@@ -773,75 +773,8 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
                 }
             }
         }
-
-    #   reform = reform_from_bareme(
-    #       TBS, [0] + taux[: len(taux) // 2], [0] + taux[len(taux) // 2 :], PERIOD
-    #   )
     return compare(
         PERIOD,
         {"avant": simulation_base, "plf": simulation_plf, "apres": simulation_reform},
         isdecile,
     )
-
-
-if __name__ == "__main__":
-    dicocases = [
-        {
-            "nombre_declarants": 1,
-            "nombre_declarants_retraites": 0,
-            "nombre_personnes_a_charge": 1,
-            "outre_mer": 0,
-            "revenu": 31200,
-            "nb_decl_parent_isole": 0,
-            "nb_decl_veuf": 0,
-            "nb_decl_invalides": 0,
-            "nb_pac_invalides": 0,
-            "nb_anciens_combattants": 0,
-            "nb_pac_charge_partagee": 0,
-        }
-    ]
-    df = dataframe_from_cas_types_description(dicocases)
-    dictreform = {
-        "impot_revenu": {
-            "bareme": {
-                "seuils": [0, 9964, 27159, 73779, 156244],
-                "taux": [0, 0.14, 0.30, 0.41, 0.45],
-            },
-            "decote": {"seuil_celib": 1196, "seuil_couple": 1970, "taux": 0.75},
-            "plafond_qf": {
-                "abat_dom": {
-                    "taux_GuadMarReu": 0.3,
-                    "plaf_GuadMarReu": 2450,
-                    "taux_GuyMay": 0.4,
-                    "plaf_GuyMay": 4050,
-                },
-                "maries_ou_pacses": 1551,
-                "celib_enf": 3660,
-                "celib": 927,
-                "reduc_postplafond": 1547,
-                "reduc_postplafond_veuf": 1728,
-                "reduction_ss_condition_revenus": {
-                    "seuil_maj_enf": 3797,
-                    "seuil1": 18985,
-                    "seuil2": 21037,
-                    "taux": 0.20,
-                },
-            },
-        }
-    }
-    reform = IncomeTaxReform(TBS, dictreform, PERIOD)
-    if version_beta_sans_simu_pop:
-        simulation_reform = simulation(PERIOD, CAS_TYPE, reform)
-        compare(
-            PERIOD,
-            {
-                "avant": simulation_base_castypes,
-                "plf": simulation_plf_castypes,
-                "apres": simulation_reform,
-            },
-            compute_deciles=False,
-        )
-        CompareOldNew("osef", False, dictreform, desc_cas_types())
-    else:
-        simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)
-        print(compare(PERIOD, {"apres": simulation_reform}))
