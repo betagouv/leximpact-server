@@ -23,6 +23,8 @@ def to_postgres(filepath, tablename, if_exists="append"):
 
 def from_postgres(tablename):
     engine = sqlalchemy.create_engine(database_url())  # connect to server
+    if not engine.dialect.has_table(engine, tablename):
+        return None
     return pandas.read_sql_query("select * from public.{}".format(tablename), engine)
 
 
