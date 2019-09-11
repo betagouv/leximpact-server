@@ -4,10 +4,22 @@ from Simulation_engine.simulate_pop_from_reform import (
     revenus_cas_types,
 )
 from server.services import check_user, with_session
+import json
+from flask import Response
 
 
 def error_as_dict(errormessage):
     return {"Error": errormessage}
+
+
+def simpop_stream(dbod):
+    yield "\n"
+    dic_resultat = CompareOldNew(
+        taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
+    )
+    if "timestamp" in dbod:
+        dic_resultat["timestamp"] = dbod["timestamp"]
+    yield json.dumps(dic_resultat)
 
 
 class CasTypes(object):
@@ -36,24 +48,25 @@ class SimulationRunner(object):
         return (dic_resultat, 201)
 
     @with_session
-    def simuledeciles(session, **params: dict) -> tuple:
+    def simuledeciles(session, **params: dict) -> Response:
         dbod = params["body"]
         if "reforme" not in dbod:
-            return error_as_dict("missing 'reforme' field in body of your request"), 200
+            return Response(
+                json.dumps(
+                    error_as_dict("missing 'reforme' field in body of your request")
+                )
+            )
         if "token" not in dbod:
-            return error_as_dict("missing token : necessary for this request"), 200
+            return Response(
+                json.dumps(error_as_dict("missing token : necessary for this request"))
+            )
         CU = check_user(session, dbod["token"])
         if CU["success"] is False:
-            return error_as_dict(CU["error"]), 200
+            return Response(json.dumps(error_as_dict(CU["error"])))
         if "description_cas_types" in dbod:
-            return (
-                error_as_dict("bad request, no description_cas_types should appear"),
-                200,
+            return Response(
+                json.dumps(
+                    error_as_dict("bad request, no description_cas_types should appear")
+                )
             )
-
-        dic_resultat = CompareOldNew(
-            taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
-        )
-        if "timestamp" in dbod:
-            dic_resultat["timestamp"] = dbod["timestamp"]
-        return (dic_resultat, 200)
+        return Response(simpop_stream(dbod), content_type="application/json")
