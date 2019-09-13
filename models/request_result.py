@@ -19,10 +19,14 @@ def create_request_result(session, id_req):
     session.commit()
     return True
 
+
 def get_request_result(session, id_req):
     return session.query(RequestResult).get(id_req)
 
-def update_request_result(session, new_status, new_result = None) -> Optional[RequestResult]:
+
+def update_request_result(
+    session, new_status, new_result=None
+) -> Optional[RequestResult]:
     request_result = get_request_result(session, email)
     if request_result is not None:
         request_result.status = new_status
