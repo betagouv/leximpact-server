@@ -5,8 +5,8 @@ Revises: 700a389cb5e1
 Create Date: 2019-08-28 15:23:19.645237
 
 """
-from alembic.op import add_column, drop_column, create_table, drop_table  # type: ignore
-from sqlalchemy import Column, String, Integer  # type: ignore
+from alembic.op import create_table, drop_table  # type: ignore
+from sqlalchemy import Column, String  # type: ignore
 
 
 # revision identifiers, used by Alembic.
