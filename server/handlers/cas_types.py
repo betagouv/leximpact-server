@@ -4,6 +4,7 @@ from Simulation_engine.simulate_pop_from_reform import (
     revenus_cas_types,
 )
 from server.services import check_user, with_session
+from models import create_request_result, update_request_result, get_request_result
 import json
 from flask import Response
 from threading import Thread
@@ -23,12 +24,14 @@ def simpop_stream(dbod):
 
 
 def simpop_async(dbod, id_requete):
+    update_request_result(id_requete,new_status="computing")
     print("Thread starting, id_requete :",id_requete)
     dic_resultat =  CompareOldNew(
         taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
     )
     print("Thread finishing")
     print(dic_resultat)
+    update_request_result(id_requete,new_status="done", new_result = json.dumps(dic_resultat))
 
 
 class CasTypes(object):
@@ -84,7 +87,8 @@ class SimulationRunner(object):
     @with_session
     def simuledeciles_async(session, **params: dict) -> Response:
         dbod = params["body"]
-        id_requete = 123
+        id_requete = str(hash(json.dumps(dbod)))
+        create_request_result(id_requete)
         if "reforme" not in dbod:
             return Response(
                 json.dumps(
@@ -105,6 +109,12 @@ class SimulationRunner(object):
                     error_as_dict("bad request, no description_cas_types should appear")
                 ), status=200
             )
-        x=Thread(target=simpop_async,args=(dbod, id_requete))
-        x.start()
+        thread_calcul=Thread(target=simpop_async,args=(dbod, id_requete))
+        thread_calcul.start()
         return Response(json.dumps({"id_requete" : id_requete}), status=200, content_type="application/json")
+
+    
+    @with_session
+    def get_async_results(id_requete):
+        resultat = get_request_result(id_requete)
+        return Response(json.dumps(resultat),status=200, content_type="application/json")
