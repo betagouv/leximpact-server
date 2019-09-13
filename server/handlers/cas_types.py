@@ -9,6 +9,7 @@ import json
 from flask import Response
 from threading import Thread
 
+
 def error_as_dict(errormessage):
     return {"Error": errormessage}
 
@@ -24,14 +25,16 @@ def simpop_stream(dbod):
 
 
 def simpop_async(dbod, id_requete):
-    update_request_result(id_requete,new_status="computing")
-    print("Thread starting, id_requete :",id_requete)
-    dic_resultat =  CompareOldNew(
+    update_request_result(id_requete, new_status="computing")
+    print("Thread starting, id_requete :", id_requete)
+    dic_resultat = CompareOldNew(
         taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
     )
     print("Thread finishing")
     print(dic_resultat)
-    update_request_result(id_requete,new_status="done", new_result = json.dumps(dic_resultat))
+    update_request_result(
+        id_requete, new_status="done", new_result=json.dumps(dic_resultat)
+    )
 
 
 class CasTypes(object):
@@ -66,12 +69,13 @@ class SimulationRunner(object):
             return Response(
                 json.dumps(
                     error_as_dict("missing 'reforme' field in body of your request")
-                ), status=200
+                ),
+                status=200,
             )
         if "token" not in dbod:
             return Response(
                 json.dumps(error_as_dict("missing token: necessary for this request")),
-                status=200
+                status=200,
             )
         CU = check_user(session, dbod["token"])
         if CU["success"] is False:
@@ -80,9 +84,12 @@ class SimulationRunner(object):
             return Response(
                 json.dumps(
                     error_as_dict("bad request, no description_cas_types should appear")
-                ), status=200
+                ),
+                status=200,
             )
-        return Response(simpop_stream(dbod), status=200, content_type="application/json")
+        return Response(
+            simpop_stream(dbod), status=200, content_type="application/json"
+        )
 
     @with_session
     def simuledeciles_async(session, **params: dict) -> Response:
@@ -93,12 +100,13 @@ class SimulationRunner(object):
             return Response(
                 json.dumps(
                     error_as_dict("missing 'reforme' field in body of your request")
-                ), status=200
+                ),
+                status=200,
             )
         if "token" not in dbod:
             return Response(
                 json.dumps(error_as_dict("missing token: necessary for this request")),
-                status=200
+                status=200,
             )
         CU = check_user(session, dbod["token"])
         if CU["success"] is False:
@@ -107,14 +115,20 @@ class SimulationRunner(object):
             return Response(
                 json.dumps(
                     error_as_dict("bad request, no description_cas_types should appear")
-                ), status=200
+                ),
+                status=200,
             )
-        thread_calcul=Thread(target=simpop_async,args=(dbod, id_requete))
+        thread_calcul = Thread(target=simpop_async, args=(dbod, id_requete))
         thread_calcul.start()
-        return Response(json.dumps({"id_requete" : id_requete}), status=200, content_type="application/json")
+        return Response(
+            json.dumps({"id_requete": id_requete}),
+            status=200,
+            content_type="application/json",
+        )
 
-    
     @with_session
     def get_async_results(id_requete):
         resultat = get_request_result(id_requete)
-        return Response(json.dumps(resultat),status=200, content_type="application/json")
+        return Response(
+            json.dumps(resultat), status=200, content_type="application/json"
+        )
