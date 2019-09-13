@@ -20,7 +20,7 @@ depends_on = None
 def upgrade():
     create_table(
         "request_results",
-        Column("id_request", Integer, primary_key=True),
+        Column("id_request", String(), primary_key=True),
         Column("status", String()),
         Column("result", String(), server_default="{}"),
     )
