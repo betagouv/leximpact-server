@@ -15,10 +15,10 @@ from Simulation_engine.simulate_pop_from_reform import (
 def generate_default_results():
     # Keeping computations short with option to keep file under 1000 FF
     # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
-    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
+    bulk_data_simulation, data_by_entity = simulation(PERIOD, DUMMY_DATA, TBS)
     # precalcul cas de base sur la population pour le cache
-    base_results = simulation_base_deciles[1]["foyer_fiscal"][["wprm", "idfoy"]]
-    base_results["avant"] = simulation_base_deciles[0].calculate("irpp", PERIOD)
+    base_results = data_by_entity["foyer_fiscal"][["wprm", "idfoy"]]
+    base_results["avant"] = bulk_data_simulation.calculate("irpp", PERIOD)
     simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
     base_results["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
     base_results[["idfoy", "avant", "plf", "wprm"]].to_csv(
