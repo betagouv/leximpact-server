@@ -64,6 +64,32 @@ paths:
       responses:
           '201':
             description: Impact de la loi sur les recettes de l'Etat et les déciles.
+  /calculate/simpop_async:
+    post:
+      summary: Calcule l'impact d'une loi sur la population (nécessite des données)
+      operationId: server.handlers.SimulationRunner.simuledeciles_async
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/compareoldnew'
+      responses:
+          '200':
+            description: Donne l'identifiant de la requete ou décrit l'erreur
+  /calculate/get_async_result:
+    post:
+      summary: Calcule l'impact d'une loi sur la population (nécessite des données)
+      operationId: server.handlers.SimulationRunner.get_async_results
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/id_requete'
+      responses:
+          '200':
+            description:  Impact de la loi sur les recettes de l'Etat et les déciles. Obtient le résultat
   /auth/login:
     post:
       summary: Authentifie l'usager
@@ -88,6 +114,11 @@ components:
           type: string
     revenus:
       type: object
+    id_requete:
+      type: object
+      properties:
+        id_requete:
+          type: string
     compareoldnew:
       type: object
       properties:
