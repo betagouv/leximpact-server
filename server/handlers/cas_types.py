@@ -24,8 +24,9 @@ def simpop_stream(dbod):
     yield json.dumps(dic_resultat)
 
 
-def simpop_async(dbod, id_requete):
-    update_request_result(id_requete, new_status="computing")
+@with_session
+def simpop_async(session, dbod, id_requete):
+    update_request_result(session, id_requete, new_status="computing")
     print("Thread starting, id_requete :", id_requete)
     dic_resultat = CompareOldNew(
         taux=None, isdecile=True, dictreform=dbod["reforme"], castypedesc=None
@@ -33,7 +34,7 @@ def simpop_async(dbod, id_requete):
     print("Thread finishing")
     print(dic_resultat)
     update_request_result(
-        id_requete, new_status="done", new_result=json.dumps(dic_resultat)
+        session, id_requete, new_status="done", new_result=json.dumps(dic_resultat)
     )
 
 
@@ -94,8 +95,6 @@ class SimulationRunner(object):
     @with_session
     def simuledeciles_async(session, **params: dict) -> Response:
         dbod = params["body"]
-        id_requete = str(hash(json.dumps(dbod)))
-        create_request_result(id_requete)
         if "reforme" not in dbod:
             return Response(
                 json.dumps(
@@ -118,8 +117,11 @@ class SimulationRunner(object):
                 ),
                 status=200,
             )
-        thread_calcul = Thread(target=simpop_async, args=(dbod, id_requete))
-        thread_calcul.start()
+        id_requete = str(hash(json.dumps(dbod["reforme"])))
+        print(json.dumps(dbod["reforme"]), hash(json.dumps(dbod["reforme"])))
+        if create_request_result(session, id_requete):
+            thread_calcul = Thread(target=simpop_async, args=(dbod, id_requete))
+            thread_calcul.start()
         return Response(
             json.dumps({"id_requete": id_requete}),
             status=200,
@@ -127,8 +129,16 @@ class SimulationRunner(object):
         )
 
     @with_session
-    def get_async_results(id_requete):
-        resultat = get_request_result(id_requete)
-        return Response(
-            json.dumps(resultat), status=200, content_type="application/json"
-        )
+    def get_async_results(session, **params: dict):
+        id_requete = params["body"]["id_requete"]
+        resultat = get_request_result(session, id_requete)
+        if resultat.status == "done":
+            return Response(
+                resultat.result, status=200, content_type="application/json"
+            )
+        else:
+            return Response(
+                json.dumps({"status": resultat.status}),
+                status=200,
+                content_type="application/json",
+            )
