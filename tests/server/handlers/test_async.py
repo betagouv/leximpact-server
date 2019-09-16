@@ -80,14 +80,15 @@ def check_response(actual_result, expected_status_code, content_path_to_check, c
     
     if content_path_to_check:
         content = dpath.util.get(actual_result, content_path_to_check)
-        assert content_to_check in content
+        if content_to_check:
+            assert content_to_check in content
 
 
 @pytest.mark.parametrize("payload, expected_status_code, content_path_to_check, content_to_check", [
     (None, BAD_REQUEST, 'detail', 'Request body is not valid JSON'),
     (reform_payload, OK, 'Error', 'missing token: necessary for this request'),  # Token signature was invalid
     (reform_payload_empty_token, BAD_REQUEST, 'Error', 'Token invalid : not Decodable'),
-    (reform_payload_with_token, OK, 'Error', 'Token signature was invalid')
+    (reform_payload_with_token, OK, 'id_requete', None)
     ])
 def test_calculate_simpop_async(client, payload, headers, expected_status_code, content_path_to_check, content_to_check):
     partial_response = post_request(client, "calculate/simpop_async", headers)
