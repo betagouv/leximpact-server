@@ -16,6 +16,9 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env")
 
 data_path = os.getenv("DATA_PATH")  # type: Optional[str]
+nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional[str]
+if nom_table_resultats_base is None:
+    nom_table_resultats_base = "base_results"
 # Config
 version_beta_sans_simu_pop = False
 adjust_results = True
@@ -353,7 +356,7 @@ if not version_beta_sans_simu_pop:
     # Resultats sur la population du code existant et du PLF. Ne change jamais donc pas besoin de fatiguer l'ordi à calculer
     # Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
     # sur le data_path
-    resultats_de_base = from_postgres("base_results")
+    resultats_de_base = from_postgres(nom_table_resultats_base)
     if (
         resultats_de_base is not None
     ):  # Si la table n'existe pas dans le schéma SQL, ce sera None et on les calcule nous même
