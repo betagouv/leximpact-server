@@ -54,7 +54,7 @@ reform_payload = {
     "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
 }
 
-reform_payload_empty_token = dict(reform_payload, token='')
+reform_payload_empty_token = dict(reform_payload, token="")
 reform_payload_with_token = dict(reform_payload, token=TEST_TOKEN)
 
 # /calculate/simpop_async
@@ -74,24 +74,46 @@ def post_request(client, endpoint, headers):
     return partial_response
 
 
-def check_response(actual_result, expected_status_code, content_path_to_check, content_to_check):
-    if 'status' in actual_result:
-        assert actual_result['status'] == expected_status_code
-    
+def check_response(
+    actual_result, expected_status_code, content_path_to_check, content_to_check
+):
+    if "status" in actual_result:
+        assert actual_result["status"] == expected_status_code
     if content_path_to_check:
         content = dpath.util.get(actual_result, content_path_to_check)
         if content_to_check:
             assert content_to_check in content
 
 
-@pytest.mark.parametrize("payload, expected_status_code, content_path_to_check, content_to_check", [
-    (None, BAD_REQUEST, 'detail', 'Request body is not valid JSON'),
-    (reform_payload, OK, 'Error', 'missing token: necessary for this request'),  # Token signature was invalid
-    (reform_payload_empty_token, BAD_REQUEST, 'Error', 'Token invalid : not Decodable'),
-    (reform_payload_with_token, OK, 'id_requete', None)
-    ])
-def test_calculate_simpop_async(client, payload, headers, expected_status_code, content_path_to_check, content_to_check):
+@pytest.mark.parametrize(
+    "payload, expected_status_code, content_path_to_check, content_to_check",
+    [
+        (None, BAD_REQUEST, "detail", "Request body is not valid JSON"),
+        (
+            reform_payload,
+            OK,
+            "Error",
+            "missing token: necessary for this request",
+        ),  # Token signature was invalid
+        (
+            reform_payload_empty_token,
+            BAD_REQUEST,
+            "Error",
+            "Token invalid : not Decodable",
+        ),
+        (reform_payload_with_token, OK, "id_requete", None),
+    ],
+)
+def test_calculate_simpop_async(
+    client,
+    payload,
+    headers,
+    expected_status_code,
+    content_path_to_check,
+    content_to_check,
+):
     partial_response = post_request(client, "calculate/simpop_async", headers)
     actual_result = json.loads(partial_response(data=json.dumps(payload)).data)
-    
-    check_response(actual_result, expected_status_code, content_path_to_check, content_to_check)
+    check_response(
+        actual_result, expected_status_code, content_path_to_check, content_to_check
+    )
