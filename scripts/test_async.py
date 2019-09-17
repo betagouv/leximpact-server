@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from os import getenv
 
 import pytest  # type: ignore
-import dpath
+import dpath  # type: ignore
 import json
 
 
