@@ -4,7 +4,7 @@ import os
 
 import pandas  # type: ignore
 
-from openfisca_core.memory_config import MemoryConfig
+from openfisca_core.memory_config import MemoryConfig  # type: ignore
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 from models import from_postgres
