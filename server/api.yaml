@@ -16,6 +16,17 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/Greetings'
+  /warmup:
+    post:
+      summary: Charge le système socio-fiscal
+      operationId: server.handlers.WarmUp.load_taxbenefits_system
+      responses:
+          '200':
+            description: Renvoie le statut de chargement du système socio-fiscal
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Greetings'
   /calculate/revenus:
     post:
       summary: Calcule l'impact par cas types
