@@ -4,11 +4,13 @@ import os
 
 import pandas  # type: ignore
 
+from openfisca_core.memory_config import MemoryConfig
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
 from Simulation_engine.reformePLF import reformePLF
+from Simulation_engine.non_cached_variables import non_cached_variables
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
@@ -100,6 +102,12 @@ def simulation(period, data, tbs):
     )
 
     simulation = sb.build(tbs)
+    memory_config = MemoryConfig(
+        max_memory_occupation=0.95,  # When 95% of the virtual memory is full, switch to disk storage
+        priority_variables=["salary", "age"],  # Always store these variables in memory
+        variables_to_drop=non_cached_variables,
+    )
+    simulation.memory_config = memory_config
 
     # Attribution des variables à la bonne entité OpenFisca
     for colonne in data.columns:
