@@ -41,20 +41,22 @@ def test_load_data_when_not_h5(mocker):
 
 def test_adjustment():
     empiric = 4
-    baseline = 2
-    assert adjustment(empiric, baseline) == 2
+    baseline = {"avant": 2}
+    assert adjustment(empiric, baseline) == {"avant": 2}
 
 
 def test_adjust_total():
-    actual = adjust_total(2, {"avant": 2, "apres": 4})
+    actual = adjust_total({"avant": 2, "apres": 2}, {"avant": 2, "apres": 4})
     expected = {"avant": 4, "apres": 8}
 
     assert actual == expected
 
 
 def test_adjust_deciles():
-    actual = adjust_deciles(2, [{"poids": 1, "avant": 2, "apres": 3}])
-    expected = [{"poids": 2, "avant": 4, "apres": 6}]
+    actual = adjust_deciles(
+        {"avant": 2, "apres": 2}, [{"poids": 1, "avant": 2, "apres": 3}]
+    )
+    expected = [{"poids": 1, "avant": 4, "apres": 6}]
 
     assert actual == expected
 
