@@ -4,16 +4,21 @@ import os
 
 import pandas  # type: ignore
 
+from openfisca_core.memory_config import MemoryConfig  # type: ignore
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
 from Simulation_engine.reformePLF import reformePLF
+from Simulation_engine.non_cached_variables import non_cached_variables
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
 
 data_path = os.getenv("DATA_PATH")  # type: Optional[str]
+nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional[str]
+if nom_table_resultats_base is None:
+    nom_table_resultats_base = "base_results"
 # Config
 version_beta_sans_simu_pop = False
 adjust_results = True
@@ -100,6 +105,12 @@ def simulation(period, data, tbs):
     )
 
     simulation = sb.build(tbs)
+    memory_config = MemoryConfig(
+        max_memory_occupation=0.95,  # When 95% of the virtual memory is full, switch to disk storage
+        priority_variables=["salary", "age"],  # Always store these variables in memory
+        variables_to_drop=non_cached_variables,
+    )
+    simulation.memory_config = memory_config
 
     # Attribution des variables à la bonne entité OpenFisca
     for colonne in data.columns:
@@ -345,7 +356,7 @@ if not version_beta_sans_simu_pop:
     # Resultats sur la population du code existant et du PLF. Ne change jamais donc pas besoin de fatiguer l'ordi à calculer
     # Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
     # sur le data_path
-    resultats_de_base = from_postgres("base_results")
+    resultats_de_base = from_postgres(nom_table_resultats_base)
     if (
         resultats_de_base is not None
     ):  # Si la table n'existe pas dans le schéma SQL, ce sera None et on les calcule nous même
