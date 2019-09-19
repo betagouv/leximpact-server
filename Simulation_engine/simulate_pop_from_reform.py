@@ -192,7 +192,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
             #  prochaine dans le scénario "avant" (i.e. avec le code existant))
             empiric = 73 * 10 ** 9
-            factor = adjustment(empiric, total["avant"])
+            factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
             deciles: Deciles = adjust_deciles(factor, decdiffres)
         else:
@@ -211,12 +211,27 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     return resultat
 
 
-def adjustment(empiric: int, baseline: float):
-    """Facteur d'ajustement à partir d'un benchmark empirique"""
-    return empiric / baseline
+def adjustment(empiric: int, brute_result: dict):
+    print(empiric, brute_result)
+    baseline_result = brute_result["avant"]
+    print("defbase", (empiric - 0.05 * baseline_result) / (0.95 * baseline_result))
+    """Facteur d'ajustement à partir d'un benchmark empirique :
+    soit r_b le calcul du code existant, et e_b la valeur empirique des recettes de l'état,
+    le resultat ajusté est calculé comme :
+    adjusted_result[nom_reforme] = e_b/r_b  si nom_reforme =="avant"
+    adjusted_result[nom_reforme] = e_b/r_b  si brute_result[nom_reforme] > 0.95 * r_b
+    si brute_result[nom_reforme] < 0.95 * r_b, on applique le même taux d'ajustement que pour
+    brute_result[nom_reforme] == 0.95 * r_b, soit  (e_b - 0.05 * r-b) / (0.95 * r_b)
+    """
+    return {
+        key: ((empiric + brute_result[key] - baseline_result) / brute_result[key])
+        if (brute_result[key] - baseline_result) / baseline_result > -0.05
+        else (empiric - 0.05 * baseline_result) / (0.95 * baseline_result)
+        for key in brute_result
+    }
 
 
-def adjust_total(factor: int, total: dict):
+def adjust_total(factor: dict, total: dict, ignore_keys: Optional[List[int]] = None):
     """
     Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
 
@@ -224,10 +239,15 @@ def adjust_total(factor: int, total: dict):
     Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
     Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
     """
-    return {key: value * factor for (key, value) in total.items()}
+    if ignore_keys is None:
+        ignore_keys = ["poids"]
+    return {
+        key: value * (factor[key] if key not in ignore_keys else 1)
+        for (key, value) in total.items()
+    }
 
 
-def adjust_deciles(factor: int, deciles: List[dict]):
+def adjust_deciles(factor: dict, deciles: List[dict]):
     """
     Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
 
