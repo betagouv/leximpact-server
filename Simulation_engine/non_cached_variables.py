@@ -793,7 +793,6 @@ non_cached_variables = [
     "iai",
     "f7ga",
     "f6ho",
-    "rfr",
     "deficit_rcm",
     "fhve",
     "pensions_invalidite",
