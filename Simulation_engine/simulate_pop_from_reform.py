@@ -236,8 +236,8 @@ def adjust_total(factor: dict, total: dict, ignore_keys: Optional[List[str]] = N
     Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
 
     C'est pour permettre d'obtenir des résultats réalistes sans données.
-    Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
-    Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    Pour la faire classe, on calibre le modèle sur un paramètre
+    (facteur d'ajustement de l'impôt de chacun des ménages).
     """
     if ignore_keys is None:
         ignore_keys = ["poids"]
@@ -252,8 +252,8 @@ def adjust_deciles(factor: dict, deciles: List[dict]):
     Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
 
     C'est pour permettre d'obtenir des résultats réalistes sans données.
-    Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
-    Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    Pour la faire classe, on calibre le modèle sur un paramètre
+    (facteur d'ajustement de l'impôt de chacun des ménages).
     """
     return [adjust_total(factor, decile) for decile in deciles]
 
