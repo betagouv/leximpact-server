@@ -231,7 +231,7 @@ def adjustment(empiric: int, brute_result: dict):
     }
 
 
-def adjust_total(factor: dict, total: dict, ignore_keys: Optional[List[int]] = None):
+def adjust_total(factor: dict, total: dict, ignore_keys: Optional[List[str]] = None):
     """
     Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
 
