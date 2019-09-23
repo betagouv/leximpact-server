@@ -40,23 +40,53 @@ def test_load_data_when_not_h5(mocker):
 
 
 def test_adjustment():
-    empiric = 4
-    baseline = {"avant": 2}
-    assert adjustment(empiric, baseline) == {"avant": 2}
+    empiric = 73 * 10 ** 9  # recettes état estimée 2019
+
+    equalizing_rate = 0.95
+    recettes_brutes_data = 93 * 10 ** 9  # recettes brutes obtenue via données insee
+    equalizing_threshold = equalizing_rate * recettes_brutes_data
+
+    recettes_brutes_sup_facteur = 186 * 10 ** 9  # >= 95% de recettes_brutes_data
+    recettes_brutes_inf_facteur = 2  # < 95% de recettes_brutes_data
+
+    brute_result = {
+        "avant": recettes_brutes_data,
+        "apres": recettes_brutes_sup_facteur,
+        "plf": recettes_brutes_inf_facteur
+    }
+    actual_adjustement_factors = adjustment(empiric, brute_result)
+
+    assert actual_adjustement_factors["avant"] == empiric / brute_result["avant"]
+
+    assert recettes_brutes_sup_facteur >= equalizing_threshold
+    assert actual_adjustement_factors["apres"] == (recettes_brutes_sup_facteur - recettes_brutes_data + empiric) / recettes_brutes_sup_facteur
+
+    assert recettes_brutes_inf_facteur < equalizing_threshold
+    assert round(actual_adjustement_factors["plf"], 2) == 0.77
 
 
 def test_adjust_total():
-    actual = adjust_total({"avant": 2, "apres": 2}, {"avant": 2, "apres": 4})
+    factor = {"avant": 2, "apres": 2}
+    total = {"avant": 2, "apres": 4}
+
+    actual = adjust_total(factor, total)
     expected = {"avant": 4, "apres": 8}
 
     assert actual == expected
 
 
 def test_adjust_deciles():
+    factor = {"avant": 2, "apres": 2}
+    decile_1 = {"poids": 1, "avant": 2, "apres": 3}
+
     actual = adjust_deciles(
-        {"avant": 2, "apres": 2}, [{"poids": 1, "avant": 2, "apres": 3}]
+        factor, [decile_1]
     )
-    expected = [{"poids": 1, "avant": 4, "apres": 6}]
+    expected = [{
+        "poids": 1,
+        "avant": factor["avant"] * decile_1["avant"],
+        "apres": 6
+    }]
 
     assert actual == expected
 
