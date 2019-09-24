@@ -103,7 +103,6 @@ def test_dataframe_from_cas_types_description():
         "contrat_de_travail",
         "date_naissance",
         "effectif_entreprise",
-        "heures_remunerees_volume",
         "idfam",
         "idfoy",
         "idmen",
