@@ -156,7 +156,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         # On rajoute "avant"  et "plf" à la liste des colonnes sur lesquelles calculer les déciles,
         # On en a besoin si ces colonnes ne sont pas déjà dans le dictionnaire_simulations (par exemple
         # dans le cas d'un compare avec isdecile = True)
-        frontieres_deciles = []
+        frontieres_deciles: List[float] = []
         noms_simus = list(set(dictionnaire_simulations.keys()) | set(["avant", "plf"]))
         totweight = impots_par_reforme["wprm"].sum()
         nbd = 10
