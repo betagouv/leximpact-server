@@ -591,7 +591,6 @@ def dataframe_from_cas_types_description(descriptions):
         "contrat_de_travail",
         "date_naissance",
         "effectif_entreprise",
-        "heures_remunerees_volume",
         "idfam",
         "idfoy",
         "idmen",
@@ -768,16 +767,12 @@ def dataframe_from_cas_types_description(descriptions):
             dres["contrat_de_travail"] += (
                 [0] if not ct["nombre_declarants_retraites"] else [6]
             )
-            dres["heures_remunerees_volume"] += (
-                [1200] if not ct["nombre_declarants_retraites"] else [0]
-            )
             dres["statut_marital"] += (
                 [4 if ct["nb_decl_veuf"] else 5] if nbd > 1 else [2]
             )
         for _ in range(nbc):
             dres["activite"] += [2]
             dres["contrat_de_travail"] += [6]
-            dres["heures_remunerees_volume"] += [0]
             dres["statut_marital"] += [2]
     dres["index"] = list(range(len(dres["quifoy"])))
     for col, v in colbinaires.items():
