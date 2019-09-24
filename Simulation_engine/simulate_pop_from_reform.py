@@ -368,9 +368,16 @@ def from_brut_to_net(val_brute, var_brute, var_nette):
 scenar_values(0, 12_000_000, "salaire_de_base", "salaire_imposable")
 scenar_values(0, 12_000_000, "retraite_brute", "retraite_imposable")
 
-print(20000, from_brut_to_net(20000,"salaire_de_base","salaire_imposable"))
-print(20000, from_net_to_brut(20000,"salaire_de_base","salaire_imposable"))
-print(20000, from_net_to_brut(from_brut_to_net(20000,"salaire_de_base","salaire_imposable"),"salaire_de_base","salaire_imposable"))
+print(20000, from_brut_to_net(20000, "salaire_de_base", "salaire_imposable"))
+print(20000, from_net_to_brut(20000, "salaire_de_base", "salaire_imposable"))
+print(
+    20000,
+    from_net_to_brut(
+        from_brut_to_net(20000, "salaire_de_base", "salaire_imposable"),
+        "salaire_de_base",
+        "salaire_imposable",
+    ),
+)
 
 PERIOD = "2018"
 TBS = FranceTaxBenefitSystem()
