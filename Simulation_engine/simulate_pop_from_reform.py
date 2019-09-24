@@ -222,9 +222,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
 
 
 def adjustment(empiric: int, brute_result: dict):
-    print(empiric, brute_result)
     baseline_result = brute_result["avant"]
-    print("defbase", (empiric - 0.05 * baseline_result) / (0.95 * baseline_result))
     """Facteur d'ajustement à partir d'un benchmark empirique :
     soit r_b le calcul du code existant, et e_b la valeur empirique des recettes de l'état,
     le resultat ajusté est calculé comme :
