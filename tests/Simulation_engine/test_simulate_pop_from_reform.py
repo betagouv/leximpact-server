@@ -20,6 +20,7 @@ from Simulation_engine.simulate_pop_from_reform import (  # type: ignore
     simulation,
     simulation_base_castypes,
     CompareOldNew,
+    simulation_from_cas_types,
     simulation_plf_castypes,
     TBS,
 )
@@ -40,21 +41,51 @@ def test_load_data_when_not_h5(mocker):
 
 
 def test_adjustment():
-    empiric = 4
-    baseline = 2
-    assert adjustment(empiric, baseline) == 2
+    empiric = 73 * 10 ** 9  # recettes état estimée 2019
+
+    equalizing_rate = 0.95
+    recettes_brutes_data = 93 * 10 ** 9  # recettes brutes obtenue via données insee
+    equalizing_threshold = equalizing_rate * recettes_brutes_data
+
+    recettes_brutes_sup_facteur = 186 * 10 ** 9  # >= 95% de recettes_brutes_data
+    recettes_brutes_inf_facteur = 2  # < 95% de recettes_brutes_data
+
+    brute_result = {
+        "avant": recettes_brutes_data,
+        "apres": recettes_brutes_sup_facteur,
+        "plf": recettes_brutes_inf_facteur,
+    }
+    actual_adjustement_factors = adjustment(empiric, brute_result)
+
+    assert actual_adjustement_factors["avant"] == empiric / brute_result["avant"]
+
+    assert recettes_brutes_sup_facteur >= equalizing_threshold
+    assert (
+        actual_adjustement_factors["apres"]
+        == (recettes_brutes_sup_facteur - recettes_brutes_data + empiric)
+        / recettes_brutes_sup_facteur
+    )
+
+    assert recettes_brutes_inf_facteur < equalizing_threshold
+    assert round(actual_adjustement_factors["plf"], 2) == 0.77
 
 
 def test_adjust_total():
-    actual = adjust_total(2, {"avant": 2, "apres": 4})
+    factor = {"avant": 2, "apres": 2}
+    total = {"avant": 2, "apres": 4}
+
+    actual = adjust_total(factor, total)
     expected = {"avant": 4, "apres": 8}
 
     assert actual == expected
 
 
 def test_adjust_deciles():
-    actual = adjust_deciles(2, [{"poids": 1, "avant": 2, "apres": 3}])
-    expected = [{"poids": 2, "avant": 4, "apres": 6}]
+    factor = {"avant": 2, "apres": 2}
+    decile_1 = {"poids": 1, "avant": 2, "apres": 3}
+
+    actual = adjust_deciles(factor, [decile_1])
+    expected = [{"poids": 1, "avant": factor["avant"] * decile_1["avant"], "apres": 6}]
 
     assert actual == expected
 
@@ -72,7 +103,6 @@ def test_dataframe_from_cas_types_description():
         "contrat_de_travail",
         "date_naissance",
         "effectif_entreprise",
-        "heures_remunerees_volume",
         "idfam",
         "idfoy",
         "idmen",
@@ -175,6 +205,39 @@ dictreform = {
         },
     }
 }
+
+
+# Bon je veux :  calculer l'inverse de quelques revenu_imposable : 10000, 20000, 30000
+# Check que le salaire_imposable est bien le même à l'arrivée qu'au début
+
+
+def dict_cas_type_unipersonne_from_revenu(revenu_imposable):
+    return {
+        "nombre_declarants": 1,
+        "nombre_declarants_retraites": 0,
+        "nombre_personnes_a_charge": 0,
+        "outre_mer": 0,
+        "revenu": revenu_imposable,
+        "nb_decl_parent_isole": 0,
+        "nb_decl_veuf": 0,
+        "nb_decl_invalides": 0,
+        "nb_pac_invalides": 0,
+        "nb_anciens_combattants": 0,
+        "nb_pac_charge_partagee": 0,
+    }
+
+
+def test_inversion_variable():
+    revenus_a_tester = [10000, 20000, 100000]
+    for revenu in revenus_a_tester:
+        _df_description, (
+            sim_base,
+            _data_frames_base,
+        ), _useless_sim = simulation_from_cas_types(
+            [dict_cas_type_unipersonne_from_revenu(revenu)]
+        )
+        revenu_post_calcul = sim_base.calculate_add("salaire_imposable", PERIOD)[0]
+        assert round(revenu_post_calcul) == round(revenu)
 
 
 @fixture

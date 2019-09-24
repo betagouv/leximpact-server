@@ -139,8 +139,14 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         impots_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
             0
         ].calculate("irpp", period)
+        impots_par_reforme["rfr"] = dictionnaire_simulations[nom_simulation][
+            0
+        ].calculate("rfr", period)
+
     for nom_res_base in [
-        colonne_df for colonne_df in impots_par_reforme.columns if colonne_df != "wprm"
+        colonne_df
+        for colonne_df in impots_par_reforme.columns
+        if colonne_df not in ["rfr", "wprm"]
     ]:
         res[nom_res_base] = -(
             impots_par_reforme[nom_res_base] * impots_par_reforme["wprm"]
@@ -150,14 +156,13 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         # On rajoute "avant"  et "plf" à la liste des colonnes sur lesquelles calculer les déciles,
         # On en a besoin si ces colonnes ne sont pas déjà dans le dictionnaire_simulations (par exemple
         # dans le cas d'un compare avec isdecile = True)
+        frontieres_deciles: List[float] = []
         noms_simus = list(set(dictionnaire_simulations.keys()) | set(["avant", "plf"]))
         totweight = impots_par_reforme["wprm"].sum()
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
         numdecile = 1
-        impots_par_reforme["keysort"] = (
-            -impots_par_reforme["avant"] - impots_par_reforme["apres"]
-        )
+        impots_par_reforme["keysort"] = impots_par_reforme["rfr"]
         impots_par_reforme = impots_par_reforme.sort_values(
             by="keysort"
         )  # For now, deciles are organized by level of irpp
@@ -182,6 +187,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
                         for k in range(len(keysdicres))
                     }
                 ]
+                frontieres_deciles += [row["keysort"]]
                 numdecile += 1
 
         # TODO : interpolate quantiles instead of doing the granular approach
@@ -192,13 +198,17 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
             #  prochaine dans le scénario "avant" (i.e. avec le code existant))
             empiric = 73 * 10 ** 9
-            factor = adjustment(empiric, total["avant"])
+            factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
             deciles: Deciles = adjust_deciles(factor, decdiffres)
         else:
             deciles = decdiffres
 
-        resultat = {"total": total, "deciles": deciles}
+        resultat = {
+            "total": total,
+            "deciles": deciles,
+            "frontieres_deciles": frontieres_deciles,
+        }
 
     else:  # This only interests us for the castypes
         # On arrondit les résultats des cas-types
@@ -211,29 +221,47 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     return resultat
 
 
-def adjustment(empiric: int, baseline: float):
-    """Facteur d'ajustement à partir d'un benchmark empirique"""
-    return empiric / baseline
+def adjustment(empiric: int, brute_result: dict):
+    baseline_result = brute_result["avant"]
+    """Facteur d'ajustement à partir d'un benchmark empirique :
+    soit r_b le calcul du code existant, et e_b la valeur empirique des recettes de l'état,
+    le resultat ajusté est calculé comme :
+    adjusted_result[nom_reforme] = e_b/r_b  si nom_reforme =="avant"
+    adjusted_result[nom_reforme] = e_b/r_b  si brute_result[nom_reforme] > 0.95 * r_b
+    si brute_result[nom_reforme] < 0.95 * r_b, on applique le même taux d'ajustement que pour
+    brute_result[nom_reforme] == 0.95 * r_b, soit  (e_b - 0.05 * r-b) / (0.95 * r_b)
+    """
+    return {
+        key: ((empiric + brute_result[key] - baseline_result) / brute_result[key])
+        if (brute_result[key] - baseline_result) / baseline_result > -0.05
+        else (empiric - 0.05 * baseline_result) / (0.95 * baseline_result)
+        for key in brute_result
+    }
 
 
-def adjust_total(factor: int, total: dict):
+def adjust_total(factor: dict, total: dict, ignore_keys: Optional[List[str]] = None):
     """
     Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
 
     C'est pour permettre d'obtenir des résultats réalistes sans données.
-    Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
-    Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    Pour la faire classe, on calibre le modèle sur un paramètre
+    (facteur d'ajustement de l'impôt de chacun des ménages).
     """
-    return {key: value * factor for (key, value) in total.items()}
+    if ignore_keys is None:
+        ignore_keys = ["poids"]
+    return {
+        key: value * (factor[key] if key not in ignore_keys else 1)
+        for (key, value) in total.items()
+    }
 
 
-def adjust_deciles(factor: int, deciles: List[dict]):
+def adjust_deciles(factor: dict, deciles: List[dict]):
     """
     Le résultat avant sera ajusté à resultBase, tout sera ajusté d'un facteur
 
     C'est pour permettre d'obtenir des résultats réalistes sans données.
-    Pour la faire classe, on calibre le modèle sur un paramètre (facteur d'ajustement de l'impot de chacun)
-    Pour minimiser un vecteur d'erreur qui ne contient qu'un paramètre (montant global des recettes de l'Etat)
+    Pour la faire classe, on calibre le modèle sur un paramètre
+    (facteur d'ajustement de l'impôt de chacun des ménages).
     """
     return [adjust_total(factor, decile) for decile in deciles]
 
@@ -279,7 +307,7 @@ def scenar_values(
         # définit un ménage par ligne
         sim = simulation(PERIOD, df, TBS)
         net = var_nette
-        df[net] = sim[0].calculate(net, "2018-01") * 12
+        df[net] = sim[0].calculate_add(net, "2018")
         df[[var_brute, var_nette]].to_csv(
             "{}_to_{}.csv".format(var_brute, var_nette), index=False
         )
@@ -556,7 +584,6 @@ def dataframe_from_cas_types_description(descriptions):
         "contrat_de_travail",
         "date_naissance",
         "effectif_entreprise",
-        "heures_remunerees_volume",
         "idfam",
         "idfoy",
         "idmen",
@@ -733,16 +760,12 @@ def dataframe_from_cas_types_description(descriptions):
             dres["contrat_de_travail"] += (
                 [0] if not ct["nombre_declarants_retraites"] else [6]
             )
-            dres["heures_remunerees_volume"] += (
-                [1200] if not ct["nombre_declarants_retraites"] else [0]
-            )
             dres["statut_marital"] += (
                 [4 if ct["nb_decl_veuf"] else 5] if nbd > 1 else [2]
             )
         for _ in range(nbc):
             dres["activite"] += [2]
             dres["contrat_de_travail"] += [6]
-            dres["heures_remunerees_volume"] += [0]
             dres["statut_marital"] += [2]
     dres["index"] = list(range(len(dres["quifoy"])))
     for col, v in colbinaires.items():
