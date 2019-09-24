@@ -162,7 +162,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
         numdecile = 1
-        impots_par_reforme["keysort"] =  impots_par_reforme["rfr"] 
+        impots_par_reforme["keysort"] = impots_par_reforme["rfr"]
         impots_par_reforme = impots_par_reforme.sort_values(
             by="keysort"
         )  # For now, deciles are organized by level of irpp
