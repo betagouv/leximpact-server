@@ -299,7 +299,7 @@ def scenar_values(
         # définit un ménage par ligne
         sim = simulation(PERIOD, df, TBS)
         net = var_nette
-        df[net] = sim[0].calculate(net, "2018-01") * 12
+        df[net] = sim[0].calculate_add(net, "2018")
         df[[var_brute, var_nette]].to_csv(
             "{}_to_{}.csv".format(var_brute, var_nette), index=False
         )
