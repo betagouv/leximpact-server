@@ -142,14 +142,11 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         impots_par_reforme["rfr"] = dictionnaire_simulations[nom_simulation][
             0
         ].calculate("rfr", period)
-        impots_par_reforme["nbptr"] = dictionnaire_simulations[nom_simulation][
-            0
-        ].calculate("nbptr", period)
 
     for nom_res_base in [
         colonne_df
         for colonne_df in impots_par_reforme.columns
-        if colonne_df not in ["rfr", "nbptr", "wprm"]
+        if colonne_df not in ["rfr", "wprm"]
     ]:
         res[nom_res_base] = -(
             impots_par_reforme[nom_res_base] * impots_par_reforme["wprm"]
@@ -165,9 +162,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
         numdecile = 1
-        impots_par_reforme["keysort"] = (
-            impots_par_reforme["rfr"] / impots_par_reforme["nbptr"]
-        )
+        impots_par_reforme["keysort"] =  impots_par_reforme["rfr"] 
         impots_par_reforme = impots_par_reforme.sort_values(
             by="keysort"
         )  # For now, deciles are organized by level of irpp
