@@ -20,6 +20,7 @@ from Simulation_engine.simulate_pop_from_reform import (  # type: ignore
     simulation,
     simulation_base_castypes,
     CompareOldNew,
+    simulation_from_cas_types,
     simulation_plf_castypes,
     TBS,
 )
@@ -52,14 +53,18 @@ def test_adjustment():
     brute_result = {
         "avant": recettes_brutes_data,
         "apres": recettes_brutes_sup_facteur,
-        "plf": recettes_brutes_inf_facteur
+        "plf": recettes_brutes_inf_facteur,
     }
     actual_adjustement_factors = adjustment(empiric, brute_result)
 
     assert actual_adjustement_factors["avant"] == empiric / brute_result["avant"]
 
     assert recettes_brutes_sup_facteur >= equalizing_threshold
-    assert actual_adjustement_factors["apres"] == (recettes_brutes_sup_facteur - recettes_brutes_data + empiric) / recettes_brutes_sup_facteur
+    assert (
+        actual_adjustement_factors["apres"]
+        == (recettes_brutes_sup_facteur - recettes_brutes_data + empiric)
+        / recettes_brutes_sup_facteur
+    )
 
     assert recettes_brutes_inf_facteur < equalizing_threshold
     assert round(actual_adjustement_factors["plf"], 2) == 0.77
@@ -79,14 +84,8 @@ def test_adjust_deciles():
     factor = {"avant": 2, "apres": 2}
     decile_1 = {"poids": 1, "avant": 2, "apres": 3}
 
-    actual = adjust_deciles(
-        factor, [decile_1]
-    )
-    expected = [{
-        "poids": 1,
-        "avant": factor["avant"] * decile_1["avant"],
-        "apres": 6
-    }]
+    actual = adjust_deciles(factor, [decile_1])
+    expected = [{"poids": 1, "avant": factor["avant"] * decile_1["avant"], "apres": 6}]
 
     assert actual == expected
 
@@ -207,6 +206,39 @@ dictreform = {
         },
     }
 }
+
+
+# Bon je veux :  calculer l'inverse de quelques revenu_imposable : 10000, 20000, 30000
+# Check que le salaire_imposable est bien le même à l'arrivée qu'au début
+
+
+def dict_cas_type_unipersonne_from_revenu(revenu_imposable):
+    return {
+        "nombre_declarants": 1,
+        "nombre_declarants_retraites": 0,
+        "nombre_personnes_a_charge": 0,
+        "outre_mer": 0,
+        "revenu": revenu_imposable,
+        "nb_decl_parent_isole": 0,
+        "nb_decl_veuf": 0,
+        "nb_decl_invalides": 0,
+        "nb_pac_invalides": 0,
+        "nb_anciens_combattants": 0,
+        "nb_pac_charge_partagee": 0,
+    }
+
+
+def test_inversion_variable():
+    revenus_a_tester = [10000, 20000, 100000]
+    for revenu in revenus_a_tester:
+        _df_description, (
+            sim_base,
+            _data_frames_base,
+        ), _useless_sim = simulation_from_cas_types(
+            [dict_cas_type_unipersonne_from_revenu(revenu)]
+        )
+        revenu_post_calcul = sim_base.calculate_add("salaire_imposable", PERIOD)[0]
+        assert round(revenu_post_calcul) == round(revenu)
 
 
 @fixture
