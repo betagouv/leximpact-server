@@ -139,9 +139,10 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         impots_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
             0
         ].calculate("irpp", period)
-        impots_par_reforme["rfr"] = dictionnaire_simulations[nom_simulation][
-            0
-        ].calculate("rfr", period)
+        if compute_deciles:
+            impots_par_reforme["rfr"] = dictionnaire_simulations[nom_simulation][
+                0
+            ].calculate("rfr", period)
 
     for nom_res_base in [
         colonne_df
