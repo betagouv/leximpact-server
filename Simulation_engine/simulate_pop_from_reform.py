@@ -205,10 +205,58 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         else:
             deciles = decdiffres
 
+        # ## Nb personnes touchees   #####
+        # On fait tous les passages possibles entre les resultats:
+        simus_passages = ["avant", "plf", "apres"]
+        transcription_code = [
+            "neutre",
+            "gagnant",
+            "perdant_zero",
+            "neutre_zero",
+            "perdant",
+        ]
+        dictionnaire_ff_affectes = {}
+        for id_comp_1 in range(len(simus_passages)):
+            nom_comp_1 = simus_passages[id_comp_1]
+            for id_comp_2 in range(id_comp_1 + 1, len(simus_passages)):
+                nom_comp_2 = simus_passages[id_comp_2]
+                nom_colonne_affectation = "{}_to_{}".format(nom_comp_1, nom_comp_2)
+                dictionnaire_ff_affectes[nom_colonne_affectation] = {}
+                impots_par_reforme[nom_colonne_affectation] = 0
+                impots_par_reforme.loc[
+                    (
+                        impots_par_reforme[nom_comp_1] - 0.1
+                        > impots_par_reforme[nom_comp_2]
+                    ),
+                    nom_colonne_affectation,
+                ] = -1
+                impots_par_reforme.loc[
+                    (
+                        impots_par_reforme[nom_comp_1] + 0.1
+                        < impots_par_reforme[nom_comp_2]
+                    ),
+                    nom_colonne_affectation,
+                ] = 1
+                impots_par_reforme.loc[
+                    (impots_par_reforme[nom_comp_1]) > -0.01, nom_colonne_affectation
+                ] = (impots_par_reforme[nom_colonne_affectation] - 2)
+                # Ca nous amene à : -3 si (avant=0, plf !=0) , -2 si (avant=0, plf=0), -1 si (avant!=0 et perdant),
+                # 0 si (avant!=0 et ni gagnant ni perdant), 1 si (avant!=0 et gagnant)
+                # Oui, c'est ca que ca veut dire le transcription_code
+                compte_code_affectation = (
+                    impots_par_reforme.groupby(nom_colonne_affectation)[["wprm"]]
+                    .sum()
+                    .to_dict()["wprm"]
+                )
+                for code, somme_poids_code in compte_code_affectation.items():
+                    dictionnaire_ff_affectes[nom_colonne_affectation][
+                        transcription_code[code]
+                    ] = round(somme_poids_code)
         resultat = {
             "total": total,
             "deciles": deciles,
             "frontieres_deciles": frontieres_deciles,
+            "foyers_fiscaux_touches": dictionnaire_ff_affectes,
         }
 
     else:  # This only interests us for the castypes
