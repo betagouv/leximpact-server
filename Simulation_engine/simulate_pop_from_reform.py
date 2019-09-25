@@ -215,7 +215,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
             "neutre_zero",
             "perdant",
         ]
-        dictionnaire_ff_affectes = {}
+        dictionnaire_ff_affectes: Dict[str, Dict[str, int]] = {}
         for id_comp_1 in range(len(simus_passages)):
             nom_comp_1 = simus_passages[id_comp_1]
             for id_comp_2 in range(id_comp_1 + 1, len(simus_passages)):
