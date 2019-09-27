@@ -67,7 +67,7 @@ def test_adjustment():
     )
 
     assert recettes_brutes_inf_facteur < equalizing_threshold
-    assert round(actual_adjustement_factors["plf"], 2) == 0.77
+    assert round(actual_adjustement_factors["plf"], 2) == 0.78
 
 
 def test_adjust_total():
