@@ -359,25 +359,20 @@ def scenar_values(
     Calcule les valeurs de var_nette pour var_brute dans [minv, maxv]
     et exporte dans un CSV avec les colonnes suivantes : var_brute,var_nette
     """
-    if "{}_to_{}.csv".format(var_brute, var_nette) not in os.listdir():
-        df = calcule_maillage_intervalle(
-            var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
-        )
-        PERIOD = "2018"
-        TBS = FranceTaxBenefitSystem()
-        # définit un ménage par ligne
-        sim = simulation(PERIOD, df, TBS)
-        net = var_nette
-        df[net] = sim[0].calculate_add(net, "2018")
-        df[[var_brute, var_nette]].to_csv(
-            "{}_to_{}.csv".format(var_brute, var_nette), index=False
-        )
+    df = calcule_maillage_intervalle(
+        var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
+    )
+    PERIOD = "2018"
+    TBS = FranceTaxBenefitSystem()
+    # définit un ménage par ligne
+    sim = simulation(PERIOD, df, TBS)
+    net = var_nette
+    df[net] = sim[0].calculate_add(net, "2018")
+    return df[[var_brute, var_nette]]
 
 
-def from_net_to_brut(val_nette, var_brute, var_nette):
-    namecsv = "{}_to_{}.csv".format(var_brute, var_nette)
-    df = pandas.read_csv(namecsv)
-    dfv = df.values
+def from_net_to_brut(val_nette, dataframe_net_to_brut):
+    dfv = dataframe_net_to_brut.values
     N = len(dfv)
     tt = 1
     while tt < N:
@@ -401,10 +396,8 @@ def from_net_to_brut(val_nette, var_brute, var_nette):
     return lambda_ * apresx + (1 - lambda_) * avantx
 
 
-def from_brut_to_net(val_brute, var_brute, var_nette):
-    namecsv = "{}_to_{}.csv".format(var_brute, var_nette)
-    df = pandas.read_csv(namecsv)
-    dfv = df.values
+def from_brut_to_net(val_brute, dataframe_net_to_brut):
+    dfv = dataframe_net_to_brut.values
     N = len(dfv)
     tt = 1
     while tt < N:
@@ -426,8 +419,14 @@ def from_brut_to_net(val_brute, var_brute, var_nette):
     return lambda_ * apresx + (1 - lambda_) * avantx
 
 
-scenar_values(0, 12_000_000, "salaire_de_base", "salaire_imposable")
-scenar_values(0, 12_000_000, "retraite_brute", "retraite_imposable")
+conversion_variables = {}
+
+conversion_variables["salaire_de_base_to_salaire_imposable"] = scenar_values(
+    0, 12_000_000, "salaire_de_base", "salaire_imposable"
+)
+conversion_variables["retraite_brute_to_retraite_imposable"] = scenar_values(
+    0, 12_000_000, "retraite_brute", "retraite_imposable"
+)
 
 
 PERIOD = "2018"
@@ -517,11 +516,15 @@ def foyertodictcastype(idfoy, data=None):
         data = CAS_TYPE
     revenu = sum(
         [
-            from_brut_to_net(sb, "salaire_de_base", "salaire_imposable")
+            from_brut_to_net(
+                sb, conversion_variables["salaire_de_base_to_salaire_imposable"]
+            )
             for sb in data[data["idfoy"] == idfoy]["salaire_de_base"].values
         ]
         + [
-            from_brut_to_net(rb, "retraite_brute", "retraite_imposable")
+            from_brut_to_net(
+                rb, conversion_variables["retraite_brute_to_retraite_imposable"]
+            )
             for rb in data[data["idfoy"] == idfoy]["retraite_brute"].values
         ]
     )
@@ -771,7 +774,8 @@ def dataframe_from_cas_types_description(descriptions):
         if ct["nombre_declarants_retraites"] == nbd:
             dres["retraite_brute"] += [
                 from_net_to_brut(
-                    ct["revenu"] / nbd, "retraite_brute", "retraite_imposable"
+                    ct["revenu"] / nbd,
+                    conversion_variables["retraite_brute_to_retraite_imposable"],
                 )
             ] * nbd + [0] * nbc
             dres["salaire_de_base"] += [0] * (nbd + nbc)
@@ -782,7 +786,8 @@ def dataframe_from_cas_types_description(descriptions):
                 [0]
                 + [
                     from_net_to_brut(
-                        ct["revenu"] / nbd, "retraite_brute", "retraite_imposable"
+                        ct["revenu"] / nbd,
+                        conversion_variables["retraite_brute_to_retraite_imposable"],
                     )
                 ]
                 + [0] * nbc
@@ -790,7 +795,8 @@ def dataframe_from_cas_types_description(descriptions):
             dres["salaire_de_base"] += (
                 [
                     from_net_to_brut(
-                        ct["revenu"] / nbd, "salaire_de_base", "salaire_imposable"
+                        ct["revenu"] / nbd,
+                        conversion_variables["salaire_de_base_to_salaire_imposable"],
                     )
                 ]
                 + [0]
@@ -801,7 +807,8 @@ def dataframe_from_cas_types_description(descriptions):
             isretraite += [0] * (nbd + nbc)
             dres["salaire_de_base"] += [
                 from_net_to_brut(
-                    ct["revenu"] / nbd, "salaire_de_base", "salaire_imposable"
+                    ct["revenu"] / nbd,
+                    conversion_variables["salaire_de_base_to_salaire_imposable"],
                 )
             ] * nbd + [0] * nbc
             dres["retraite_brute"] += [0] * (nbd + nbc)
