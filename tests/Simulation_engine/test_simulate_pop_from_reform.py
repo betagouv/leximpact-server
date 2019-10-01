@@ -250,10 +250,26 @@ def test_sim_pop_dict_content(reform):
     comp_result = compare(PERIOD, {"apres": simulation_reform})
     assert "total" in comp_result
     assert "deciles" in comp_result
+    assert "frontieres_deciles" in comp_result
+    assert len(comp_result["frontieres_deciles"]) == len(comp_result["deciles"])
+    assert "foyers_fiscaux_touches" in comp_result
     # assert len(comp_result["deciles"])==10 Removed cause with the cas type description
     for key in ["avant", "apres", "plf"]:
         assert key in comp_result["total"]
         assert key in comp_result["deciles"][0]
+    for key in ["avant_to_apres", "avant_to_plf", "plf_to_apres"]:
+        assert key in comp_result["foyers_fiscaux_touches"]
+        for type_touche, nb_people in comp_result["foyers_fiscaux_touches"][
+            key
+        ].items():
+            assert type_touche in [
+                "gagnant",
+                "neutre",
+                "perdant",
+                "perdant_zero",
+                "neutre_zero",
+            ]
+            assert isinstance(nb_people, int)
 
 
 def test_sim_base_cas_types_dict_content_ok(reform):

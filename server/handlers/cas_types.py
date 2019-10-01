@@ -38,6 +38,8 @@ class SimulationRunner(object):
         dct = None
         if "description_cas_types" in dbod:
             dct = dbod["description_cas_types"]
+            if not len(dct):
+                return error_as_dict("Empty list of cas types received"), 200
         if "reforme" not in dbod:
             return error_as_dict("missing 'reforme' field in body of your request"), 200
         dic_resultat = CompareOldNew(
@@ -54,12 +56,13 @@ class SimulationRunner(object):
             return Response(
                 json.dumps(
                     error_as_dict("missing 'reforme' field in body of your request")
-                ), status=200
+                ),
+                status=200,
             )
         if "token" not in dbod:
             return Response(
                 json.dumps(error_as_dict("missing token: necessary for this request")),
-                status=200
+                status=200,
             )
         CU = check_user(session, dbod["token"])
         if CU["success"] is False:
@@ -68,6 +71,9 @@ class SimulationRunner(object):
             return Response(
                 json.dumps(
                     error_as_dict("bad request, no description_cas_types should appear")
-                ), status=200
+                ),
+                status=200,
             )
-        return Response(simpop_stream(dbod), status=200, content_type="application/json")
+        return Response(
+            simpop_stream(dbod), status=200, content_type="application/json"
+        )

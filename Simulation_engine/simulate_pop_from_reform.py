@@ -124,6 +124,63 @@ def simulation(period, data, tbs):
     return simulation, dictionnaire_datagrouped
 
 
+def calcule_personnes_touchees(impots_par_reforme):
+    # On fait tous les passages possibles entre les resultats:
+    simus_passages = ["avant", "plf", "apres"]
+    transcription_code = [
+        "neutre",
+        "gagnant",
+        "perdant_zero",
+        "neutre_zero",
+        "perdant",
+    ]
+    foyers_fiscaux_touches: Dict[str, Dict[str, int]] = {}
+    IMPOT_DIMINUE = 1
+    IMPOT_INCHANGE = 0
+    IMPOT_AUGMENTE = -1
+    IMPOT_NUL_DELTA = -2
+
+    for id_comp_1 in range(len(simus_passages)):
+        nom_comp_1 = simus_passages[id_comp_1]
+        for id_comp_2 in range(id_comp_1 + 1, len(simus_passages)):
+            nom_comp_2 = simus_passages[id_comp_2]
+            nom_colonne_affectation = "{}_to_{}".format(nom_comp_1, nom_comp_2)
+            foyers_fiscaux_touches[nom_colonne_affectation] = {}
+            impots_par_reforme[nom_colonne_affectation] = IMPOT_INCHANGE
+            impots_par_reforme.loc[
+                (
+                    impots_par_reforme[nom_comp_1] - 0.1
+                    > impots_par_reforme[nom_comp_2]
+                ),
+                nom_colonne_affectation,
+            ] = IMPOT_AUGMENTE
+            impots_par_reforme.loc[
+                (
+                    impots_par_reforme[nom_comp_1] + 0.1
+                    < impots_par_reforme[nom_comp_2]
+                ),
+                nom_colonne_affectation,
+            ] = IMPOT_DIMINUE
+            impots_par_reforme.loc[
+                (impots_par_reforme[nom_comp_1]) > -0.01, nom_colonne_affectation
+            ] = (impots_par_reforme[nom_colonne_affectation] + IMPOT_NUL_DELTA)
+            # Ca nous amene à : -3 si (avant=0, plf !=0),
+            # -2 si (avant=0, plf=0), -1 si (avant!=0 et perdant),
+            # 0 si (avant!=0 et ni gagnant ni perdant), 1 si (avant!=0 et gagnant)
+            # Oui, c'est ca que ca veut dire le transcription_code
+            compte_code_affectation = (
+                impots_par_reforme.groupby(nom_colonne_affectation)[["wprm"]]
+                .sum()
+                .to_dict()["wprm"]
+            )
+            for code, somme_poids_code in compte_code_affectation.items():
+                foyers_fiscaux_touches[nom_colonne_affectation][
+                    transcription_code[code]
+                ] = round(somme_poids_code)
+
+    return foyers_fiscaux_touches
+
+
 def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     res: Total = {}
     if (
@@ -139,9 +196,10 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         impots_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
             0
         ].calculate("irpp", period)
-        impots_par_reforme["rfr"] = dictionnaire_simulations[nom_simulation][
-            0
-        ].calculate("rfr", period)
+        if compute_deciles:
+            impots_par_reforme["rfr"] = dictionnaire_simulations[nom_simulation][
+                0
+            ].calculate("rfr", period)
 
     for nom_res_base in [
         colonne_df
@@ -196,7 +254,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         if adjust_results:
             # empiric = valeur de base sur laquelle calibrer (pour prendre en compte, par
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
-            #  prochaine dans le scénario "avant" (i.e. avec le code existant))
+            # prochaine dans le scénario "avant" (i.e. avec le code existant))
             empiric = 73 * 10 ** 9
             factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
@@ -204,10 +262,12 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         else:
             deciles = decdiffres
 
+        foyers_fiscaux_touches = calcule_personnes_touchees(impots_par_reforme)
         resultat = {
             "total": total,
             "deciles": deciles,
             "frontieres_deciles": frontieres_deciles,
+            "foyers_fiscaux_touches": foyers_fiscaux_touches,
         }
 
     else:  # This only interests us for the castypes
@@ -299,25 +359,20 @@ def scenar_values(
     Calcule les valeurs de var_nette pour var_brute dans [minv, maxv]
     et exporte dans un CSV avec les colonnes suivantes : var_brute,var_nette
     """
-    if "{}_to_{}.csv".format(var_brute, var_nette) not in os.listdir():
-        df = calcule_maillage_intervalle(
-            var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
-        )
-        PERIOD = "2018"
-        TBS = FranceTaxBenefitSystem()
-        # définit un ménage par ligne
-        sim = simulation(PERIOD, df, TBS)
-        net = var_nette
-        df[net] = sim[0].calculate_add(net, "2018")
-        df[[var_brute, var_nette]].to_csv(
-            "{}_to_{}.csv".format(var_brute, var_nette), index=False
-        )
+    df = calcule_maillage_intervalle(
+        var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
+    )
+    PERIOD = "2018"
+    TBS = FranceTaxBenefitSystem()
+    # définit un ménage par ligne
+    sim = simulation(PERIOD, df, TBS)
+    net = var_nette
+    df[net] = sim[0].calculate_add(net, "2018")
+    return df[[var_brute, var_nette]]
 
 
-def from_net_to_brut(val_nette, var_brute, var_nette):
-    namecsv = "{}_to_{}.csv".format(var_brute, var_nette)
-    df = pandas.read_csv(namecsv)
-    dfv = df.values
+def from_net_to_brut(val_nette, dataframe_brut_to_net):
+    dfv = dataframe_brut_to_net.values
     N = len(dfv)
     tt = 1
     while tt < N:
@@ -341,10 +396,8 @@ def from_net_to_brut(val_nette, var_brute, var_nette):
     return lambda_ * apresx + (1 - lambda_) * avantx
 
 
-def from_brut_to_net(val_brute, var_brute, var_nette):
-    namecsv = "{}_to_{}.csv".format(var_brute, var_nette)
-    df = pandas.read_csv(namecsv)
-    dfv = df.values
+def from_brut_to_net(val_brute, dataframe_brut_to_net):
+    dfv = dataframe_brut_to_net.values
     N = len(dfv)
     tt = 1
     while tt < N:
@@ -366,8 +419,14 @@ def from_brut_to_net(val_brute, var_brute, var_nette):
     return lambda_ * apresx + (1 - lambda_) * avantx
 
 
-scenar_values(0, 12_000_000, "salaire_de_base", "salaire_imposable")
-scenar_values(0, 12_000_000, "retraite_brute", "retraite_imposable")
+conversion_variables = {}
+
+conversion_variables["salaire_de_base_to_salaire_imposable"] = scenar_values(
+    0, 12_000_000, "salaire_de_base", "salaire_imposable"
+)
+conversion_variables["retraite_brute_to_retraite_imposable"] = scenar_values(
+    0, 12_000_000, "retraite_brute", "retraite_imposable"
+)
 
 
 PERIOD = "2018"
@@ -457,11 +516,15 @@ def foyertodictcastype(idfoy, data=None):
         data = CAS_TYPE
     revenu = sum(
         [
-            from_brut_to_net(sb, "salaire_de_base", "salaire_imposable")
+            from_brut_to_net(
+                sb, conversion_variables["salaire_de_base_to_salaire_imposable"]
+            )
             for sb in data[data["idfoy"] == idfoy]["salaire_de_base"].values
         ]
         + [
-            from_brut_to_net(rb, "retraite_brute", "retraite_imposable")
+            from_brut_to_net(
+                rb, conversion_variables["retraite_brute_to_retraite_imposable"]
+            )
             for rb in data[data["idfoy"] == idfoy]["retraite_brute"].values
         ]
     )
@@ -711,7 +774,8 @@ def dataframe_from_cas_types_description(descriptions):
         if ct["nombre_declarants_retraites"] == nbd:
             dres["retraite_brute"] += [
                 from_net_to_brut(
-                    ct["revenu"] / nbd, "retraite_brute", "retraite_imposable"
+                    ct["revenu"] / nbd,
+                    conversion_variables["retraite_brute_to_retraite_imposable"],
                 )
             ] * nbd + [0] * nbc
             dres["salaire_de_base"] += [0] * (nbd + nbc)
@@ -722,7 +786,8 @@ def dataframe_from_cas_types_description(descriptions):
                 [0]
                 + [
                     from_net_to_brut(
-                        ct["revenu"] / nbd, "retraite_brute", "retraite_imposable"
+                        ct["revenu"] / nbd,
+                        conversion_variables["retraite_brute_to_retraite_imposable"],
                     )
                 ]
                 + [0] * nbc
@@ -730,7 +795,8 @@ def dataframe_from_cas_types_description(descriptions):
             dres["salaire_de_base"] += (
                 [
                     from_net_to_brut(
-                        ct["revenu"] / nbd, "salaire_de_base", "salaire_imposable"
+                        ct["revenu"] / nbd,
+                        conversion_variables["salaire_de_base_to_salaire_imposable"],
                     )
                 ]
                 + [0]
@@ -741,7 +807,8 @@ def dataframe_from_cas_types_description(descriptions):
             isretraite += [0] * (nbd + nbc)
             dres["salaire_de_base"] += [
                 from_net_to_brut(
-                    ct["revenu"] / nbd, "salaire_de_base", "salaire_imposable"
+                    ct["revenu"] / nbd,
+                    conversion_variables["salaire_de_base_to_salaire_imposable"],
                 )
             ] * nbd + [0] * nbc
             dres["retraite_brute"] += [0] * (nbd + nbc)
