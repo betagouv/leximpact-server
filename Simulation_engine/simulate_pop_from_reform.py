@@ -371,8 +371,8 @@ def scenar_values(
     return df[[var_brute, var_nette]]
 
 
-def from_net_to_brut(val_nette, dataframe_net_to_brut):
-    dfv = dataframe_net_to_brut.values
+def from_net_to_brut(val_nette, dataframe_brut_to_net):
+    dfv = dataframe_brut_to_net.values
     N = len(dfv)
     tt = 1
     while tt < N:
@@ -396,8 +396,8 @@ def from_net_to_brut(val_nette, dataframe_net_to_brut):
     return lambda_ * apresx + (1 - lambda_) * avantx
 
 
-def from_brut_to_net(val_brute, dataframe_net_to_brut):
-    dfv = dataframe_net_to_brut.values
+def from_brut_to_net(val_brute, dataframe_brut_to_net):
+    dfv = dataframe_brut_to_net.values
     N = len(dfv)
     tt = 1
     while tt < N:
