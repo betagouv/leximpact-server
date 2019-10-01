@@ -124,6 +124,63 @@ def simulation(period, data, tbs):
     return simulation, dictionnaire_datagrouped
 
 
+def calcule_personnes_touchees(impots_par_reforme):
+    # On fait tous les passages possibles entre les resultats:
+    simus_passages = ["avant", "plf", "apres"]
+    transcription_code = [
+        "neutre",
+        "gagnant",
+        "perdant_zero",
+        "neutre_zero",
+        "perdant",
+    ]
+    foyers_fiscaux_touches: Dict[str, Dict[str, int]] = {}
+    IMPOT_DIMINUE = 1
+    IMPOT_INCHANGE = 0
+    IMPOT_AUGMENTE = -1
+    IMPOT_NUL_DELTA = -2
+
+    for id_comp_1 in range(len(simus_passages)):
+        nom_comp_1 = simus_passages[id_comp_1]
+        for id_comp_2 in range(id_comp_1 + 1, len(simus_passages)):
+            nom_comp_2 = simus_passages[id_comp_2]
+            nom_colonne_affectation = "{}_to_{}".format(nom_comp_1, nom_comp_2)
+            foyers_fiscaux_touches[nom_colonne_affectation] = {}
+            impots_par_reforme[nom_colonne_affectation] = IMPOT_INCHANGE
+            impots_par_reforme.loc[
+                (
+                    impots_par_reforme[nom_comp_1] - 0.1
+                    > impots_par_reforme[nom_comp_2]
+                ),
+                nom_colonne_affectation,
+            ] = IMPOT_AUGMENTE
+            impots_par_reforme.loc[
+                (
+                    impots_par_reforme[nom_comp_1] + 0.1
+                    < impots_par_reforme[nom_comp_2]
+                ),
+                nom_colonne_affectation,
+            ] = IMPOT_DIMINUE
+            impots_par_reforme.loc[
+                (impots_par_reforme[nom_comp_1]) > -0.01, nom_colonne_affectation
+            ] = (impots_par_reforme[nom_colonne_affectation] + IMPOT_NUL_DELTA)
+            # Ca nous amene à : -3 si (avant=0, plf !=0),
+            # -2 si (avant=0, plf=0), -1 si (avant!=0 et perdant),
+            # 0 si (avant!=0 et ni gagnant ni perdant), 1 si (avant!=0 et gagnant)
+            # Oui, c'est ca que ca veut dire le transcription_code
+            compte_code_affectation = (
+                impots_par_reforme.groupby(nom_colonne_affectation)[["wprm"]]
+                .sum()
+                .to_dict()["wprm"]
+            )
+            for code, somme_poids_code in compte_code_affectation.items():
+                foyers_fiscaux_touches[nom_colonne_affectation][
+                    transcription_code[code]
+                ] = round(somme_poids_code)
+
+    return foyers_fiscaux_touches
+
+
 def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     res: Total = {}
     if (
@@ -197,7 +254,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         if adjust_results:
             # empiric = valeur de base sur laquelle calibrer (pour prendre en compte, par
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
-            #  prochaine dans le scénario "avant" (i.e. avec le code existant))
+            # prochaine dans le scénario "avant" (i.e. avec le code existant))
             empiric = 73 * 10 ** 9
             factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
@@ -205,63 +262,12 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         else:
             deciles = decdiffres
 
-        # ## Nb personnes touchees   #####
-        # On fait tous les passages possibles entre les resultats:
-        simus_passages = ["avant", "plf", "apres"]
-        transcription_code = [
-            "neutre",
-            "gagnant",
-            "perdant_zero",
-            "neutre_zero",
-            "perdant",
-        ]
-        dictionnaire_ff_affectes: Dict[str, Dict[str, int]] = {}
-        IMPOT_DIMINUE = 1
-        IMPOT_INCHANGE = 0
-        IMPOT_AUGMENTE = -1
-        IMPOT_NUL_DELTA = -2
-
-        for id_comp_1 in range(len(simus_passages)):
-            nom_comp_1 = simus_passages[id_comp_1]
-            for id_comp_2 in range(id_comp_1 + 1, len(simus_passages)):
-                nom_comp_2 = simus_passages[id_comp_2]
-                nom_colonne_affectation = "{}_to_{}".format(nom_comp_1, nom_comp_2)
-                dictionnaire_ff_affectes[nom_colonne_affectation] = {}
-                impots_par_reforme[nom_colonne_affectation] = IMPOT_INCHANGE
-                impots_par_reforme.loc[
-                    (
-                        impots_par_reforme[nom_comp_1] - 0.1
-                        > impots_par_reforme[nom_comp_2]
-                    ),
-                    nom_colonne_affectation,
-                ] = IMPOT_AUGMENTE
-                impots_par_reforme.loc[
-                    (
-                        impots_par_reforme[nom_comp_1] + 0.1
-                        < impots_par_reforme[nom_comp_2]
-                    ),
-                    nom_colonne_affectation,
-                ] = IMPOT_DIMINUE
-                impots_par_reforme.loc[
-                    (impots_par_reforme[nom_comp_1]) > -0.01, nom_colonne_affectation
-                ] = (impots_par_reforme[nom_colonne_affectation] + IMPOT_NUL_DELTA)
-                # Ca nous amene à : -3 si (avant=0, plf !=0) , -2 si (avant=0, plf=0), -1 si (avant!=0 et perdant),
-                # 0 si (avant!=0 et ni gagnant ni perdant), 1 si (avant!=0 et gagnant)
-                # Oui, c'est ca que ca veut dire le transcription_code
-                compte_code_affectation = (
-                    impots_par_reforme.groupby(nom_colonne_affectation)[["wprm"]]
-                    .sum()
-                    .to_dict()["wprm"]
-                )
-                for code, somme_poids_code in compte_code_affectation.items():
-                    dictionnaire_ff_affectes[nom_colonne_affectation][
-                        transcription_code[code]
-                    ] = round(somme_poids_code)
+        foyers_fiscaux_touches = calcule_personnes_touchees(impots_par_reforme)
         resultat = {
             "total": total,
             "deciles": deciles,
             "frontieres_deciles": frontieres_deciles,
-            "foyers_fiscaux_touches": dictionnaire_ff_affectes,
+            "foyers_fiscaux_touches": foyers_fiscaux_touches,
         }
 
     else:  # This only interests us for the castypes
