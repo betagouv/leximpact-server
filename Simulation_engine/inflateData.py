@@ -1,6 +1,6 @@
-
 import pandas as pd  # type: ignore
 import numpy as np
+
 
 def inflate(inputfile, outputfile=None):
     if outputfile is None:

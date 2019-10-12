@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
 
-
-import pandas
-import time
+import pandas  # type: ignore
 import os
 import math
 
 from openfisca_france import FranceTaxBenefitSystem
-from simulate_pop_from_reform import simulation
+from simulate_pop_from_reform import simulation, TBS_PLF
 
 
 def aggregats_ff(
@@ -191,7 +188,7 @@ def compare_input_data(
     TBS = FranceTaxBenefitSystem()
     DUMMY_DATA = pandas.read_hdf(input_h5)
     simulation_base_deciles, dictionnaire_datagrouped = simulation(
-        PERIOD, DUMMY_DATA, TBS, timer=time
+        PERIOD, DUMMY_DATA, TBS
     )
     df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
     for nv in name_variables:
@@ -199,7 +196,7 @@ def compare_input_data(
     isdif = False
     data2 = pandas.read_hdf(input_h5_b)
     col = "b"
-    newsim, ddg2 = simulation(PERIOD, data2, TBS, timer=time)
+    newsim, ddg2 = simulation(PERIOD, data2, TBS)
     for nv in name_variables:
         df["{}_{}".format(nv, col)] = newsim.calculate(nv, PERIOD)
 
@@ -220,7 +217,7 @@ def test_useless_variables(
     TBS = FranceTaxBenefitSystem()
     DUMMY_DATA = pandas.read_hdf(input_h5)
     simulation_base_deciles, dictionnaire_datagrouped = simulation(
-        PERIOD, DUMMY_DATA, TBS, timer=time
+        PERIOD, DUMMY_DATA, TBS
     )
     df = dictionnaire_datagrouped["foyer_fiscal"][["wprm"]]
     for nv in name_variables:
@@ -231,7 +228,7 @@ def test_useless_variables(
         isdif = False
         data_wo_column = DUMMY_DATA[[k for k in DUMMY_DATA.columns if k != col]]
         try:
-            newsim, ddg2 = simulation(PERIOD, data_wo_column, TBS, timer=time)
+            newsim, ddg2 = simulation(PERIOD, data_wo_column, TBS)
             resvar = {nv: {} for nv in name_variables}
             for nv in name_variables:
                 df["{}_{}".format(nv, col)] = newsim.calculate(nv, PERIOD)
@@ -257,7 +254,7 @@ def test_useless_variables(
     data_wo_useless = DUMMY_DATA[
         [k for k in DUMMY_DATA.columns if k not in list_useless_variables]
     ]
-    newsim, ddg2 = simulation(PERIOD, data_wo_column, TBS, timer=time)
+    newsim, ddg2 = simulation(PERIOD, data_wo_column, TBS)
     isdif = False
     for nv in name_variables:
         # print(col,nv,resvar[nv]["countdif"])
@@ -282,17 +279,18 @@ def test_h5_input(
     name_variables=("rfr", "irpp", "nbptr"),
     aggfunc="sum",
     compdic=None,
+    is_plf=False
 ):
     PERIOD = "2018"
-    TBS = FranceTaxBenefitSystem()
+    TBS = TBS_PLF if is_plf else FranceTaxBenefitSystem()
     DUMMY_DATA = pandas.read_hdf(input_h5)
-    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
+    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
     df = aggregats_ff(PERIOD, simulation_base_deciles, name_variables).sort_values(
         by="rfr"
     )
     if aggfunc == "sum":  # Pour la somme, on calcule les % d'erreur sur la répartition.
         testerrorvalues(df)
-    aggs_to_compute = ["wprm", "salaire_de_base", "retraite_brute"] + name_variables
+    aggs_to_compute = ["wprm", "salaire_de_base", "retraite_brute"] + list(name_variables)
     val_donnees_pac_agg = 0
     trpac_agg = [
         compdic[ag]
@@ -358,7 +356,7 @@ def ajustement_h5(
     DUMMY_DATA = pandas.read_hdf(input_h5)
     # Keeping computations short with option to keep file under 1000 FF
     # DUMMY_DATA = DUMMY_DATA[DUMMY_DATA["idmen"] < 1000]
-    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS, timer=time)
+    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
     df = aggregats_ff(PERIOD, simulation_base_deciles).sort_values(by="rfr")
     print(
         "{} FF sur {} ont un revenu>0 , donc {:.2f}% ont que dalle ".format(
@@ -558,6 +556,76 @@ def adjustment_example():
         compdic=theoric_values["countnonzero"],
     )
 
+
+def anotherexample():
+    # Compares two different calibrations...
+    ajustement_h5(
+        input_h5="dummy_data_step3.h5",
+        output_h5="dummy_data_final.h5",
+        distribution_rfr_population="./Simulation_Engine/Calib/ResFinalCalibSenat_Old.csv",
+    )
+    ajustement_h5(
+        input_h5="dummy_data_step3.h5",
+        output_h5="dummy_data_final_2018.h5",
+        distribution_rfr_population="./Simulation_Engine/Calib/ResFinalCalibSenat.csv",
+    )
+    print("before adj :")
+    theoric_values = {  # source : stats impots 2018 (sur revenu 2017)
+        "sum": {
+            "rfr": 985_934_421,
+            "irpp": -78000000000,
+            "wprm": 38332977,
+            "nbG": 244715,
+            "nbF": 15748883,
+            "nbH": 972058,
+            "nbJ": 1906364,
+            "nbR": 52124,
+        },
+        "countnonzero": {
+            "maries_ou_pacses": 12990578,
+            "celibataire_ou_divorce": 21388331,
+            "veuf": 3954068,
+            "nbF": 9088622,
+            "nbH": 642590,
+            "nbJ": 1630205,
+            "nbR": 50091,
+            "nbG": 232088,
+        },
+    }
+    print("after adj 1 :")
+    test_h5_input(
+        input_h5="dummy_data_final.h5",
+        name_variables=("rfr", "irpp", "nbptr"),
+        aggfunc="sum",
+        compdic=theoric_values["sum"],
+        is_plf=False
+    )
+    print("after adj 2 :")
+    test_h5_input(
+        input_h5="dummy_data_final_2018.h5",
+        name_variables=("rfr", "irpp", "nbptr"),
+        aggfunc="sum",
+        compdic=theoric_values["sum"],
+        is_plf=False
+    )
+
+    print("WITH PLF NOW HIhihi")
+    print("after adj 1 plf:")
+    test_h5_input(
+        input_h5="dummy_data_final.h5",
+        name_variables=("rfr", "irpp", "nbptr"),
+        aggfunc="sum",
+        compdic=theoric_values["sum"],
+        is_plf=True
+    )
+    print("after adj 2 plf:")
+    test_h5_input(
+        input_h5="dummy_data_final_2018.h5",
+        name_variables=("rfr", "irpp", "nbptr"),
+        aggfunc="sum",
+        compdic=theoric_values["sum"],
+        is_plf=True
+    )
 
 # ToDo : Le test doit retourner True si :
 #  - On a Une erreur totale sur la distrib de rfr < 2.5% après ajustement
