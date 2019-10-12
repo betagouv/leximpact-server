@@ -15,9 +15,9 @@ def aggregats_ff(
 ):
     for sim, dictionnaire_datagrouped in [simulation_base]:
         for nomvariable in name_variables:
-            dictionnaire_datagrouped["foyer_fiscal"][
-                nomvariable
-            ] = sim.calculate(nomvariable, period)
+            dictionnaire_datagrouped["foyer_fiscal"][nomvariable] = sim.calculate(
+                nomvariable, period
+            )
             dictionnaire_datagrouped["foyer_fiscal"][nomvariable + "w"] = (
                 dictionnaire_datagrouped["foyer_fiscal"][nomvariable]
                 * dictionnaire_datagrouped["foyer_fiscal"]["wprm"]
@@ -74,7 +74,36 @@ def reverseCDF(calibratedso):
     return reverseCDFfromTable
 
 
-def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
+distrib_ref = [
+    (8747240, 35650844.124, -571772.33),
+    (2075458, 22918630.4, -261361.963),
+    (3376281, 46013883.986, -348790.712),
+    (6093153, 106107384.717, 489979.736),
+    (7128078, 175094399.166, 5503116.008),
+    (6983156, 267373648.186, 12741264.542),
+    (3705104, 244595733.939, 22716376.387),
+    (690856, 90722780.007, 14594473.555),
+    (103089, 24655894.355, 5384938.23),
+    (34043, 11644308.133, 2848424.787),
+    (15705, 6982162.964, 1794080.016),
+    (8404, 4589995.388, 1205199.154),
+    (5149, 3325875.018, 857308.684),
+    (3412, 2551274.133, 641060.56),
+    (2361, 2003894.507, 503689.565),
+    (1753, 1664075.044, 406984.715),
+    (6005, 8133585.615, 1975793.842),
+    (1442, 3487910.345, 822605.416),
+    (565, 1934106.377, 430778.68),
+    (353, 1574353.902, 364856.619),
+    (188, 1031308.509, 225696.923),
+    (150, 985855.205, 191826.502),
+    (89, 654905.34, 152250.209),
+    (52, 439492.703, 80549.784),
+    (273, 5536950.866, 1081949.261),
+]
+
+
+def testerrorvalues(df, namerfr="rfr", nameweight="wprm", valeursref=distrib_ref):
     errs = {
         var: [] for var in ["nombre_ff", "rfr", "irpp"]
     }  # absolute value of percentage differences
@@ -117,33 +146,6 @@ def testerrorvalues(df, namerfr="rfr", nameweight="wprm"):
         sommesPartielles += [(nombreCourant, sommeCourante, sommeimpots)]
         nbp += [len(df[df[namerfr] <= tranche])]
         # nb foyers fisccaux , rfr, impots
-    valeursref = [
-        (8779578, 37017352.91, -120470.926),
-        (2141456, 23577329.09, -52667.915),
-        (3415487, 46459160.772, -97920.236),
-        (5907523, 102764311.931, 1757682.568),
-        (6830792, 167947232.228, 5647709.376),
-        (6553656, 250560654.266, 13309362.326),
-        (3305940, 217391801.563, 20630440.587),
-        (597946, 78515622.095, 12812673.619),
-        (88183, 21094944.421, 4697851.34),
-        (28243, 9670624.317, 2422618.717),
-        (12523, 5567585.822, 1464664.904),
-        (6552, 3572204.884, 965369.51),
-        (3889, 2512859.538, 685320.67),
-        (2456, 1833358.763, 511723.79),
-        (1709, 1445836.223, 405218.849),
-        (1247, 1181172.438, 330407.275),
-        (4463, 6045094.957, 1605428.388),
-        (978, 2349456.523, 618765.854),
-        (389, 1339663.563, 332044.446),
-        (177, 792643.994, 192016.727),
-        (106, 582664.429, 145106.787),
-        (62, 399427.263, 108240.956),
-        (41, 310128.514, 84401.203),
-        (36, 302012.261, 65296.768),
-        (163, 2701278.296, 580641.771),
-    ]
 
     res = {}
     adjust = [1, 1000, -1000]
@@ -385,8 +387,8 @@ def ajustement_h5(
     df.loc[df["rfr"] < 0.01, "adjwstep0"] = redweightifrfr0
     df.loc[df["rfr"] < 0.01, "realwprm"] = df["wprm"] * redweightifrfr0
     # Calibration du nombre total de foyers fiscaux
-    target_foyers_fiscaux = 37889181
-    # src : https://www.economie.gouv.fr/files/files/directions_services/dgfip/Rapport/2017/RA2017_cahierstats_0719.pdf
+    target_foyers_fiscaux = 38_332_977
+    # src : https://www.impots.gouv.fr/portail/statistiques (2018)
     adjust_wprm = target_foyers_fiscaux / df["realwprm"].sum()
     df["realwprm"] = df["realwprm"] * adjust_wprm
     print(
