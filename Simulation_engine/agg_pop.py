@@ -4,7 +4,7 @@ import os
 import math
 
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
-from simulate_pop_from_reform import simulation, TBS_PLF
+from simulate_pop_from_reform import simulation, TBS_PLF  # type: ignore
 
 
 def aggregats_ff(

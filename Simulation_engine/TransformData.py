@@ -1,5 +1,5 @@
-from inflateData import inflate, noise
-from agg_pop import ajustement_h5, test_useless_variables
+from inflateData import inflate, noise  # type: ignore
+from agg_pop import ajustement_h5, test_useless_variables  # type: ignore
 
 
 if __name__ == "__main__":
