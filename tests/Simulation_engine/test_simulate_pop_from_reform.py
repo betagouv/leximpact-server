@@ -43,7 +43,7 @@ def test_load_data_when_not_h5(mocker):
 def test_adjustment():
     empiric = 73 * 10 ** 9  # recettes état estimée 2019
 
-    equalizing_rate = 0.95
+    equalizing_rate = 0.9
     recettes_brutes_data = 93 * 10 ** 9  # recettes brutes obtenue via données insee
     equalizing_threshold = equalizing_rate * recettes_brutes_data
 
@@ -67,7 +67,7 @@ def test_adjustment():
     )
 
     assert recettes_brutes_inf_facteur < equalizing_threshold
-    assert round(actual_adjustement_factors["plf"], 2) == 0.78
+    assert round(actual_adjustement_factors["plf"], 2) == 0.76
 
 
 def test_adjust_total():

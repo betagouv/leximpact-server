@@ -127,13 +127,7 @@ def simulation(period, data, tbs):
 def calcule_personnes_touchees(impots_par_reforme):
     # On fait tous les passages possibles entre les resultats:
     simus_passages = ["avant", "plf", "apres"]
-    transcription_code = [
-        "neutre",
-        "gagnant",
-        "perdant_zero",
-        "neutre_zero",
-        "perdant",
-    ]
+    transcription_code = ["neutre", "gagnant", "perdant_zero", "neutre_zero", "perdant"]
     foyers_fiscaux_touches: Dict[str, Dict[str, int]] = {}
     IMPOT_DIMINUE = 1
     IMPOT_INCHANGE = 0
@@ -148,17 +142,11 @@ def calcule_personnes_touchees(impots_par_reforme):
             foyers_fiscaux_touches[nom_colonne_affectation] = {}
             impots_par_reforme[nom_colonne_affectation] = IMPOT_INCHANGE
             impots_par_reforme.loc[
-                (
-                    impots_par_reforme[nom_comp_1] - 0.1
-                    > impots_par_reforme[nom_comp_2]
-                ),
+                (impots_par_reforme[nom_comp_1] - 0.1 > impots_par_reforme[nom_comp_2]),
                 nom_colonne_affectation,
             ] = IMPOT_AUGMENTE
             impots_par_reforme.loc[
-                (
-                    impots_par_reforme[nom_comp_1] + 0.1
-                    < impots_par_reforme[nom_comp_2]
-                ),
+                (impots_par_reforme[nom_comp_1] + 0.1 < impots_par_reforme[nom_comp_2]),
                 nom_colonne_affectation,
             ] = IMPOT_DIMINUE
             impots_par_reforme.loc[
@@ -291,7 +279,7 @@ def adjustment(empiric: int, brute_result: dict):
     si brute_result[nom_reforme] < 0.95 * r_b, on applique le même taux d'ajustement que pour
     brute_result[nom_reforme] == 0.95 * r_b, soit  (e_b - 0.05 * r-b) / (0.95 * r_b)
     """
-    adj_lim = 0.975
+    adj_lim = 0.9
     return {
         key: ((empiric + brute_result[key] - baseline_result) / brute_result[key])
         if (brute_result[key] - baseline_result) / baseline_result > -(1 - adj_lim)
