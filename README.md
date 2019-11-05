@@ -12,6 +12,10 @@ LexImpact permet aux administrations, aux parlementaires et à la société civi
 * [Fiche produit](https://beta.gouv.fr/startups/leximpact.html)
 * [LexImpact Beta](https://leximpact.beta.gouv.fr)
 
+Leximpact est constitué de deux parties :
+- [Leximpact-server](https://github.com/betagouv/leximpact-server/) : interface en python utilisant openfisca permettant de mettre en place une API répondant à des questions sur l'impact de modifications de la loi fiscale
+- [Leximpact-client](https://github.com/betagouv/leximpact-client/) : interface web communiquant avec l'API qui met à disposition des usagers un site web permettant de visulaliser les résultats des calculs de l'API
+
 ## Installation
 
 Cette application requiert [Python 3.7](https://www.python.org/downloads/release/python-370/) et [pip](https://pip.pypa.io/en/stable/installing/).
@@ -19,7 +23,7 @@ Cette application requiert [Python 3.7](https://www.python.org/downloads/release
 Plateformes supportées :
 - distributions GNU/Linux (en particulier Debian and Ubuntu) ;
 - Mac OS X ;
-- Windows (nous recommandons d'utiliser [ConEmu](https://conemu.github.io/) à la place de la console par défaut) ;
+- Windows (nous recommandons d'utiliser [ConEmu](https://conemu.github.io/) à la place de la console par défaut, mais bon la personne qui a écrit cette phrase n'utilise pas windows) ;
 
 Pour les autres OS : si vous pouvez exécuter Python et Numpy, l'installation de LexImpact-Server devrait fonctionner.
 
@@ -61,26 +65,27 @@ Pour installer LexImpact-Server, dans votre fenêtre de terminal :
 make install
 ```
 
+ou sous Windows 
+
+```sh
+pip install --editable .[dev]
+```
+
 Félicitations :tada: LexImpact-Server est prêt à être utilisé !
 
 ## Lancez l'API Web LexImpact
 
 ### Fichier de configuration `.env`
 
-Pour lancer LexImpact-Server, vous devez tout d'abord créer un fichier de configuration `.env`. Dans votre fenêtre de terminal :
 
-```sh
-echo DATABASE_USER=\"asdf\" >> .env
-echo DATABASE_PASS=\"1234\" >> .env
-echo DATABASE_HOST=\"localhost\" >> .env
-echo DATABASE_PORT=\"5432\" >> .env
-echo DATABASE_NAME=\"leximpact\" >> .env
-echo JWT_AUDIENCE=\"Toi\" >> .env
-echo JWT_ISSUER=\"Moi\" >> .env
-echo JWT_SECRET=\"$(python -c 'from server.services.auth import create_nonce; print(create_nonce().decode("ascii"))')\" >> .env
-```
+Uniquement nécessaire dans le cas où les données sur la population sont utilisées (fonctionnalité simpop). En l'absence d'utilisation de ces fonctionnalités (i.e. les endpoints auth et simpop), il devrait être possible de faire tourner Leximpact-server sans base de données ni fichier .env .
 
-Regardez le fichier `.env.example` pour avoir un exemple de fichier de configuration `.env`.
+Pour lancer LexImpact-Server, vous devez tout d'abord créer un fichier de configuration `.env`. Le fichier `.env.example` contient un exemple de fichier de configuration `.env`, les champs y apparaissant sont :
+- DATABASE_* : décrit la configuration de la base de données, leximpact-server doit avoit un accès à une base de données postgres lui permettant de se comporter correctement 
+- JWT_* : Décrit les caractéristique du [JSON Web Token](https://jwt.io/). JWT_SECRET est une clef privée, JWT_AUDIENCE et JWT_ISSUER sont vérifiés quand le token est vérifié, mais peut être lu par quiconque a un token (car ces derniers ne sont pas chiffrés, mais juste signés par une clef privée) 
+- MAILJET_* : données d'authentification pour Mailjet, qui est utilisé pour envoyer les emails contenant les liens de connexion.
+- DATA_PATH :  Peut contenir un nom de fichier (.csv ou .h5) ou un nom de table dans la base SQL. Cette source de données sera importée. Un exemple de fichier fonctionnnant comme source de données situé dans le dépôt est DCT.csv . Des fonctions pour calibrer une source de données en fonction des données existantes de la population française sont disponibles dans le fichier ./scripts (utilisés notamment dans le script TransformData.py) 
+- NAME_TABLE_BASE_RESULTS : Table SQL, générée par le script generate_default_results.csv, qui contient les résultats de la population pour les calculs réutilisés (i.e. code existant et PLF) utilisée pour économiser du temps de calcul.
 
 ### Base de données et migrations
 
@@ -184,11 +189,10 @@ L'API Web dispose des itinéraires suivants :
 * `/calculate/compare`
 * `/calculate/simpop`
 
-Parmi ces itinéraires, trois nécessitent une vérification de l'identité de l'appelant :
+Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'appelant :
 
-* `/auth/login`
-* `/calculate/compare`
-* `/calculate/simpop`
+* `/auth/login` : vérifie que l'email mentionné dans le corps est dans la base de données (si oui, lui envoie par mail un lien comportant un token)
+* `/calculate/simpop` : vérifie que le token présent dans le corps de la requête est valide, non expiré, et n'appartient pas à un utilisateur suspendu
 
 ###  Itinéraire par défaut ou /
 
@@ -367,7 +371,14 @@ En date du 2019-10-07, la structure de la réforme est la suivante. Elle reprodu
 
 ## Base de données
 
+Uniquement nécessaire dans le cas où les données sur la population sont utilisées (fonctionnalité simpop).  En l'absence d'utilisation de ces données (i.e. les endpoints auth et simpop), il devrait être possible de faire tourner Leximpact-server sans base de données ni fichier .env .
+
 Leximpact-server conserve l'ensemble des données qu'il utilise et qui ne sont pas ouvertes dans une base de données sécurisée en postgresql. Cette partie décrit les différentes tables nécessaire au fonctionnement du site, et la manière de les créer.
+
+Une base de données [PostgreSQL](https://www.postgresql.org/) doit être installée afin de remplir les différentes fonctions suivantes :
+- Stockage de la liste des utilisateurs autorisés
+- Stockage des requêtes effectuées (pour éviter une surcharge provenant d'un utilisateur unique)
+- Stockage des résultats de base préprocessés pour économiser du temps de calcul (utile si la population est grande)
 
 ### **users**
 
