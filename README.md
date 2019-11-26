@@ -257,7 +257,7 @@ Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'
     }
     ```
 
-En date du 2019-10-07, la structure de la réforme est la suivante. Elle reproduit presque la structure d'OpenFisca. Si un paramètre est omis, il est remplacé par la version par défaut d'OpenFisca (donc le code existant) :
+En version `1.0.0`, la structure de la réforme est la suivante. Elle reproduit presque la structure d'OpenFisca. Si un paramètre est omis, il est remplacé par la version par défaut d'OpenFisca (donc le code existant) :
 
 
 ```json
