@@ -252,10 +252,10 @@ Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'
     {
         "reforme" : décrit la réforme,
         "deciles": deprecated - n'a plus d'impact,
-        "description_cas_types": array de descriptions de cas-types (pour la structure, cf le guide du endpoint /   metadata/description_cas_types). Champ optionnel, si non fourni, utilise les descriptions de cas types     par défaut,
-        "timestamp" : chaîne de caractères qui sera renvoyé tel quel par le programme. Champ optionnel, si non fourni, la     réponse ne contiendra pas de champ "timestamp"
+        "description_cas_types": array de descriptions de cas-types (pour la structure, cf. le guide du endpoint /metadata/description_cas_types) ; champ optionnel, si non fourni, utilise les descriptions de cas types par défaut,
+        "timestamp" : chaîne de caractères qui sera renvoyé tel quel par le programme ; champ optionnel, si non fourni, la réponse ne contiendra pas de champ "timestamp"
     }
-    ```
+    ``` 
 
 En version `1.0.0`, la structure de la réforme est la suivante. Elle reproduit presque la structure d'OpenFisca. Si un paramètre est omis, il est remplacé par la version par défaut d'OpenFisca (donc le code existant) :
 
