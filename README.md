@@ -53,7 +53,7 @@ pyenv virtualenv 3.7.3 leximpact-server-3.7.3
 pyenv activate leximpact-server-3.7.3
 ```
 
-Le  _virtualenv_ **leximpact-server** sera alors activé, c'est-à-dire que les commandes suivantes s'exécuteront directement dans l'environnement virtuel. Vous verrez dans votre terminal. :
+Le  _virtualenv_ **leximpact-server** sera alors activé, c'est-à-dire que les commandes suivantes s'exécuteront directement dans l'environnement virtuel.
 
 Bravo :tada: Vous êtes prêt·e à installer LexImpact-Server !
 
@@ -71,21 +71,22 @@ ou sous Windows
 pip install --editable .[dev]
 ```
 
-Félicitations :tada: LexImpact-Server est prêt à être utilisé !
+🎉 Félicitations LexImpact-Server est prêt à être utilisé !
 
 ## Lancez l'API Web LexImpact
 
 ### Fichier de configuration `.env`
 
 
-Uniquement nécessaire dans le cas où les données sur la population sont utilisées (fonctionnalité simpop). En l'absence d'utilisation de ces fonctionnalités (i.e. les endpoints auth et simpop), il devrait être possible de faire tourner Leximpact-server sans base de données ni fichier .env .
+ℹ️ Uniquement nécessaire dans le cas où les données sur la population sont utilisées (fonctionnalité simpop). En l'absence d'utilisation de ces fonctionnalités (i.e. les endpoints auth et simpop), il devrait être possible de faire tourner Leximpact-server sans base de données ni fichier `.env` .
 
 Pour lancer LexImpact-Server, vous devez tout d'abord créer un fichier de configuration `.env`. Le fichier `.env.example` contient un exemple de fichier de configuration `.env`, les champs y apparaissant sont :
-- DATABASE_* : décrit la configuration de la base de données, leximpact-server doit avoit un accès à une base de données postgres lui permettant de se comporter correctement 
-- JWT_* : Décrit les caractéristique du [JSON Web Token](https://jwt.io/). JWT_SECRET est une clef privée, JWT_AUDIENCE et JWT_ISSUER sont vérifiés quand le token est vérifié, mais peut être lu par quiconque a un token (car ces derniers ne sont pas chiffrés, mais juste signés par une clef privée) 
-- MAILJET_* : données d'authentification pour Mailjet, qui est utilisé pour envoyer les emails contenant les liens de connexion.
-- DATA_PATH :  Peut contenir un nom de fichier (.csv ou .h5) ou un nom de table dans la base SQL. Cette source de données sera importée. Un exemple de fichier fonctionnnant comme source de données situé dans le dépôt est DCT.csv . Des fonctions pour calibrer une source de données en fonction des données existantes de la population française sont disponibles dans le fichier ./scripts (utilisés notamment dans le script TransformData.py) 
-- NAME_TABLE_BASE_RESULTS : Table SQL, générée par le script generate_default_results.csv, qui contient les résultats de la population pour les calculs réutilisés (i.e. code existant et PLF) utilisée pour économiser du temps de calcul.
+
+- `DATABASE_*` : décrit la configuration de la base de données, leximpact-server doit avoit un accès à une base de données postgres lui permettant de se comporter correctement 
+- `JWT_*` : Décrit les caractéristique du [JSON Web Token](https://jwt.io/). `JWT_SECRET` est une clef privée, `JWT_AUDIENCE` et `JWT_ISSUER` sont vérifiés quand le token est vérifié, mais peut être lu par quiconque a un token (car ces derniers ne sont pas chiffrés, mais juste signés par une clef privée) 
+- `MAILJET_*` : données d'authentification pour Mailjet, qui est utilisé pour envoyer les emails contenant les liens de connexion.
+- `DATA_PATH` :  Peut contenir un nom de fichier (.csv ou .h5) ou un nom de table dans la base SQL. Cette source de données sera importée. Un exemple de fichier fonctionnnant comme source de données situé dans le dépôt est `DCT.csv`. Des fonctions pour calibrer une source de données en fonction des données existantes de la population française sont disponibles dans le fichier sous `./scripts` (utilisés notamment dans le script `TransformData.py`) 
+- `NAME_TABLE_BASE_RESULTS` : Table SQL, générée par le script generate_default_results.csv, qui contient les résultats de la population pour les calculs réutilisés (i.e. code existant et PLF) utilisée pour économiser du temps de calcul.
 
 ### Base de données et migrations
 
@@ -109,7 +110,7 @@ Pour s'assurer que tout marche bien :
 ./tests/server/stress/test.sh
 ```
 
-Félicitations :tada: LexImpact-Server est en train de tourner !
+🎉 Félicitations LexImpact-Server est en train de tourner !
 
 ### Mode agrégats de population
 
@@ -126,7 +127,7 @@ version_beta_sans_graph_pop = False  # Au lieu de True par défaut
 
 _**Note :** les instructions supra vous sont fournies à caractère indicatif, l'équipe de développement LexImpact ne disposant pas à ce stade de véritable jeu de données._
 
-Félicitations :tada: Vous-êtes en train de réformer le système socio-fiscal français !
+🎉 Félicitations, vous-êtes en train de réformer le système socio-fiscal français !
 
 ## Testing
 
