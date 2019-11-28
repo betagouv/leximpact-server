@@ -23,7 +23,7 @@ Cette application requiert [Python 3.7](https://www.python.org/downloads/release
 Plateformes supportées :
 - distributions GNU/Linux (en particulier Debian and Ubuntu) ;
 - Mac OS X ;
-- Windows (nous recommandons d'utiliser [ConEmu](https://conemu.github.io/) à la place de la console par défaut, mais bon la personne qui a écrit cette phrase n'utilise pas windows) ;
+- Windows;
 
 Pour les autres OS : si vous pouvez exécuter Python et Numpy, l'installation de LexImpact-Server devrait fonctionner.
 
