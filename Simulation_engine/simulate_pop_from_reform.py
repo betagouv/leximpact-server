@@ -441,7 +441,7 @@ if not version_beta_sans_simu_pop:
     resultats_de_base = from_postgres(nom_table_resultats_base)
     if (
         resultats_de_base is not None
-    ):  # Si la table n'existe pas dans le schéma SQL, ce sera None et on les calcule nous même
+    ):  # Si la table n'existe pas dans le schéma SQL (par exemple si la variable d'environnement comporte une erreur, ou si on n'a pas mis les données dans la base SQL du serveur), ce sera None et on les calcule nous même
         print(
             "table resultats de base used :",
             nom_table_resultats_base,
