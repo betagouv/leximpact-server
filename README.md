@@ -4,13 +4,13 @@
 LexImpact allows civil servants, policy makers and citizens to simulate the _ex ante_ impact of a reform to a country's tax-benefit system.
 * [Call for candidates (FR)](https://entrepreneur-interet-general.etalab.gouv.fr/defis/2019/leximpact.html)
 * [Elevator pitch (FR)](https://beta.gouv.fr/startups/leximpact.html)
-* [LexImpact Beta](https://leximpact.an.fr)
+* [LexImpact](https://leximpact.an.fr)
 
 ## [FR] Introduction
 LexImpact permet aux administrations, aux parlementaires et à la société civile de simuler l'impact _ex ante_ des réformes au système socio-fiscal.
 * [Appels à candidatures](https://entrepreneur-interet-general.etalab.gouv.fr/defis/2019/leximpact.html)
 * [Fiche produit](https://beta.gouv.fr/startups/leximpact.html)
-* [LexImpact Beta](https://leximpact.an.fr)
+* [LexImpact](https://leximpact.an.fr)
 
 Leximpact est constitué de deux parties :
 - [Leximpact-server](https://github.com/betagouv/leximpact-server/) : interface en python utilisant openfisca permettant de mettre en place une API répondant à des questions sur l'impact de modifications de la loi fiscale
