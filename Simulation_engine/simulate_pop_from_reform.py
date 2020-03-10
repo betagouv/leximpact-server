@@ -15,13 +15,16 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
 
-data_path = os.getenv("DATA_PATH")  # type: Optional[str]
-nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional[str]
-if nom_table_resultats_base is None:
-    nom_table_resultats_base = "base_results"
+
 # Config
-version_beta_sans_simu_pop = False
+version_beta_sans_simu_pop = True
 adjust_results = True
+
+if version_beta_sans_simu_pop:
+    data_path = os.getenv("DATA_PATH")  # type: Optional[str]
+    nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional[str]
+    if nom_table_resultats_base is None:
+        nom_table_resultats_base = "base_results"
 
 # Types
 Total = Dict[str, float]
