@@ -30,7 +30,7 @@ adjust_results = True
 # Toutes les requêtes renvoient un résultat "avant" (code existant),
 # un résultat "apres" (reforme renseignée dans la requete)
 # et un résultat par réforme présente dans reformes_par_defaut
-reformes_par_defaut: Dict[str,Dict] = {}
+reformes_par_defaut: Dict[str, Dict] = {}
 # from Simulation_engine.reformePLF import reforme_PLF_2020
 # reformes_par_defaut["plf"] = reforme_PLF_2020  Ca c'était le PLF 2020. Moins intéressant depuis qu'il est la loi
 
@@ -645,6 +645,7 @@ def texte_cas_types(data=None):
     for k in data["idfoy"].values:
         dic_res[k] = foyertotexte(k, data)
     return dic_res
+
 
 def simulation_from_cas_types(descriptions):
     df = dataframe_from_cas_types_description(descriptions)
