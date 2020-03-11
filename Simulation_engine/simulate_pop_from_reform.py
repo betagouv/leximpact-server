@@ -364,12 +364,12 @@ def scenar_values(
     df = calcule_maillage_intervalle(
         var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
     )
-    PERIOD = "2018"
+    PERIOD = str(annee_de_calcul)
     TBS = FranceTaxBenefitSystem()
     # définit un ménage par ligne
     sim = simulation(PERIOD, df, TBS)
     net = var_nette
-    df[net] = sim[0].calculate_add(net, "2018")
+    df[net] = sim[0].calculate_add(net, PERIOD)
     return df[[var_brute, var_nette]]
 
 
