@@ -1,4 +1,4 @@
-from functools import partial
+# from functools import partial
 from typing import Dict, List, Optional
 import os
 
@@ -9,7 +9,6 @@ from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
-from Simulation_engine.reformePLF import reformePLF
 from Simulation_engine.non_cached_variables import non_cached_variables
 from dotenv import load_dotenv
 
@@ -25,6 +24,18 @@ if nom_table_resultats_base is None:
 
 version_beta_sans_simu_pop = not (data_path is None)  # #Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
 adjust_results = True
+
+# Decrit les réformes renvoyées par défaut.
+# Vide en l'absence de PLF, si un PLF survient on peut le renseigner
+# Toutes les requêtes renvoient un résultat "avant" (code existant),
+# un résultat "apres" (reforme renseignée dans la requete)
+# et un résultat par réforme présente dans reformes_par_defaut
+reformes_par_defaut = {}
+# from Simulation_engine.reformePLF import reforme_PLF_2020
+# reformes_par_defaut["plf"] = reforme_PLF_2020  Ca c'était le PLF 2020. Moins intéressant depuis qu'il est la loi
+
+# Année sur la législation de laquelle les calculs seront menés.
+annee_de_calcul = 2020
 
 # Types
 Total = Dict[str, float]
@@ -202,11 +213,11 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         ).sum()
     total: Total = res
     if compute_deciles:
-        # On rajoute "avant"  et "plf" à la liste des colonnes sur lesquelles calculer les déciles,
+        # On rajoute les simulations par défaut à la liste des colonnes sur lesquelles calculer les déciles,
         # On en a besoin si ces colonnes ne sont pas déjà dans le dictionnaire_simulations (par exemple
         # dans le cas d'un compare avec isdecile = True)
         frontieres_deciles: List[float] = []
-        noms_simus = list(set(dictionnaire_simulations.keys()) | set(["avant", "plf"]))
+        noms_simus = list(set(dictionnaire_simulations.keys()) | set(TBS_DEFAULT.keys()))
         totweight = impots_par_reforme["wprm"].sum()
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
@@ -420,13 +431,15 @@ conversion_variables["retraite_brute_to_retraite_imposable"] = scenar_values(
 )
 
 
-PERIOD = "2018"
+PERIOD = str(annee_de_calcul)
 TBS = FranceTaxBenefitSystem()
-TBS_PLF = IncomeTaxReform(TBS, reformePLF, PERIOD)
+TBS_DEFAULT = {"avant" : TBS}
+for nom_reforme in reformes_par_defaut:
+    TBS_DEFAULT[nom_reforme] = IncomeTaxReform(TBS, reformes_par_defaut[nom_reforme], PERIOD)
 CAS_TYPE = load_data("DCT.csv")
-SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
-SIMCAT_BASE = SIMCAT(tbs=TBS)
-
+# SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)   unused??
+# SIMCAT_BASE = SIMCAT(tbs=TBS)
+# SIMCAT_DEFAULT = {nom_ref : SIMCAT(tbs=tbs_ref) for nom_ref,tbs_ref in TBS_DEFAULT.items()}
 
 if not version_beta_sans_simu_pop:
     # Initialisation des données utilisées pour le calcul sur la population
@@ -456,13 +469,14 @@ if not version_beta_sans_simu_pop:
         simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
         resultats_de_base = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
         # precalcul cas de base sur la population pour le cache
-        resultats_de_base["avant"] = simulation_base_deciles[0].calculate(
-            "irpp", PERIOD
-        )
-        simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
-        resultats_de_base["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
-simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
-simulation_plf_castypes = simulation(PERIOD, CAS_TYPE, TBS_PLF)
+        simulations_reformes_par_defaut_deciles = {}
+        for nom_reforme in TBS_DEFAULT:
+            simulations_reformes_par_defaut_deciles[nom_reforme] = simulation(PERIOD, DUMMY_DATA, TBS_DEFAULT[nom_reforme])
+            resultats_de_basenom_reforme = simulations_reformes_par_defaut_deciles[nom_reforme].calculate("irpp", PERIOD)
+# simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
+simulations_reformes_par_defaut_castypes = {}
+for nom_reforme in TBS_DEFAULT:
+    simulations_reformes_par_defaut_castypes[nom_reforme] = simulation(PERIOD, CAS_TYPE, TBS_DEFAULT[nom_reforme])
 
 
 def foyertosomethingelse(idfoy):
@@ -635,7 +649,7 @@ def texte_cas_types(data=None):
 
 def simulation_from_cas_types(descriptions):
     df = dataframe_from_cas_types_description(descriptions)
-    return (df, simulation(PERIOD, df, TBS), simulation(PERIOD, df, TBS_PLF))
+    return (df, {nom_reforme : simulation(PERIOD, df, reforme) for nom_reforme, reforme in TBS_DEFAULT})
 
 
 # Transforme une description de cas types en un dataframe parsable. Good luck!
@@ -859,13 +873,14 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
         simulation_reform = simulation(PERIOD, data, reform)
         return compare(PERIOD, {"apres": simulation_reform}, isdecile)
 
-    data, simulation_base, simulation_plf = (
-        (CAS_TYPE, simulation_base_castypes, simulation_plf_castypes)
+    data, default_sims = (
+        (CAS_TYPE, simulations_reformes_par_defaut_castypes)
         if castypedesc is None
         else simulation_from_cas_types(castypedesc)
     )
     reform = IncomeTaxReform(TBS, dictreform, PERIOD)
     simulation_reform = simulation(PERIOD, data, reform)
+    default_sims["apres"] = simulation_reform
 
     if dictreform is None:
         assert taux is not None
@@ -877,8 +892,9 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
                 }
             }
         }
+
     return compare(
         PERIOD,
-        {"avant": simulation_base, "plf": simulation_plf, "apres": simulation_reform},
+        default_sims,
         isdecile,
     )
