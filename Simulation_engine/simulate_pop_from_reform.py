@@ -22,7 +22,7 @@ nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional
 if nom_table_resultats_base is None:
     nom_table_resultats_base = "base_results"
 
-version_beta_sans_simu_pop = not (data_path is None)  # #Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
+version_beta_sans_simu_pop = (data_path is None)  # #Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
 adjust_results = True
 
 # Decrit les réformes renvoyées par défaut.
