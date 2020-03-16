@@ -17,7 +17,9 @@ def generate_default_results():
     liste_base_reformes = []
     for reforme in TBS_DEFAULT:
         liste_base_reformes += [reforme]
-        bulk_data_simulation, data_by_entity = simulation(PERIOD, DUMMY_DATA, TBS_DEFAULT[reforme])
+        bulk_data_simulation, data_by_entity = simulation(
+            PERIOD, DUMMY_DATA, TBS_DEFAULT[reforme]
+        )
         if base_results is None:
             base_results = data_by_entity["foyer_fiscal"][["wprm", "idfoy"]]
         base_results[reforme] = bulk_data_simulation.calculate("irpp", PERIOD)

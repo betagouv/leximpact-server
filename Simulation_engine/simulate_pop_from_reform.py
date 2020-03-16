@@ -22,7 +22,9 @@ nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional
 if nom_table_resultats_base is None:
     nom_table_resultats_base = "base_results"
 
-version_beta_sans_simu_pop = (data_path is None)  # #Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
+version_beta_sans_simu_pop = (
+    data_path is None
+)  # #Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
 adjust_results = True
 
 # Decrit les réformes renvoyées par défaut.
@@ -217,7 +219,9 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         # On en a besoin si ces colonnes ne sont pas déjà dans le dictionnaire_simulations (par exemple
         # dans le cas d'un compare avec isdecile = True)
         frontieres_deciles: List[float] = []
-        noms_simus = list(set(dictionnaire_simulations.keys()) | set(TBS_DEFAULT.keys()))
+        noms_simus = list(
+            set(dictionnaire_simulations.keys()) | set(TBS_DEFAULT.keys())
+        )
         totweight = impots_par_reforme["wprm"].sum()
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
@@ -355,7 +359,7 @@ def calcule_maillage_intervalle(
 
 
 def scenar_values(
-    minv, maxv, var_brute, var_nette, pourcentage_hausse=0.01, valeur_hausse=100
+    minv, maxv, var_brute, var_nette, pourcentage_hausse=0.001, valeur_hausse=100
 ):
     """
     Calcule les valeurs de var_nette pour var_brute dans [minv, maxv]
@@ -433,9 +437,11 @@ conversion_variables["retraite_brute_to_retraite_imposable"] = scenar_values(
 
 PERIOD = str(annee_de_calcul)
 TBS = FranceTaxBenefitSystem()
-TBS_DEFAULT = {"avant" : TBS}
+TBS_DEFAULT = {"avant": TBS}
 for nom_reforme in reformes_par_defaut:
-    TBS_DEFAULT[nom_reforme] = IncomeTaxReform(TBS, reformes_par_defaut[nom_reforme], PERIOD)
+    TBS_DEFAULT[nom_reforme] = IncomeTaxReform(
+        TBS, reformes_par_defaut[nom_reforme], PERIOD
+    )
 CAS_TYPE = load_data("DCT.csv")
 # SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)   unused??
 # SIMCAT_BASE = SIMCAT(tbs=TBS)
@@ -471,12 +477,18 @@ if not version_beta_sans_simu_pop:
         # precalcul cas de base sur la population pour le cache
         simulations_reformes_par_defaut_deciles = {}
         for nom_reforme in TBS_DEFAULT:
-            simulations_reformes_par_defaut_deciles[nom_reforme] = simulation(PERIOD, DUMMY_DATA, TBS_DEFAULT[nom_reforme])
-            resultats_de_basenom_reforme = simulations_reformes_par_defaut_deciles[nom_reforme].calculate("irpp", PERIOD)
+            simulations_reformes_par_defaut_deciles[nom_reforme] = simulation(
+                PERIOD, DUMMY_DATA, TBS_DEFAULT[nom_reforme]
+            )
+            resultats_de_basenom_reforme = simulations_reformes_par_defaut_deciles[
+                nom_reforme
+            ].calculate("irpp", PERIOD)
 # simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
 simulations_reformes_par_defaut_castypes = {}
 for nom_reforme in TBS_DEFAULT:
-    simulations_reformes_par_defaut_castypes[nom_reforme] = simulation(PERIOD, CAS_TYPE, TBS_DEFAULT[nom_reforme])
+    simulations_reformes_par_defaut_castypes[nom_reforme] = simulation(
+        PERIOD, CAS_TYPE, TBS_DEFAULT[nom_reforme]
+    )
 
 
 def foyertosomethingelse(idfoy):
@@ -649,7 +661,13 @@ def texte_cas_types(data=None):
 
 def simulation_from_cas_types(descriptions):
     df = dataframe_from_cas_types_description(descriptions)
-    return (df, {nom_reforme : simulation(PERIOD, df, reforme) for nom_reforme, reforme in TBS_DEFAULT.items()})
+    return (
+        df,
+        {
+            nom_reforme: simulation(PERIOD, df, reforme)
+            for nom_reforme, reforme in TBS_DEFAULT.items()
+        },
+    )
 
 
 # Transforme une description de cas types en un dataframe parsable. Good luck!
@@ -893,8 +911,4 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
             }
         }
 
-    return compare(
-        PERIOD,
-        default_sims,
-        isdecile,
-    )
+    return compare(PERIOD, default_sims, isdecile)

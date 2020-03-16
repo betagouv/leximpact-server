@@ -1,4 +1,3 @@
-
 reforme_base = {
     "impot_revenu": {
         "bareme": {
