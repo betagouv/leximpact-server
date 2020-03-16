@@ -20,7 +20,7 @@ def generate_default_results():
         bulk_data_simulation, data_by_entity = simulation(PERIOD, DUMMY_DATA, TBS_DEFAULT[reforme])
         if base_results is None:
             base_results = data_by_entity["foyer_fiscal"][["wprm", "idfoy"]]
-        base_results[reforme]=bulk_data_simulation.calculate("irpp", PERIOD)
+        base_results[reforme] = bulk_data_simulation.calculate("irpp", PERIOD)
     base_results[["idfoy"] + liste_base_reformes + ["wprm"]].to_csv(
         "base_results.csv", index=False
     )
