@@ -18,10 +18,9 @@ from Simulation_engine.simulate_pop_from_reform import (  # type: ignore
     IncomeTaxReform,
     PERIOD,
     simulation,
-    simulation_base_castypes,
+    simulations_reformes_par_defaut_castypes,
     CompareOldNew,
     simulation_from_cas_types,
-    simulation_plf_castypes,
     TBS,
 )
 
@@ -274,13 +273,11 @@ def test_sim_pop_dict_content(reform):
 
 def test_sim_base_cas_types_dict_content_ok(reform):
     simulation_reform = simulation(PERIOD, CAS_TYPE, reform)
+    simulations_cas_types = simulations_reformes_par_defaut_castypes
+    simulations_cas_types["apres"] = simulation_reform
     comp_result = compare(
         PERIOD,
-        {
-            "avant": simulation_base_castypes,
-            "plf": simulation_plf_castypes,
-            "apres": simulation_reform,
-        },
+        simulations_cas_types,
         compute_deciles=False,
     )
     assert "total" in comp_result
