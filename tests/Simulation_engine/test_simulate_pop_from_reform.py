@@ -22,6 +22,7 @@ from Simulation_engine.simulate_pop_from_reform import (  # type: ignore
     CompareOldNew,
     simulation_from_cas_types,
     TBS,
+    TBS_DEFAULT,
 )
 
 
@@ -227,14 +228,12 @@ def dict_cas_type_unipersonne_from_revenu(revenu_imposable):
 
 
 def test_inversion_variable():
-    revenus_a_tester = [10000, 20000, 100000]
+    revenus_a_tester = [10000, 20000, 100000, 500000]
     for revenu in revenus_a_tester:
-        _df_description, (
-            sim_base,
-            _data_frames_base,
-        ), _useless_sim = simulation_from_cas_types(
+        _df_description, simulations = simulation_from_cas_types(
             [dict_cas_type_unipersonne_from_revenu(revenu)]
         )
+        sim_base, _data_frames_base = simulations["avant"]
         revenu_post_calcul = sim_base.calculate_add("salaire_imposable", PERIOD)[0]
         assert round(revenu_post_calcul) == round(revenu)
 
@@ -244,7 +243,14 @@ def reform():
     return IncomeTaxReform(TBS, dictreform, PERIOD)
 
 
-def test_sim_pop_dict_content(reform):
+@fixture
+def expected_keys_resultat():
+    # list of keys that are supposed to appear in the results. should be ["avant",  "plf", "apres"]
+    # or ["avant", "apres"]
+    return sorted(list(TBS_DEFAULT.keys())) + ["apres"]
+
+
+def test_sim_pop_dict_content(reform, expected_keys_resultat):
     simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)
     comp_result = compare(PERIOD, {"apres": simulation_reform})
     assert "total" in comp_result
@@ -253,43 +259,46 @@ def test_sim_pop_dict_content(reform):
     assert len(comp_result["frontieres_deciles"]) == len(comp_result["deciles"])
     assert "foyers_fiscaux_touches" in comp_result
     # assert len(comp_result["deciles"])==10 Removed cause with the cas type description
-    for key in ["avant", "apres", "plf"]:
+    for key in expected_keys_resultat:
         assert key in comp_result["total"]
         assert key in comp_result["deciles"][0]
-    for key in ["avant_to_apres", "avant_to_plf", "plf_to_apres"]:
-        assert key in comp_result["foyers_fiscaux_touches"]
-        for type_touche, nb_people in comp_result["foyers_fiscaux_touches"][
-            key
-        ].items():
-            assert type_touche in [
-                "gagnant",
-                "neutre",
-                "perdant",
-                "perdant_zero",
-                "neutre_zero",
-            ]
-            assert isinstance(nb_people, int)
+    for index_key_1 in range(len(expected_keys_resultat)):
+        for index_key_2 in range(index_key_1 + 1, len(expected_keys_resultat)):
+            key = (
+                expected_keys_resultat[index_key_1]
+                + "_to_"
+                + expected_keys_resultat[index_key_2]
+            )
+            # list of keys checked can be for example ["avant_to_apres", "avant_to_plf", "plf_to_apres"]
+            assert key in comp_result["foyers_fiscaux_touches"]
+            for type_touche, nb_people in comp_result["foyers_fiscaux_touches"][
+                key
+            ].items():
+                assert type_touche in [
+                    "gagnant",
+                    "neutre",
+                    "perdant",
+                    "perdant_zero",
+                    "neutre_zero",
+                ]
+                assert isinstance(nb_people, int)
 
 
-def test_sim_base_cas_types_dict_content_ok(reform):
+def test_sim_base_cas_types_dict_content_ok(reform, expected_keys_resultat):
     simulation_reform = simulation(PERIOD, CAS_TYPE, reform)
     simulations_cas_types = simulations_reformes_par_defaut_castypes
     simulations_cas_types["apres"] = simulation_reform
-    comp_result = compare(
-        PERIOD,
-        simulations_cas_types,
-        compute_deciles=False,
-    )
+    comp_result = compare(PERIOD, simulations_cas_types, compute_deciles=False)
     assert "total" in comp_result
     assert "res_brut" in comp_result
     # assert len(comp_result["deciles"])==10 Removed cause with the cas type description
-    for key in ["avant", "apres", "plf"]:
+    for key in expected_keys_resultat:
         assert key in comp_result["total"]
         assert key in comp_result["res_brut"]
         assert len(comp_result["res_brut"][key]) == 6
 
 
-def test_sim_custom_cas_types_dict_content_ok():
+def test_sim_custom_cas_types_dict_content_ok(expected_keys_resultat):
     dict_cas = [
         {
             "nombre_declarants": 1,
@@ -324,7 +333,7 @@ def test_sim_custom_cas_types_dict_content_ok():
     assert "total" in comp_result
     assert "res_brut" in comp_result
     # assert len(comp_result["deciles"])==10 Removed cause with the cas type description
-    for key in ["avant", "apres", "plf"]:
+    for key in expected_keys_resultat:
         assert key in comp_result["total"]
         assert key in comp_result["res_brut"]
         assert len(comp_result["res_brut"][key]) == len(dict_cas)
