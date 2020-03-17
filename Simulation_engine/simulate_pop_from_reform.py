@@ -446,43 +446,46 @@ CAS_TYPE = load_data("DCT.csv")
 # SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)   unused??
 # SIMCAT_BASE = SIMCAT(tbs=TBS)
 # SIMCAT_DEFAULT = {nom_ref : SIMCAT(tbs=tbs_ref) for nom_ref,tbs_ref in TBS_DEFAULT.items()}
+DUMMY_DATA = (
+    CAS_TYPE
+    if version_beta_sans_simu_pop
+    else load_data(data_path).sort_values(by="idfoy")
+)
 
-if not version_beta_sans_simu_pop:
-    # Initialisation des données utilisées pour le calcul sur la population
-    DUMMY_DATA = load_data(data_path).sort_values(by="idfoy")
+# Initialisation des données utilisées pour le calcul sur la population
+print(
+    "Dummy Data loaded",
+    len(DUMMY_DATA),
+    "lines",
+    len(DUMMY_DATA["idfoy"].unique()),
+    "foyers fiscaux",
+)
+# Resultats sur la population du code existant et du PLF. Ne change jamais donc pas besoin de fatiguer l'ordi à calculer
+# Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
+# sur le data_path
+resultats_de_base = from_postgres(nom_table_resultats_base)
+if (
+    resultats_de_base is not None
+):  # Si la table n'existe pas dans le schéma SQL (par exemple si la variable d'environnement comporte une erreur, ou si on n'a pas mis les données dans la base SQL du serveur), ce sera None et on les calcule nous même
     print(
-        "Dummy Data loaded",
-        len(DUMMY_DATA),
-        "lines",
-        len(DUMMY_DATA["idfoy"].unique()),
-        "foyers fiscaux",
+        "table resultats de base used :",
+        nom_table_resultats_base,
+        len(resultats_de_base),
+        "rows",
     )
-    # Resultats sur la population du code existant et du PLF. Ne change jamais donc pas besoin de fatiguer l'ordi à calculer
-    # Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
-    # sur le data_path
-    resultats_de_base = from_postgres(nom_table_resultats_base)
-    if (
-        resultats_de_base is not None
-    ):  # Si la table n'existe pas dans le schéma SQL (par exemple si la variable d'environnement comporte une erreur, ou si on n'a pas mis les données dans la base SQL du serveur), ce sera None et on les calcule nous même
-        print(
-            "table resultats de base used :",
-            nom_table_resultats_base,
-            len(resultats_de_base),
-            "rows",
+    resultats_de_base = resultats_de_base.set_index("idfoy").sort_index()
+else:
+    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
+    resultats_de_base = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
+    # precalcul cas de base sur la population pour le cache
+    simulations_reformes_par_defaut_deciles = {}
+    for nom_reforme in TBS_DEFAULT:
+        simulations_reformes_par_defaut_deciles[nom_reforme] = simulation(
+            PERIOD, DUMMY_DATA, TBS_DEFAULT[nom_reforme]
         )
-        resultats_de_base = resultats_de_base.set_index("idfoy").sort_index()
-    else:
-        simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
-        resultats_de_base = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
-        # precalcul cas de base sur la population pour le cache
-        simulations_reformes_par_defaut_deciles = {}
-        for nom_reforme in TBS_DEFAULT:
-            simulations_reformes_par_defaut_deciles[nom_reforme] = simulation(
-                PERIOD, DUMMY_DATA, TBS_DEFAULT[nom_reforme]
-            )
-            resultats_de_basenom_reforme = simulations_reformes_par_defaut_deciles[
-                nom_reforme
-            ].calculate("irpp", PERIOD)
+        resultats_de_base[nom_reforme] = simulations_reformes_par_defaut_deciles[
+            nom_reforme
+        ][0].calculate("irpp", PERIOD)
 # simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
 simulations_reformes_par_defaut_castypes = {}
 for nom_reforme in TBS_DEFAULT:
