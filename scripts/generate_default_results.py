@@ -1,8 +1,7 @@
 from Simulation_engine.simulate_pop_from_reform import (
     simulation,
     PERIOD,
-    TBS,
-    TBS_PLF,
+    TBS_DEFAULT,
     DUMMY_DATA,
 )
 
@@ -13,15 +12,18 @@ from Simulation_engine.simulate_pop_from_reform import (
 
 
 def generate_default_results():
-    # Keeping computations short with option to keep file under 1000 FF
-    # DUMMY_DATA = DUMMY_DATA[(DUMMY_DATA["idmen"] > 2500) & (DUMMY_DATA["idmen"] < 7500)]
-    bulk_data_simulation, data_by_entity = simulation(PERIOD, DUMMY_DATA, TBS)
     # precalcul cas de base sur la population pour le cache
-    base_results = data_by_entity["foyer_fiscal"][["wprm", "idfoy"]]
-    base_results["avant"] = bulk_data_simulation.calculate("irpp", PERIOD)
-    simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
-    base_results["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
-    base_results[["idfoy", "avant", "plf", "wprm"]].to_csv(
+    base_results = None
+    liste_base_reformes = []
+    for reforme in TBS_DEFAULT:
+        liste_base_reformes += [reforme]
+        bulk_data_simulation, data_by_entity = simulation(
+            PERIOD, DUMMY_DATA, TBS_DEFAULT[reforme]
+        )
+        if base_results is None:
+            base_results = data_by_entity["foyer_fiscal"][["wprm", "idfoy"]]
+        base_results[reforme] = bulk_data_simulation.calculate("irpp", PERIOD)
+    base_results[["idfoy"] + liste_base_reformes + ["wprm"]].to_csv(
         "base_results.csv", index=False
     )
     return base_results

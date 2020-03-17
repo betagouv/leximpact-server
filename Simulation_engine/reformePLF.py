@@ -1,4 +1,3 @@
-
 reforme_base = {
     "impot_revenu": {
         "bareme": {
@@ -88,7 +87,7 @@ only_reforme = {
 }
 
 
-reformePLF = {
+reforme_PLF_2020 = {
     "impot_revenu": {
         "bareme": {
             "seuils": [10064, 25659, 73369, 157806],
