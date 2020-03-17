@@ -142,7 +142,9 @@ def simulation(period, data, tbs):
 
 def calcule_personnes_touchees(impots_par_reforme):
     # On fait tous les passages possibles entre les resultats:
-    simus_passages = ["avant", "plf", "apres"]
+    simus_passages = sorted(list(TBS_DEFAULT.keys())) + [
+        "apres"
+    ]  # ["avant", "plf", "apres"]
     transcription_code = ["neutre", "gagnant", "perdant_zero", "neutre_zero", "perdant"]
     foyers_fiscaux_touches: Dict[str, Dict[str, int]] = {}
     IMPOT_DIMINUE = 1
