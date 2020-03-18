@@ -362,7 +362,7 @@ def calcule_maillage_intervalle(
 
 
 def scenar_values(
-    minv, maxv, var_brute, var_nette, pourcentage_hausse=0.01, valeur_hausse=100
+    minv, maxv, var_brute, var_nette, pourcentage_hausse=0.001, valeur_hausse=100
 ):
     """
     Calcule les valeurs de var_nette pour var_brute dans [minv, maxv]
