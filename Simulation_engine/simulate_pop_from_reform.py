@@ -28,6 +28,18 @@ version_beta_sans_simu_pop = (
 )  # #Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
 adjust_results = True
 
+# Decrit les réformes renvoyées par défaut.
+# Vide en l'absence de PLF, si un PLF survient on peut le renseigner
+# Toutes les requêtes renvoient un résultat "avant" (code existant),
+# un résultat "apres" (reforme renseignée dans la requete)
+# et un résultat par réforme présente dans reformes_par_defaut
+reformes_par_defaut: Dict[str, Dict] = {}
+# from Simulation_engine.reformePLF import reforme_PLF_2020
+# reformes_par_defaut["plf"] = reforme_PLF_2020  Ca c'était le PLF 2020. Moins intéressant depuis qu'il est la loi
+
+# Année sur la législation de laquelle les calculs seront menés.
+annee_de_calcul = 2020
+
 # Types
 Total = Dict[str, float]
 Deciles = List[Dict[str, float]]
@@ -355,12 +367,12 @@ def scenar_values(
     df = calcule_maillage_intervalle(
         var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
     )
-    PERIOD = "2018"
+    PERIOD = str(annee_de_calcul)
     TBS = FranceTaxBenefitSystem()
     # définit un ménage par ligne
     sim = simulation(PERIOD, df, TBS)
     net = var_nette
-    df[net] = sim[0].calculate_add(net, "2018")
+    df[net] = sim[0].calculate_add(net, PERIOD)
     return df[[var_brute, var_nette]]
 
 
@@ -422,7 +434,7 @@ conversion_variables["retraite_brute_to_retraite_imposable"] = scenar_values(
 )
 
 
-PERIOD = "2018"
+PERIOD = str(annee_de_calcul)
 TBS = FranceTaxBenefitSystem()
 TBS_PLF = IncomeTaxReform(TBS, reformePLF, PERIOD)
 CAS_TYPE = load_data("DCT.csv")
