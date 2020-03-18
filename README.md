@@ -71,7 +71,7 @@ ou sous Windows
 pip install --editable .[dev]
 ```
 
-🎉 Félicitations LexImpact-Server est prêt à être utilisé !
+🎉 Félicitations LexImpact-Server est prêt à être utilisé  !
 
 ## Lancez l'API Web LexImpact
 
