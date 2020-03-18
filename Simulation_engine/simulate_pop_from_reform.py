@@ -1,4 +1,4 @@
-from functools import partial
+# from functools import partial
 from typing import Dict, List, Optional
 import os
 
@@ -9,7 +9,6 @@ from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
-from Simulation_engine.reformePLF import reformePLF
 from Simulation_engine.non_cached_variables import non_cached_variables
 from dotenv import load_dotenv
 

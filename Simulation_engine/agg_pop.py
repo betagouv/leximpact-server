@@ -1,4 +1,3 @@
-
 import pandas  # type: ignore
 import os
 import math
@@ -279,7 +278,7 @@ def test_h5_input(
     name_variables=("rfr", "irpp", "nbptr"),
     aggfunc="sum",
     compdic=None,
-    is_plf=False
+    is_plf=False,
 ):
     PERIOD = "2018"
     TBS = TBS_PLF if is_plf else FranceTaxBenefitSystem()
@@ -290,7 +289,9 @@ def test_h5_input(
     )
     if aggfunc == "sum":  # Pour la somme, on calcule les % d'erreur sur la répartition.
         testerrorvalues(df)
-    aggs_to_compute = ["wprm", "salaire_de_base", "retraite_brute"] + list(name_variables)
+    aggs_to_compute = ["wprm", "salaire_de_base", "retraite_brute"] + list(
+        name_variables
+    )
     val_donnees_pac_agg = 0
     trpac_agg = [
         compdic[ag]
@@ -598,7 +599,7 @@ def anotherexample():
         name_variables=("rfr", "irpp", "nbptr"),
         aggfunc="sum",
         compdic=theoric_values["sum"],
-        is_plf=False
+        is_plf=False,
     )
     print("after adj 2 :")
     test_h5_input(
@@ -606,7 +607,7 @@ def anotherexample():
         name_variables=("rfr", "irpp", "nbptr"),
         aggfunc="sum",
         compdic=theoric_values["sum"],
-        is_plf=False
+        is_plf=False,
     )
 
     print("WITH PLF NOW HIhihi")
@@ -616,7 +617,7 @@ def anotherexample():
         name_variables=("rfr", "irpp", "nbptr"),
         aggfunc="sum",
         compdic=theoric_values["sum"],
-        is_plf=True
+        is_plf=True,
     )
     print("after adj 2 plf:")
     test_h5_input(
@@ -624,8 +625,9 @@ def anotherexample():
         name_variables=("rfr", "irpp", "nbptr"),
         aggfunc="sum",
         compdic=theoric_values["sum"],
-        is_plf=True
+        is_plf=True,
     )
+
 
 # ToDo : Le test doit retourner True si :
 #  - On a Une erreur totale sur la distrib de rfr < 2.5% après ajustement
