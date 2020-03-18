@@ -24,7 +24,7 @@ Plateformes supportées :
 - distributions GNU/Linux (en particulier Debian and Ubuntu) ;
 - Mac OS X ;
 - Windows;
-- Amiga (>= 500)
+- Amiga (>= 1000)
 
 Pour les autres OS : si vous pouvez exécuter Python et Numpy, l'installation de LexImpact-Server devrait fonctionner.
 
