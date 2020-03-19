@@ -263,7 +263,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
             # empiric = valeur de base sur laquelle calibrer (pour prendre en compte, par
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
             # prochaine dans le scénario "avant" (i.e. avec le code existant))
-            empiric = 73 * 10 ** 9
+            empiric = 66.9 * 10 ** 9
             factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
             deciles: Deciles = adjust_deciles(factor, decdiffres)
