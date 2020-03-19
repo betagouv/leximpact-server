@@ -207,7 +207,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
                 0
             ].calculate("rfr", period)
 
-    for nom_res_base in TBS_DEFAULT:
+    for nom_res_base in list(TBS_DEFAULT.keys()) + ['apres']:
         res[nom_res_base] = -(
             impots_par_reforme[nom_res_base] * impots_par_reforme["wprm"]
         ).sum()
@@ -259,7 +259,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
             # empiric = valeur de base sur laquelle calibrer (pour prendre en compte, par
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
             # prochaine dans le scénario "avant" (i.e. avec le code existant))
-            empiric = 66.9 * 10 ** 9
+            empiric = 66900 * 10 ** 6
             factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
             deciles: Deciles = adjust_deciles(factor, decdiffres)
