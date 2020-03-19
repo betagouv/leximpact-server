@@ -207,11 +207,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
                 0
             ].calculate("rfr", period)
 
-    for nom_res_base in [
-        colonne_df
-        for colonne_df in impots_par_reforme.columns
-        if colonne_df not in ["rfr", "wprm"]
-    ]:
+    for nom_res_base in TBS_DEFAULT:
         res[nom_res_base] = -(
             impots_par_reforme[nom_res_base] * impots_par_reforme["wprm"]
         ).sum()
