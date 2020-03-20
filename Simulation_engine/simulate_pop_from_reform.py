@@ -27,6 +27,8 @@ version_beta_sans_simu_pop = (
 )  # #Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
 adjust_results = True
 
+#  PARTIE CONFIGURABLE PAR L'UTILISATEUR
+
 # Decrit les réformes renvoyées par défaut.
 # Vide en l'absence de PLF, si un PLF survient on peut le renseigner
 # Toutes les requêtes renvoient un résultat "avant" (code existant),
@@ -39,6 +41,7 @@ reformes_par_defaut: Dict[str, Dict] = {}
 # Année sur la législation de laquelle les calculs seront menés.
 annee_de_calcul = 2020
 
+# FIN DE LA PARTIE CONFIGURABLE PAR L'UTILISATEUR
 # Types
 Total = Dict[str, float]
 Deciles = List[Dict[str, float]]
