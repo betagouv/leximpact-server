@@ -20,9 +20,9 @@ setup(
     ],
     install_requires=[
         "alembic >= 1.0.11, < 2.0.0",
-        "connexion[swagger-ui] >= 2.2.0, < 3.0.0",
+        "connexion[swagger-ui] >= 2.6.0, < 3.0.0",
         "flask-cors >= 3.0.7, < 3.1.0",
-        "gunicorn >= 19.0.0, < 20.0.0",
+        "gunicorn >= 20.0.0, < 21.0.0",
         "mailjet-rest >= 1.3.3, < 2.0.0",
         "openfisca-core >= 34.2.8, < 35.0.0",
         "openfisca-france >= 48.10.6, < 49.0.0",
