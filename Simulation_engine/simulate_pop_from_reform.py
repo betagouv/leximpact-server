@@ -42,6 +42,13 @@ reformes_par_defaut: Dict[str, Dict] = {}
 annee_de_calcul = 2020
 
 # FIN DE LA PARTIE CONFIGURABLE PAR L'UTILISATEUR
+
+# liste_noms_reformes_sans_apres contient les noms de réformes hormis celle demandée par l'usager :
+liste_noms_reformes_sans_apres = sorted(list(reformes_par_defaut.keys()) + ["avant"])
+# liste_noms_reformes_avec_apres contient les noms de réformes incluant celle demandée par l'usager :
+liste_noms_reformes_avec_apres = liste_noms_reformes_sans_apres + ["apres"]
+
+
 # Types
 Total = Dict[str, float]
 Deciles = List[Dict[str, float]]
@@ -145,9 +152,7 @@ def simulation(period, data, tbs):
 
 def calcule_personnes_touchees(impots_par_reforme):
     # On fait tous les passages possibles entre les resultats:
-    simus_passages = sorted(list(TBS_DEFAULT.keys())) + [
-        "apres"
-    ]  # ["avant", "plf", "apres"]
+    simus_passages = liste_noms_reformes_avec_apres
     transcription_code = ["neutre", "gagnant", "perdant_zero", "neutre_zero", "perdant"]
     foyers_fiscaux_touches: Dict[str, Dict[str, int]] = {}
     IMPOT_DIMINUE = 1
@@ -210,7 +215,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
                 0
             ].calculate("rfr", period)
 
-    for nom_res_base in list(TBS_DEFAULT.keys()) + ['apres']:
+    for nom_res_base in liste_noms_reformes_avec_apres:
         res[nom_res_base] = -(
             impots_par_reforme[nom_res_base] * impots_par_reforme["wprm"]
         ).sum()
@@ -221,7 +226,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         # dans le cas d'un compare avec isdecile = True)
         frontieres_deciles: List[float] = []
         noms_simus = list(
-            set(dictionnaire_simulations.keys()) | set(TBS_DEFAULT.keys())
+            set(dictionnaire_simulations.keys()) | set(liste_noms_reformes_sans_apres)
         )
         totweight = impots_par_reforme["wprm"].sum()
         nbd = 10
@@ -489,7 +494,7 @@ else:
         ][0].calculate("irpp", PERIOD)
 # simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
 simulations_reformes_par_defaut_castypes = {}
-for nom_reforme in TBS_DEFAULT:
+for nom_reforme in liste_noms_reformes_sans_apres:
     simulations_reformes_par_defaut_castypes[nom_reforme] = simulation(
         PERIOD, CAS_TYPE, TBS_DEFAULT[nom_reforme]
     )
