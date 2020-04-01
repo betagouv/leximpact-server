@@ -244,13 +244,13 @@ def reform():
 
 
 @fixture
-def expected_keys_resultat():
+def requested_simulations():
     # list of keys that are supposed to appear in the results. should be ["avant",  "plf", "apres"]
     # or ["avant", "apres"]
     return sorted(list(TBS_DEFAULT.keys())) + ["apres"]
 
 
-def test_sim_pop_dict_content(reform, expected_keys_resultat):
+def test_sim_pop_dict_content(reform, requested_simulations):
     simulation_reform = simulation(PERIOD, DUMMY_DATA, reform)
     comp_result = compare(PERIOD, {"apres": simulation_reform})
     assert "total" in comp_result
@@ -259,15 +259,15 @@ def test_sim_pop_dict_content(reform, expected_keys_resultat):
     assert len(comp_result["frontieres_deciles"]) == len(comp_result["deciles"])
     assert "foyers_fiscaux_touches" in comp_result
     # assert len(comp_result["deciles"])==10 Removed cause with the cas type description
-    for key in expected_keys_resultat:
+    for key in requested_simulations:
         assert key in comp_result["total"]
         assert key in comp_result["deciles"][0]
-    for index_key_1 in range(len(expected_keys_resultat)):
-        for index_key_2 in range(index_key_1 + 1, len(expected_keys_resultat)):
+    for index_key_1 in range(len(requested_simulations)):
+        for index_key_2 in range(index_key_1 + 1, len(requested_simulations)):
             key = (
-                expected_keys_resultat[index_key_1]
+                requested_simulations[index_key_1]
                 + "_to_"
-                + expected_keys_resultat[index_key_2]
+                + requested_simulations[index_key_2]
             )
             # list of keys checked can be for example ["avant_to_apres", "avant_to_plf", "plf_to_apres"]
             assert key in comp_result["foyers_fiscaux_touches"]
@@ -284,7 +284,7 @@ def test_sim_pop_dict_content(reform, expected_keys_resultat):
                 assert isinstance(nb_people, int)
 
 
-def test_sim_base_cas_types_dict_content_ok(reform, expected_keys_resultat):
+def test_sim_base_cas_types_dict_content_ok(reform, requested_simulations):
     simulation_reform = simulation(PERIOD, CAS_TYPE, reform)
     simulations_cas_types = simulations_reformes_par_defaut_castypes
     simulations_cas_types["apres"] = simulation_reform
@@ -292,13 +292,13 @@ def test_sim_base_cas_types_dict_content_ok(reform, expected_keys_resultat):
     assert "total" in comp_result
     assert "res_brut" in comp_result
     # assert len(comp_result["deciles"])==10 Removed cause with the cas type description
-    for key in expected_keys_resultat:
+    for key in requested_simulations:
         assert key in comp_result["total"]
         assert key in comp_result["res_brut"]
         assert len(comp_result["res_brut"][key]) == 6
 
 
-def test_sim_custom_cas_types_dict_content_ok(expected_keys_resultat):
+def test_sim_custom_cas_types_dict_content_ok(requested_simulations):
     dict_cas = [
         {
             "nombre_declarants": 1,
@@ -333,7 +333,7 @@ def test_sim_custom_cas_types_dict_content_ok(expected_keys_resultat):
     assert "total" in comp_result
     assert "res_brut" in comp_result
     # assert len(comp_result["deciles"])==10 Removed cause with the cas type description
-    for key in expected_keys_resultat:
+    for key in requested_simulations:
         assert key in comp_result["total"]
         assert key in comp_result["res_brut"]
         assert len(comp_result["res_brut"][key]) == len(dict_cas)

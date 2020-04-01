@@ -1,4 +1,3 @@
-# from functools import partial
 from typing import Dict, List, Optional
 import os
 
@@ -24,7 +23,7 @@ if nom_table_resultats_base is None:
 
 version_beta_sans_simu_pop = (
     data_path is None
-)  # #Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
+)  # Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
 adjust_results = True
 
 #  PARTIE CONFIGURABLE PAR L'UTILISATEUR
@@ -449,9 +448,6 @@ for nom_reforme in reformes_par_defaut:
         TBS, reformes_par_defaut[nom_reforme], PERIOD
     )
 CAS_TYPE = load_data("DCT.csv")
-# SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)   unused??
-# SIMCAT_BASE = SIMCAT(tbs=TBS)
-# SIMCAT_DEFAULT = {nom_ref : SIMCAT(tbs=tbs_ref) for nom_ref,tbs_ref in TBS_DEFAULT.items()}
 DUMMY_DATA = (
     CAS_TYPE
     if version_beta_sans_simu_pop
@@ -466,7 +462,8 @@ print(
     len(DUMMY_DATA["idfoy"].unique()),
     "foyers fiscaux",
 )
-# Resultats sur la population du code existant et du PLF. Ne change jamais donc pas besoin de fatiguer l'ordi à calculer
+# Resultats sur la population du code existant et, lorsqu'il y en a un de configuré, du PLF.
+# Ne change jamais donc pas besoin de fatiguer l'ordi à calculer : ils sont mémorisés en base de données.
 # Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
 # sur le data_path
 resultats_de_base = from_postgres(nom_table_resultats_base)
@@ -492,7 +489,6 @@ else:
         resultats_de_base[nom_reforme] = simulations_reformes_par_defaut_deciles[
             nom_reforme
         ][0].calculate("irpp", PERIOD)
-# simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
 simulations_reformes_par_defaut_castypes = {}
 for nom_reforme in liste_noms_reformes_sans_apres:
     simulations_reformes_par_defaut_castypes[nom_reforme] = simulation(
@@ -895,11 +891,16 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     # the isdecile=False
 
     if isdecile:
+        # On prend les données de la population entière
         data = DUMMY_DATA
         reform = IncomeTaxReform(TBS, dictreform, PERIOD)
+        # On ne crée qu'une simulation, le moteur de calcul ayant précalculé les autres.
         simulation_reform = simulation(PERIOD, data, reform)
+        # On n'envoie à simuler que le "apres"
         return compare(PERIOD, {"apres": simulation_reform}, isdecile)
 
+    # Pour les cas-types, on n'utilise pas de resultats précalculés
+    # donc on inclut aussi les simulations par défaut
     data, default_sims = (
         (CAS_TYPE, simulations_reformes_par_defaut_castypes)
         if castypedesc is None
