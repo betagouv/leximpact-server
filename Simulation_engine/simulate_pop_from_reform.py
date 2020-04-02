@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 import os
-
+import re
 import pandas  # type: ignore
 
 from openfisca_core.memory_config import MemoryConfig  # type: ignore
@@ -12,7 +12,6 @@ from Simulation_engine.non_cached_variables import non_cached_variables
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
-
 
 # Config
 
@@ -34,9 +33,33 @@ adjust_results = True
 # un résultat "apres" (reforme renseignée dans la requete)
 # et un résultat par réforme présente dans reformes_par_defaut
 reformes_par_defaut: Dict[str, Dict] = {}
-# from Simulation_engine.reformePLF import reforme_PLF_2020
-# reformes_par_defaut["plf"] = reforme_PLF_2020  Ca c'était le PLF 2020. Moins intéressant depuis qu'il est la loi
 
+# On verifie dans la variable d'environnement PLF_PATH si on doit inclure le PLF ou pas.
+reforme_adresse = os.getenv("PLF_PATH")
+# Ce reforme path doit contenir le path vers une librairie python qui contient un dictionnaire au bon format.
+if reforme_adresse is not None:
+    regex_secu = re.compile(r"^[^\s;]*$")
+    if regex_secu.match(reforme_adresse) is None:
+        print(
+            "Votre variable d'environnement PLF_PATH contient des ; ou des caractères vides. Elle n'a pas le droit. Nommez vos fichiers normalement s'il vous plaît. Bisous."
+        )
+        raise ImportError
+    elements = reforme_adresse.split(".")
+    origine_import = ".".join(elements[:-1])
+    nom_dic_import = elements[-1]
+    reforme_PLF = (
+        None
+    )  # Declare une valeur par défaut, la valeur arrivant par des moyens détournés que le linter ne peut voir
+    try:
+        exec("from {} import {} as reforme_PLF".format(origine_import, nom_dic_import))
+    except (ImportError, ModuleNotFoundError, SyntaxError):
+        print(
+            "Si la variable PLF_PATH est renseignée, elle doit contenir un chemin valide vers un dictionnaire présentant la réforme."
+        )
+        raise
+    reformes_par_defaut["plf"] = reforme_PLF
+
+print(reformes_par_defaut)
 # Année sur la législation de laquelle les calculs seront menés.
 annee_de_calcul = os.getenv("YEAR_COMPUTATION")
 

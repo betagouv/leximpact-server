@@ -89,6 +89,7 @@ Pour lancer LexImpact-Server, vous devez tout d'abord créer un fichier de confi
 - `NAME_TABLE_BASE_RESULTS` : Table SQL, générée par le script generate_default_results.csv, qui contient les résultats de la population pour les calculs réutilisés (i.e. code existant et PLF) utilisée pour économiser du temps de calcul.
 - `EMPIRIC_VALUE` : valeur (entière) représentant le montant total de l'impôt attendu avec le code existant. Les résultats sur l'échantillon de population sont ajustés pour matcher cet ordre de grandeur pour le code existant.
 - `YEAR_COMPUTATION` : Année de calcul : les revenus des cas-types et de la population seront supposés survenir l'année spécifiée, et seront donc taxés aux taux applicables cette année là.
+- `PLF_PATH` : contient le chemin où l'on peut trouver un dictionnaire représentant la réforme.  un plf_path écrit comme "dossier.sousdossier.fichier.nom_dictionnaire" importera le dictionnaire portant le nom "nom_dictionnaire" dans le fichier "dossier/sousdossier/fichier.py" de l'arborescence. Cette variable fera planter le programme si elle contient des espaces ou le caractère ';', pour éviter toute fausse manipulation de l'utilisateur.
 
 ### Base de données et migrations
 
