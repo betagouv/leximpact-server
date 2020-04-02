@@ -38,7 +38,7 @@ reformes_par_defaut: Dict[str, Dict] = {}
 # reformes_par_defaut["plf"] = reforme_PLF_2020  Ca c'était le PLF 2020. Moins intéressant depuis qu'il est la loi
 
 # Année sur la législation de laquelle les calculs seront menés.
-annee_de_calcul = 2020
+annee_de_calcul = os.getenv("YEAR_COMPUTATION")
 
 # FIN DE LA PARTIE CONFIGURABLE PAR L'UTILISATEUR
 
