@@ -8,7 +8,9 @@ jobs:
           JWT_SECRET: asdf1234
           JWT_AUDIENCE: Toi
           JWT_ISSUER: Moi
-
+          YEAR_COMPUTATION: 2020
+          EMPIRIC_VALUE: 66_900_000_000
+          
       - image: postgres:9.6.7
         environment:
           POSTGRES_USER: root
