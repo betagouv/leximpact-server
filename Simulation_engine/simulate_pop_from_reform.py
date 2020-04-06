@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import os
 import re
 import pandas  # type: ignore
@@ -23,7 +23,6 @@ if nom_table_resultats_base is None:
 version_beta_sans_simu_pop = (
     data_path is None
 )  # Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
-adjust_results = True
 
 #  PARTIE CONFIGURABLE PAR L'UTILISATEUR
 
@@ -47,9 +46,9 @@ if reforme_adresse is not None:
     elements = reforme_adresse.split(".")
     origine_import = ".".join(elements[:-1])
     nom_dic_import = elements[-1]
-    reforme_PLF = (
-        None
-    )  # Declare une valeur par défaut, la valeur arrivant par des moyens détournés que le linter ne peut voir
+    reforme_PLF: Dict[
+        Any, Any
+    ] = {}  # Declare une valeur par défaut, la valeur arrivant par des moyens détournés que le linter ne peut voir
     try:
         exec("from {} import {} as reforme_PLF".format(origine_import, nom_dic_import))
     except (ImportError, ModuleNotFoundError, SyntaxError):
@@ -292,12 +291,11 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
 
         # TODO : interpolate quantiles instead of doing the granular approach
         # This is the only TODO part in this code, I highly doubt it's the most pressing matter
-
-        if adjust_results:
+        if os.getenv("EMPIRIC_VALUE") is not None:
             # empiric = valeur de base sur laquelle calibrer (pour prendre en compte, par
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
-            # prochaine dans le scénario "avant" (i.e. avec le code existant))
-            empiric = int(os.getenv("EMPIRIC_VALUE"))
+            # prochaine dans le scénario "avant" (i.e. avec le code existant)).
+            empiric = int(os.getenv("EMPIRIC_VALUE"))  # type: ignore
             factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
             deciles: Deciles = adjust_deciles(factor, decdiffres)
