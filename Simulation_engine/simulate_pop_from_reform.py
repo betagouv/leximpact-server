@@ -1,4 +1,3 @@
-from functools import partial
 from typing import Dict, List, Optional
 import os
 
@@ -9,19 +8,45 @@ from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
-from Simulation_engine.reformePLF import reformePLF
 from Simulation_engine.non_cached_variables import non_cached_variables
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
 
+
+# Config
+
 data_path = os.getenv("DATA_PATH")  # type: Optional[str]
 nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional[str]
 if nom_table_resultats_base is None:
     nom_table_resultats_base = "base_results"
-# Config
-version_beta_sans_simu_pop = False
+
+version_beta_sans_simu_pop = (
+    data_path is None
+)  # Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
 adjust_results = True
+
+#  PARTIE CONFIGURABLE PAR L'UTILISATEUR
+
+# Decrit les réformes renvoyées par défaut.
+# Vide en l'absence de PLF, si un PLF survient on peut le renseigner
+# Toutes les requêtes renvoient un résultat "avant" (code existant),
+# un résultat "apres" (reforme renseignée dans la requete)
+# et un résultat par réforme présente dans reformes_par_defaut
+reformes_par_defaut: Dict[str, Dict] = {}
+# from Simulation_engine.reformePLF import reforme_PLF_2020
+# reformes_par_defaut["plf"] = reforme_PLF_2020  Ca c'était le PLF 2020. Moins intéressant depuis qu'il est la loi
+
+# Année sur la législation de laquelle les calculs seront menés.
+annee_de_calcul = 2020
+
+# FIN DE LA PARTIE CONFIGURABLE PAR L'UTILISATEUR
+
+# liste_noms_reformes_sans_apres contient les noms de réformes hormis celle demandée par l'usager :
+liste_noms_reformes_sans_apres = sorted(list(reformes_par_defaut.keys()) + ["avant"])
+# liste_noms_reformes_avec_apres contient les noms de réformes incluant celle demandée par l'usager :
+liste_noms_reformes_avec_apres = liste_noms_reformes_sans_apres + ["apres"]
+
 
 # Types
 Total = Dict[str, float]
@@ -126,7 +151,7 @@ def simulation(period, data, tbs):
 
 def calcule_personnes_touchees(impots_par_reforme):
     # On fait tous les passages possibles entre les resultats:
-    simus_passages = ["avant", "plf", "apres"]
+    simus_passages = liste_noms_reformes_avec_apres
     transcription_code = ["neutre", "gagnant", "perdant_zero", "neutre_zero", "perdant"]
     foyers_fiscaux_touches: Dict[str, Dict[str, int]] = {}
     IMPOT_DIMINUE = 1
@@ -189,21 +214,19 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
                 0
             ].calculate("rfr", period)
 
-    for nom_res_base in [
-        colonne_df
-        for colonne_df in impots_par_reforme.columns
-        if colonne_df not in ["rfr", "wprm"]
-    ]:
+    for nom_res_base in liste_noms_reformes_avec_apres:
         res[nom_res_base] = -(
             impots_par_reforme[nom_res_base] * impots_par_reforme["wprm"]
         ).sum()
     total: Total = res
     if compute_deciles:
-        # On rajoute "avant"  et "plf" à la liste des colonnes sur lesquelles calculer les déciles,
+        # On rajoute les simulations par défaut à la liste des colonnes sur lesquelles calculer les déciles,
         # On en a besoin si ces colonnes ne sont pas déjà dans le dictionnaire_simulations (par exemple
         # dans le cas d'un compare avec isdecile = True)
         frontieres_deciles: List[float] = []
-        noms_simus = list(set(dictionnaire_simulations.keys()) | set(["avant", "plf"]))
+        noms_simus = list(
+            set(dictionnaire_simulations.keys()) | set(liste_noms_reformes_sans_apres)
+        )
         totweight = impots_par_reforme["wprm"].sum()
         nbd = 10
         decilweights = [i / nbd * totweight for i in range(nbd + 1)]
@@ -243,7 +266,7 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
             # empiric = valeur de base sur laquelle calibrer (pour prendre en compte, par
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
             # prochaine dans le scénario "avant" (i.e. avec le code existant))
-            empiric = 73 * 10 ** 9
+            empiric = 66900 * 10 ** 6
             factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
             deciles: Deciles = adjust_deciles(factor, decdiffres)
@@ -341,7 +364,7 @@ def calcule_maillage_intervalle(
 
 
 def scenar_values(
-    minv, maxv, var_brute, var_nette, pourcentage_hausse=0.01, valeur_hausse=100
+    minv, maxv, var_brute, var_nette, pourcentage_hausse=0.001, valeur_hausse=100
 ):
     """
     Calcule les valeurs de var_nette pour var_brute dans [minv, maxv]
@@ -350,12 +373,12 @@ def scenar_values(
     df = calcule_maillage_intervalle(
         var_brute, minv, maxv, pourcentage_hausse, valeur_hausse
     )
-    PERIOD = "2018"
+    PERIOD = str(annee_de_calcul)
     TBS = FranceTaxBenefitSystem()
     # définit un ménage par ligne
     sim = simulation(PERIOD, df, TBS)
     net = var_nette
-    df[net] = sim[0].calculate_add(net, "2018")
+    df[net] = sim[0].calculate_add(net, PERIOD)
     return df[[var_brute, var_nette]]
 
 
@@ -417,49 +440,60 @@ conversion_variables["retraite_brute_to_retraite_imposable"] = scenar_values(
 )
 
 
-PERIOD = "2018"
+PERIOD = str(annee_de_calcul)
 TBS = FranceTaxBenefitSystem()
-TBS_PLF = IncomeTaxReform(TBS, reformePLF, PERIOD)
-CAS_TYPE = load_data("DCT.csv")
-SIMCAT = partial(simulation, period=PERIOD, data=CAS_TYPE)
-SIMCAT_BASE = SIMCAT(tbs=TBS)
-
-
-if not version_beta_sans_simu_pop:
-    # Initialisation des données utilisées pour le calcul sur la population
-    DUMMY_DATA = load_data(data_path).sort_values(by="idfoy")
-    print(
-        "Dummy Data loaded",
-        len(DUMMY_DATA),
-        "lines",
-        len(DUMMY_DATA["idfoy"].unique()),
-        "foyers fiscaux",
+TBS_DEFAULT = {"avant": TBS}
+for nom_reforme in reformes_par_defaut:
+    TBS_DEFAULT[nom_reforme] = IncomeTaxReform(
+        TBS, reformes_par_defaut[nom_reforme], PERIOD
     )
-    # Resultats sur la population du code existant et du PLF. Ne change jamais donc pas besoin de fatiguer l'ordi à calculer
-    # Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
-    # sur le data_path
-    resultats_de_base = from_postgres(nom_table_resultats_base)
-    if (
-        resultats_de_base is not None
-    ):  # Si la table n'existe pas dans le schéma SQL (par exemple si la variable d'environnement comporte une erreur, ou si on n'a pas mis les données dans la base SQL du serveur), ce sera None et on les calcule nous même
-        print(
-            "table resultats de base used :",
-            nom_table_resultats_base,
-            len(resultats_de_base),
-            "rows",
+CAS_TYPE = load_data("DCT.csv")
+DUMMY_DATA = (
+    CAS_TYPE
+    if version_beta_sans_simu_pop
+    else load_data(data_path).sort_values(by="idfoy")
+)
+
+# Initialisation des données utilisées pour le calcul sur la population
+print(
+    "Dummy Data loaded",
+    len(DUMMY_DATA),
+    "lines",
+    len(DUMMY_DATA["idfoy"].unique()),
+    "foyers fiscaux",
+)
+# Resultats sur la population du code existant et, lorsqu'il y en a un de configuré, du PLF.
+# Ne change jamais donc pas besoin de fatiguer l'ordi à calculer : ils sont mémorisés en base de données.
+# Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
+# sur le data_path
+resultats_de_base = from_postgres(nom_table_resultats_base)
+if (
+    resultats_de_base is not None
+):  # Si la table n'existe pas dans le schéma SQL (par exemple si la variable d'environnement comporte une erreur, ou si on n'a pas mis les données dans la base SQL du serveur), ce sera None et on les calcule nous même
+    print(
+        "table resultats de base used :",
+        nom_table_resultats_base,
+        len(resultats_de_base),
+        "rows",
+    )
+    resultats_de_base = resultats_de_base.set_index("idfoy").sort_index()
+else:
+    simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
+    resultats_de_base = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
+    # precalcul cas de base sur la population pour le cache
+    simulations_reformes_par_defaut_deciles = {}
+    for nom_reforme in TBS_DEFAULT:
+        simulations_reformes_par_defaut_deciles[nom_reforme] = simulation(
+            PERIOD, DUMMY_DATA, TBS_DEFAULT[nom_reforme]
         )
-        resultats_de_base = resultats_de_base.set_index("idfoy").sort_index()
-    else:
-        simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
-        resultats_de_base = simulation_base_deciles[1]["foyer_fiscal"][["wprm"]]
-        # precalcul cas de base sur la population pour le cache
-        resultats_de_base["avant"] = simulation_base_deciles[0].calculate(
-            "irpp", PERIOD
-        )
-        simulation_plf_deciles = simulation(PERIOD, DUMMY_DATA, TBS_PLF)
-        resultats_de_base["plf"] = simulation_plf_deciles[0].calculate("irpp", PERIOD)
-simulation_base_castypes = simulation(PERIOD, CAS_TYPE, TBS)
-simulation_plf_castypes = simulation(PERIOD, CAS_TYPE, TBS_PLF)
+        resultats_de_base[nom_reforme] = simulations_reformes_par_defaut_deciles[
+            nom_reforme
+        ][0].calculate("irpp", PERIOD)
+simulations_reformes_par_defaut_castypes = {}
+for nom_reforme in liste_noms_reformes_sans_apres:
+    simulations_reformes_par_defaut_castypes[nom_reforme] = simulation(
+        PERIOD, CAS_TYPE, TBS_DEFAULT[nom_reforme]
+    )
 
 
 def foyertosomethingelse(idfoy):
@@ -632,7 +666,13 @@ def texte_cas_types(data=None):
 
 def simulation_from_cas_types(descriptions):
     df = dataframe_from_cas_types_description(descriptions)
-    return (df, simulation(PERIOD, df, TBS), simulation(PERIOD, df, TBS_PLF))
+    return (
+        df,
+        {
+            nom_reforme: simulation(PERIOD, df, reforme)
+            for nom_reforme, reforme in TBS_DEFAULT.items()
+        },
+    )
 
 
 # Transforme une description de cas types en un dataframe parsable. Good luck!
@@ -851,18 +891,24 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
     # the isdecile=False
 
     if isdecile:
+        # On prend les données de la population entière
         data = DUMMY_DATA
         reform = IncomeTaxReform(TBS, dictreform, PERIOD)
+        # On ne crée qu'une simulation, le moteur de calcul ayant précalculé les autres.
         simulation_reform = simulation(PERIOD, data, reform)
+        # On n'envoie à simuler que le "apres"
         return compare(PERIOD, {"apres": simulation_reform}, isdecile)
 
-    data, simulation_base, simulation_plf = (
-        (CAS_TYPE, simulation_base_castypes, simulation_plf_castypes)
+    # Pour les cas-types, on n'utilise pas de resultats précalculés
+    # donc on inclut aussi les simulations par défaut
+    data, default_sims = (
+        (CAS_TYPE, simulations_reformes_par_defaut_castypes)
         if castypedesc is None
         else simulation_from_cas_types(castypedesc)
     )
     reform = IncomeTaxReform(TBS, dictreform, PERIOD)
     simulation_reform = simulation(PERIOD, data, reform)
+    default_sims["apres"] = simulation_reform
 
     if dictreform is None:
         assert taux is not None
@@ -874,8 +920,5 @@ def CompareOldNew(taux=None, isdecile=True, dictreform=None, castypedesc=None):
                 }
             }
         }
-    return compare(
-        PERIOD,
-        {"avant": simulation_base, "plf": simulation_plf, "apres": simulation_reform},
-        isdecile,
-    )
+
+    return compare(PERIOD, default_sims, isdecile)

@@ -49,6 +49,8 @@ def payload() -> dict:
 
 
 def test_calculate_compare_with_cas_types(client, payload, headers):
+    # Vérifie qu'une simulation qui ne contient pas les cas types renvoie les mêmes résultats
+    # qu'une simulation avec les cas-types par défaut
     cas_types = json.loads(client.post("metadata/description_cas_types").data)
     response = partial(client.post, "calculate/compare", headers=headers)
     payload_full = dict({**payload, "description_cas_types": cas_types})
@@ -57,9 +59,6 @@ def test_calculate_compare_with_cas_types(client, payload, headers):
     expected = json.loads(response(data=json.dumps(payload_full)).data)
 
     assert actual.keys() == expected.keys()
-    for var_in_res_brut in ["avant", "apres", "plf"]:
-        assert var_in_res_brut in expected["res_brut"]
-        assert var_in_res_brut in expected["total"]
 
     assert actual["res_brut"] == expected["res_brut"]
     assert actual["total"] == expected["total"]
@@ -67,10 +66,11 @@ def test_calculate_compare_with_cas_types(client, payload, headers):
 
 
 def test_calculate_compare_weights(client, payload, headers):
+    # Vérifie que les cas types des résultats apparaissent tous dans tous les champs
     response = partial(client.post, "calculate/compare", headers=headers)
     actual = json.loads(response(data=json.dumps(payload)).data)
 
-    for var_in_res_brut in ["avant", "apres", "plf"]:
+    for var_in_res_brut in actual["res_brut"].keys():
         assert set(actual["res_brut"]["wprm"].keys()) == set(
             actual["res_brut"][var_in_res_brut].keys()
         )

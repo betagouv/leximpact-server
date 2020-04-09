@@ -1,10 +1,12 @@
-
 import pandas  # type: ignore
-import os
 import math
 
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
-from simulate_pop_from_reform import simulation, TBS_PLF  # type: ignore
+from Simulation_engine.simulate_pop_from_reform import (
+    simulation,
+    TBS_DEFAULT,
+    annee_de_calcul,
+)  # type: ignore
 
 
 def aggregats_ff(
@@ -183,8 +185,10 @@ def compare_input_data(
     input_h5="./Simulation_engine/dummy_data.h5",
     input_h5_b="./Simulation_engine/dummy_data.h5",
     name_variables=("rfr", "irpp", "nbptr"),
+    PERIOD=None,
 ):
-    PERIOD = "2018"
+    if PERIOD is None:
+        PERIOD = annee_de_calcul
     TBS = FranceTaxBenefitSystem()
     DUMMY_DATA = pandas.read_hdf(input_h5)
     simulation_base_deciles, dictionnaire_datagrouped = simulation(
@@ -210,10 +214,12 @@ def test_useless_variables(
     input_h5="./Simulation_engine/dummy_data.h5",
     outfile_path=None,
     name_variables=("rfr", "irpp", "nbptr"),
+    PERIOD=None,
 ):
+    if PERIOD is None:
+        PERIOD = annee_de_calcul
     pandas.options.mode.chained_assignment = None
     list_useless_variables = []
-    PERIOD = "2018"
     TBS = FranceTaxBenefitSystem()
     DUMMY_DATA = pandas.read_hdf(input_h5)
     simulation_base_deciles, dictionnaire_datagrouped = simulation(
@@ -279,10 +285,12 @@ def test_h5_input(
     name_variables=("rfr", "irpp", "nbptr"),
     aggfunc="sum",
     compdic=None,
-    is_plf=False
+    is_plf=False,
+    PERIOD=None,
 ):
-    PERIOD = "2018"
-    TBS = TBS_PLF if is_plf else FranceTaxBenefitSystem()
+    if PERIOD is None:
+        PERIOD = annee_de_calcul
+    TBS = TBS_DEFAULT["plf"] if is_plf else FranceTaxBenefitSystem()
     DUMMY_DATA = pandas.read_hdf(input_h5)
     simulation_base_deciles = simulation(PERIOD, DUMMY_DATA, TBS)
     df = aggregats_ff(PERIOD, simulation_base_deciles, name_variables).sort_values(
@@ -290,7 +298,9 @@ def test_h5_input(
     )
     if aggfunc == "sum":  # Pour la somme, on calcule les % d'erreur sur la répartition.
         testerrorvalues(df)
-    aggs_to_compute = ["wprm", "salaire_de_base", "retraite_brute"] + list(name_variables)
+    aggs_to_compute = ["wprm", "salaire_de_base", "retraite_brute"] + list(
+        name_variables
+    )
     val_donnees_pac_agg = 0
     trpac_agg = [
         compdic[ag]
@@ -348,9 +358,10 @@ def ajustement_h5(
     input_h5="./Simulation_engine/dummy_data.h5",
     output_h5="./Simulation_engine/dummy_data_ajuste.h5",
     distribution_rfr_population="./Simulation_engine/Calib/ResFinalCalibSenat.csv",
+    PERIOD=None,
 ):
-    print("puréé", os.listdir("."))
-    PERIOD = "2018"
+    if PERIOD is None:
+        PERIOD = annee_de_calcul
     ajuste_h5 = output_h5
     TBS = FranceTaxBenefitSystem()
     DUMMY_DATA = pandas.read_hdf(input_h5)
@@ -598,7 +609,7 @@ def anotherexample():
         name_variables=("rfr", "irpp", "nbptr"),
         aggfunc="sum",
         compdic=theoric_values["sum"],
-        is_plf=False
+        is_plf=False,
     )
     print("after adj 2 :")
     test_h5_input(
@@ -606,7 +617,7 @@ def anotherexample():
         name_variables=("rfr", "irpp", "nbptr"),
         aggfunc="sum",
         compdic=theoric_values["sum"],
-        is_plf=False
+        is_plf=False,
     )
 
     print("WITH PLF NOW HIhihi")
@@ -616,7 +627,7 @@ def anotherexample():
         name_variables=("rfr", "irpp", "nbptr"),
         aggfunc="sum",
         compdic=theoric_values["sum"],
-        is_plf=True
+        is_plf=True,
     )
     print("after adj 2 plf:")
     test_h5_input(
@@ -624,8 +635,9 @@ def anotherexample():
         name_variables=("rfr", "irpp", "nbptr"),
         aggfunc="sum",
         compdic=theoric_values["sum"],
-        is_plf=True
+        is_plf=True,
     )
+
 
 # ToDo : Le test doit retourner True si :
 #  - On a Une erreur totale sur la distrib de rfr < 2.5% après ajustement
