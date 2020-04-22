@@ -24,7 +24,31 @@ reforme_base = {
                 "taux": 0.2,
             },
         },
-    }
+        "calcul_nombre_parts": {
+            "parts_selon_nombre_personnes_a_charge":{  #Contenu du tableau, 4  cas distincts
+                "veuf":[1, 2.5, 3, 4, 5, 6, 7],
+                "maries_ou_pacses":[2, 2.5, 3, 4, 5, 6, 7],
+                "celibataire" : [1, 1.5, 2, 3, 4, 5, 6],
+                "divorce" : [1, 1.5, 2, 3, 4, 5, 6],
+            },
+            "parts_par_pac_au_dela" : 1, # LE "Et ainsi de suite..."
+            "nombre_de_parts_charge_partagee":{ #On a maintenant 12 cas différents en fonction du nobre d'enfants. 
+                "zero_charge_principale": {
+                    "deux_premiers" : 0.25, 
+                    "suivants" : 0.5,
+                },
+                "un_charge_principale": {
+                    "premier" : 0.25, 
+                    "suivants" : 0.5,
+                },
+                "deux_ou_plus_charge_principale" :  {
+                    "suivants" : 0.5,
+                },
+            },
+            #Pfff c vraiment la pire paramétrisation du monde, ca contraint énormément la réflexion
+
+        },
+    },
 }
 
 
