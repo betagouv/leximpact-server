@@ -25,7 +25,7 @@ def login(session, **params: Dict[str, str]) -> Tuple[str, int]:
         )
         send_mail(
             recipient=params["body"]["email"],
-            subject="Lien de connexion LexImpact POP",
+            subject="Lien de connexion LexImpact IR",
             content=mail_content,
         )
     return (
