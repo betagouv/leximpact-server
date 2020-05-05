@@ -232,7 +232,7 @@ Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'
 ###  /auth/login
 
 - Type : POST
-- Description : Soumet un email au serveur. Si cet email est dans la liste des adresses autorisées, un lien de connexion au service LexImpact Pop est envoyé à l'adresse email spécifiée.
+- Description : Soumet un email au serveur. Si cet email est dans la liste des adresses autorisées, un lien de connexion au service LexImpact IR à accès restreint est envoyé à l'adresse email spécifiée.
 - Requête - contenu du body : Ne contient qu'un champ tel que décrit dans l'exemple suivant.
 
     ```json
