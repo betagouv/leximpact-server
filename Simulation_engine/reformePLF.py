@@ -45,6 +45,11 @@ reforme_base = {
                     "suivants" : 0.5,
                 },
             },
+            "bonus_parent_isole":{
+                "au_moins_un_charge_principale" : 0.5,
+                "zero_principal_un_partage" : 0.25,
+                "zero_principal_deux_ou_plus_partages" : 0.5,
+            }
             #Pfff c vraiment la pire paramétrisation du monde, ca contraint énormément la réflexion
 
         },
