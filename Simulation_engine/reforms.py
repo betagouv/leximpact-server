@@ -5,11 +5,27 @@ from toolz.functoolz import compose  # type: ignore
 from openfisca_core.parameters import ParameterNode  # type: ignore
 from openfisca_core import periods  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
-from openfisca_france.model.base import Reform, Variable, FoyerFiscal,YEAR, not_, min_, max_ # type: ignore
+from openfisca_france.model.base import Reform, Variable, FoyerFiscal,YEAR, not_, min_, max_, TypesStatutMarital   # type: ignore
+from numpy import take
 
 T = TypeVar("T", bound="ParametricReform")
 
-def generate_nbptr_class(parametre=None):
+def generate_nbptr_class(calcul_nb_parts): # redéfinit le calcul des nbptr si spécifié par l'utilisateur
+    print(calcul_nb_parts.keys())
+    for nom_rubrique in ["parts_selon_nombre_personnes_a_charge", "parts_par_pac_au_dela", "nombre_de_parts_charge_partagee"]:
+        assert nom_rubrique in calcul_nb_parts
+    parts_pac_tableau = calcul_nb_parts["parts_selon_nombre_personnes_a_charge"]
+    longueurs_tableaux=[]
+    for nom_situation in ["veuf","maries_ou_pacses","celibataire","divorce"]:
+        assert nom_situation in parts_pac_tableau
+        longueurs_tableaux+=[len(parts_pac_tableau[nom_situation])]
+    assert(max(longueurs_tableaux)==min(longueurs_tableaux))
+    nb_cases_tableau=max(longueurs_tableaux) #nombre de nombre d'enfants dont la situation est décrite par le tableau
+    nb_enfants_tableau = nb_cases_tableau -1 #car le zéro est décrit dans le tableau
+    parts_supp_cp = calcul_nb_parts["nombre_de_parts_charge_partagee"]
+    for nb_cp in ["zero_charge_principale","un_charge_principale","deux_ou_plus_charge_principale"]:
+        assert nb_cp in parts_supp_cp
+    bonus_isole=calcul_nb_parts["bonus_parent_isole"]
     class nbptr(Variable):
         value_type = float
         entity = FoyerFiscal
@@ -64,16 +80,35 @@ def generate_nbptr_class(parametre=None):
             has_pac = not_(no_pac)
             no_alt = nbH == 0  # Aucun enfant à charge en garde alternée
             has_alt = not_(no_alt)
+            #Ici on calcule plutôt d'abord le nombre de parts liées au nb d'enfants en charge principale
+            def nb_enfants_principal(situation="celibataire"):
+                def fonction_parts_gagnees(nb_charge_principale = 1):
+                    return (( parts_pac_tableau[situation][nb_enfants_tableau] 
+                        + (nb_charge_principale-nb_enfants_tableau)*calcul_nb_parts["parts_par_pac_au_dela"]) * (nb_charge_principale>nb_enfants_tableau)
+                        + (nb_charge_principale<=nb_enfants_tableau) * take(parts_pac_tableau[situation],min_(nb_enfants_tableau, nb_charge_principale)))
+                return fonction_parts_gagnees
+
+            
+            statut_marital = foyer_fiscal.declarant_principal('statut_marital', period.first_month)
+            celib= ( statut_marital==TypesStatutMarital.celibataire)
+            divorce = ( statut_marital==TypesStatutMarital.divorce)
+            nb_pac=nb_pac.astype(int)
+            enf3= (celib * nb_enfants_principal("celibataire")(nb_pac)
+                + divorce * nb_enfants_principal("divorce")(nb_pac)
+                + maries_ou_pacses * nb_enfants_principal("maries_ou_pacses")(nb_pac)
+                + veuf * nb_enfants_principal("veuf")(nb_pac))
+
+
 
             # # nombre de parts liées aux enfants à charge
             # que des enfants en résidence alternée
-            enf1 = (no_pac & has_alt) * (quotient_familial.enf1 * min_(nbH, 2) * 0.5
-                                        + quotient_familial.enf2 * max_(nbH - 2, 0) * 0.5)
+            enf1 = (no_pac & has_alt) * (parts_supp_cp["zero_charge_principale"]["deux_premiers"]* min_(nbH, 2)
+                                        + parts_supp_cp["zero_charge_principale"]["suivants"] * max_(nbH - 2, 0) )
             # pas que des enfants en résidence alternée
-            enf2 = (has_pac & has_alt) * ((nb_pac == 1) * (quotient_familial.enf1 * min_(nbH, 1) * 0.5
-                + quotient_familial.enf2 * max_(nbH - 1, 0) * 0.5) + (nb_pac > 1) * (quotient_familial.enf2 * nbH * 0.5))
+            enf2 = (has_pac & has_alt) * ((nb_pac == 1) * (parts_supp_cp["un_charge_principale"]["premier"] * min_(nbH, 1)
+                + parts_supp_cp["un_charge_principale"]["suivants"] * max_(nbH - 1, 0)) + (nb_pac > 1) * (parts_supp_cp["deux_ou_plus_charge_principale"]["suivants"] * nbH ))
             # pas d'enfant en résidence alternée
-            enf3 = quotient_familial.enf1 * min_(nb_pac, 2) + quotient_familial.enf2 * max_((nb_pac - 2), 0)
+            #enf3 = quotient_familial.enf1 * min_(nb_pac, 2) + quotient_familial.enf2 * max_((nb_pac - 2), 0)
 
             enf = enf1 + enf2 + enf3
             # # note 2 : nombre de parts liées aux invalides (enfant + adulte)
@@ -95,31 +130,30 @@ def generate_nbptr_class(parametre=None):
 
             # # note 5
             #  - enfant du conjoint décédé
-            n51 = quotient_familial.cdcd * (caseL & ((nbF + nbJ) > 0))
+            #n51 = quotient_familial.cdcd * (caseL & ((nbF + nbJ) > 0))
             #  - enfant autre et parent isolé
-            n52 = quotient_familial.isol * caseT * (((no_pac & has_alt) * ((nbH == 1) * 0.5 + (nbH >= 2))) + 1 * has_pac)
-            n5 = max_(n51, n52)
+            #n52 = quotient_familial.isol * caseT * (((no_pac & has_alt) * ((nbH == 1) * 0.5 + (nbH >= 2))) + 1 * has_pac)
+            #n5 = max_(n51, n52)
 
             # # note 6 invalide avec personne à charge
             n6 = quotient_familial.not6 * (caseP & (has_pac | has_alt))
 
-            # # note 7 Parent isolé
-            n7 = quotient_familial.isol * caseT * ((no_pac & has_alt) * ((nbH == 1) * 0.5 + (nbH >= 2)) + 1 * has_pac)
-
+            # # note 7 Parent isolé["au_moins_un_charge_principale"]
+            n7 = caseT * ((no_pac & has_alt) * ((nbH == 1) * bonus_isole["zero_principal_un_partage"] 
+                + (nbH >= 2) * bonus_isole["zero_principal_deux_ou_plus_partages"]) 
+                + bonus_isole["au_moins_un_charge_principale"] * has_pac)
             # # Régime des mariés ou pacsés
-            nb_parts_famille = 1 + quotient_familial.conj + enf + n2 + n4
+            nb_parts_famille =  enf + n2 + n4
 
             # # veufs  hors jeune_veuf
-            nb_parts_veuf = 1 + quotient_familial.veuf * has_pac + enf + n2 + n3 + n5 + n6
+            nb_parts_veuf = enf + n2 + n3 + n7 + n6
 
             # # celib div
-            nb_parts_celib = 1 + enf + n2 + n3 + n6 + n7
-
+            nb_parts_celib = enf + n2 + n3 + n6 + n7
             return (maries_ou_pacses | jeune_veuf) * nb_parts_famille + (veuf & not_(jeune_veuf)) * nb_parts_veuf + celibataire_ou_divorce * nb_parts_celib
     return nbptr
 
 
-nbptr=generate_nbptr_class("coucou")
 
 class IncomeTaxReform(Reform):
     """Une réforme de l'impôt sur le revenu"""
@@ -135,7 +169,9 @@ class IncomeTaxReform(Reform):
         parameters, *_ = compose(*reforms(mapping(), self.payload))(reform)
         return parameters
     def apply(self) -> None:
-        self.update_variable(nbptr)
+        if "calcul_nombre_parts" in self.payload:
+            function_nbptr=generate_nbptr_class(self.payload["calcul_nombre_parts"])
+            self.update_variable(function_nbptr)
         self.modify_parameters(modifier_function=self.modifier)
 
 
