@@ -859,7 +859,7 @@ def dataframe_from_cas_types_description(descriptions):
         ] + [1 if id_pac < ct["nb_pac_invalides"] else 0 for id_pac in range(nbc)]
         # TODO : be able to choose if garde_alternee personnes_a_charges are also the ones with invalidite or not
         dres["garde_alternee"] += [0] * nbd + [
-            1 if id_pac < ct["nb_pac_invalides"] else 0 for id_pac in range(nbc)
+            1 if id_pac < ct["nb_pac_charge_partagee"] else 0 for id_pac in range(nbc)
         ]
 
         for _ in range(nbd):
@@ -868,7 +868,7 @@ def dataframe_from_cas_types_description(descriptions):
                 [0] if not ct["nombre_declarants_retraites"] else [6]
             )
             dres["statut_marital"] += (
-                [4 if ct["nb_decl_veuf"] else 5] if nbd > 1 else [2]
+                [5] if nbd > 1 else [4 if ct["nb_decl_veuf"] else 2]
             )
         for _ in range(nbc):
             dres["activite"] += [2]
