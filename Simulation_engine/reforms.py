@@ -52,7 +52,7 @@ def generate_nbptr_class(calcul_nb_parts): # redéfinit le calcul des nbptr si s
             quotient_familial.isol : demi-part parent isolé (T)
             quotient_familial.edcd : enfant issu du mariage avec conjoint décédé;
             '''
-            nb_pac = foyer_fiscal('nb_pac', period) if parametre is None else 0
+            nb_pac = foyer_fiscal('nb_pac', period)
             maries_ou_pacses = foyer_fiscal('maries_ou_pacses', period)
             celibataire_ou_divorce = foyer_fiscal('celibataire_ou_divorce', period)
             veuf = foyer_fiscal('veuf', period)
