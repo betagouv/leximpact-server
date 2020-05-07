@@ -2,7 +2,7 @@ openapi: "3.0.0"
 
 info:
   title: LexImpact
-  version: 1.0.0
+  version: 1.1.0
 
 paths:
   /:
@@ -172,51 +172,61 @@ components:
                           type: integer
                         plafond_2:
                           type: integer
-                bareme:
-                  type: object
-                parts_selon_nombre_personnes_a_charge:
+                calcul_nombre_parts:
                   type: object
                   properties:
-                    veuf:
-                      type:array
-                      items:
-                        type: number
-                    maries_ou_pacses:
-                      type:array
-                      items:
-                        type: number
-                    celibataire:
-                      type:array
-                      items:
-                        type: number
-                    divorce:
-                      type:array
-                      items:
-                        type: number
-                parts_par_pac_au_dela: number
-                nombre_de_parts_charge_partagee:
-                  type: object
-                  properties:
-                    zero_charge_principale:
+                    parts_selon_nombre_personnes_a_charge:
                       type: object
                       properties:
-                        deux_premiers: number
-                        suivants: number
-                    un_charge_principale:
+                        veuf:
+                          type: array
+                          items:
+                            type: number
+                        maries_ou_pacses:
+                          type: array
+                          items:
+                            type: number
+                        celibataire:
+                          type: array
+                          items:
+                            type: number
+                        divorce:
+                          type: array
+                          items:
+                            type: number
+                    parts_par_pac_au_dela:
+                      type: number
+                    nombre_de_parts_charge_partagee:
                       type: object
                       properties:
-                        premier: number
-                        suivants: number
-                    deux_ou_plus_charge_principale:
+                        zero_charge_principale:
+                          type: object
+                          properties:
+                            deux_premiers:
+                              type: number
+                            suivants: 
+                              type: number
+                        un_charge_principale:
+                          type: object
+                          properties:
+                            premier:
+                              type: number
+                            suivants:
+                              type: number
+                        deux_ou_plus_charge_principale:
+                          type: object
+                          properties:
+                            suivants:
+                              type: number
+                    bonus_parent_isole:
                       type: object
                       properties:
-                        suivants: number
-                bonus_parent_isole:
-                  type: object
-                  properties:
-                    au_moins_un_charge_principale: number
-                    zero_principal_un_partage: number
-                    zero_principal_deux_ou_plus_partages: number
+                        au_moins_un_charge_principale:
+                          type: number
+                        zero_principal_un_partage:
+                          type: number
+                        zero_principal_deux_ou_plus_partages:
+                          type: number
         description_cas_types:
           type: array
           items:
