@@ -5,7 +5,7 @@ from toolz.functoolz import compose  # type: ignore
 from openfisca_core.parameters import ParameterNode  # type: ignore
 from openfisca_core import periods  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
-from openfisca_france.model.base import (
+from openfisca_france.model.base import (  # type: ignore
     Reform,
     Variable,
     FoyerFiscal,
@@ -14,8 +14,8 @@ from openfisca_france.model.base import (
     min_,
     max_,
     TypesStatutMarital,
-)  # type: ignore
-from numpy import take
+)
+from numpy import take  # type: ignore
 
 T = TypeVar("T", bound="ParametricReform")
 
@@ -80,13 +80,13 @@ def generate_nbptr_class(
             celibataire_ou_divorce = foyer_fiscal("celibataire_ou_divorce", period)
             veuf = foyer_fiscal("veuf", period)
             jeune_veuf = foyer_fiscal("jeune_veuf", period)
-            nbF = foyer_fiscal("nbF", period)
+            # nbF = foyer_fiscal("nbF", period)
             nbG = foyer_fiscal("nbG", period)
             nbH = foyer_fiscal("nbH", period)
             nbI = foyer_fiscal("nbI", period)
             nbR = foyer_fiscal("nbR", period)
-            nbJ = foyer_fiscal("nbJ", period)
-            nbN = foyer_fiscal("nbN", period)  # noqa F841
+            # nbJ = foyer_fiscal("nbJ", period)
+            # nbN = foyer_fiscal("nbN", period)  # noqa F841
             caseP = foyer_fiscal("caseP", period)
             caseW = foyer_fiscal("caseW", period)
             caseG = foyer_fiscal("caseG", period)
@@ -104,6 +104,7 @@ def generate_nbptr_class(
             no_alt = nbH == 0  # Aucun enfant à charge en garde alternée
             has_alt = not_(no_alt)
             # Ici on calcule plutôt d'abord le nombre de parts liées au nb d'enfants en charge principale
+
             def nb_enfants_principal(situation="celibataire"):
                 def fonction_parts_gagnees(nb_charge_principale=1):
                     return (
