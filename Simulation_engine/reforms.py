@@ -23,7 +23,6 @@ T = TypeVar("T", bound="ParametricReform")
 def generate_nbptr_class(
     calcul_nb_parts
 ):  # redéfinit le calcul des nbptr si spécifié par l'utilisateur
-    print(calcul_nb_parts.keys())
     for nom_rubrique in [
         "parts_selon_nombre_personnes_a_charge",
         "parts_par_pac_au_dela",
