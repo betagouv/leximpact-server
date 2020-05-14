@@ -31,16 +31,30 @@ def generate_nbptr_class(
     ]:
         if nom_rubrique not in calcul_nb_parts:
             raise LexCeption(
-                "the field {} is missing from 'calcul_nombre_parts'. You can refer to the README to check valid format.".format(
+                "the field '{}' is missing from 'calcul_nombre_parts'. You can refer to the README to check valid format.".format(
                     nom_rubrique
                 )
             )
     parts_pac_tableau = calcul_nb_parts["parts_selon_nombre_personnes_a_charge"]
     longueurs_tableaux = []
     for nom_situation in ["veuf", "maries_ou_pacses", "celibataire", "divorce"]:
-        assert nom_situation in parts_pac_tableau
+        if nom_situation not in parts_pac_tableau:
+            raise LexCeption(
+                "the field '{}' is missing from 'parts_selon_nombre_personnes_a_charge'. You can refer to the README to check valid format.".format(
+                    nom_situation
+                )
+            )
         longueurs_tableaux += [len(parts_pac_tableau[nom_situation])]
-    assert max(longueurs_tableaux) == min(longueurs_tableaux)
+    if max(longueurs_tableaux) != min(longueurs_tableaux):
+        raise LexCeption(
+            "the tables in 'parts_selon_nombre_personnes_a_charge' that correspond to situations should all be the same size. Sizes : {}".format(
+                {
+                    nom_situation: len(parts_pac_tableau[nom_situation])
+                    for nom_situation in parts_pac_tableau
+                }
+            )
+        )
+
     nb_cases_tableau = max(
         longueurs_tableaux
     )  # nombre de nombre d'enfants dont la situation est décrite par le tableau
@@ -51,7 +65,12 @@ def generate_nbptr_class(
         "un_charge_principale",
         "deux_ou_plus_charge_principale",
     ]:
-        assert nb_cp in parts_supp_cp
+        if nb_cp not in parts_supp_cp:
+            raise LexCeption(
+                "the field '{}' is missing from 'nombre_de_parts_charge_partagee'. You can refer to the README to check valid format.".format(
+                    nb_cp
+                )
+            )
 
     bonus_isole = calcul_nb_parts["bonus_parent_isole"]
 
