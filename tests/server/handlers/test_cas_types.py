@@ -172,7 +172,7 @@ def test_calculate_compare_lexception(client, headers):
     }
     response_function = partial(client.post, "calculate/compare", headers=headers)
     response = response_function(data=json.dumps(requete))
-    assert response.status_code == 200
+    assert response.status_code == 400
     assert json.loads(response.data) == {
-        "Error": "Threw an Exception : the field 'parts_selon_nombre_personnes_a_charge' is missing from 'calcul_nombre_parts'. You can refer to the README to check valid format."
+        "Error": "Error in request : the field 'parts_selon_nombre_personnes_a_charge' is missing from 'calcul_nombre_parts'. You can refer to the README to check valid format."
     }
