@@ -2,6 +2,7 @@ from typing import Callable, NamedTuple, TypeVar
 
 from toolz.functoolz import compose  # type: ignore
 
+from Simulation_engine.lexception import LexCeption
 from openfisca_core.parameters import ParameterNode  # type: ignore
 from openfisca_core import periods  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
@@ -28,7 +29,8 @@ def generate_nbptr_class(
         "parts_par_pac_au_dela",
         "nombre_de_parts_charge_partagee",
     ]:
-        assert nom_rubrique in calcul_nb_parts
+        if nom_rubrique not in calcul_nb_parts:
+            raise LexCeption("the field {} is missing from 'calcul_nombre_parts'. You can refer to the README to check valid format.".format(nom_rubrique))
     parts_pac_tableau = calcul_nb_parts["parts_selon_nombre_personnes_a_charge"]
     longueurs_tableaux = []
     for nom_situation in ["veuf", "maries_ou_pacses", "celibataire", "divorce"]:

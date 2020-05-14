@@ -7,6 +7,7 @@ from server.services import check_user, with_session
 import json
 from flask import Response
 
+from Simulation_engine.lexception import LexCeption
 
 def error_as_dict(errormessage):
     return {"Error": errormessage}
@@ -42,9 +43,13 @@ class SimulationRunner(object):
                 return error_as_dict("Empty list of cas types received"), 200
         if "reforme" not in dbod:
             return error_as_dict("missing 'reforme' field in body of your request"), 200
-        dic_resultat = CompareOldNew(
-            taux=None, isdecile=False, dictreform=dbod["reforme"], castypedesc=dct
-        )
+        try:
+            dic_resultat = CompareOldNew(
+                taux=None, isdecile=False, dictreform=dbod["reforme"], castypedesc=dct
+            )
+        except LexCeption as exc:
+            return error_as_dict("Threw an Exception : " + str(exc)), 200
+
         if "timestamp" in dbod:
             dic_resultat["timestamp"] = dbod["timestamp"]
         return (dic_resultat, 201)

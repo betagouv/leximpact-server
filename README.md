@@ -258,7 +258,7 @@ Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'
     }
     ``` 
 
-En version `1.0.0`, la structure de la réforme est la suivante. Elle reproduit presque la structure d'OpenFisca. Si un paramètre est omis, il est remplacé par la version par défaut d'OpenFisca (donc le code existant) :
+En version `1.1.0`, la structure de la réforme est la suivante. Elle reproduit presque la structure d'OpenFisca. Si un paramètre est omis, il est remplacé par la version par défaut d'OpenFisca (donc le code existant). Le champ "calul_nombre_parts" est optionnel, mais s'il figure, tous ses champs doivent y figurer, et les tableaux associés aux quatre situations familiales doivent faire la même longueur :
 
 
 ```json
@@ -287,6 +287,31 @@ En version `1.0.0`, la structure de la réforme est la suivante. Elle reproduit 
                 "seuil2":21037,
                 "taux":0
             }
+        },
+        "calcul_nombre_parts": {
+            "parts_selon_nombre_personnes_a_charge": {
+                "veuf": [1, 2.5, 3, 4, 5, 6, 7],
+                "maries_ou_pacses": [2, 2.5, 3, 4, 5, 6, 7],
+                "celibataire": [1, 1.5, 2, 3, 4, 5, 6],
+                "divorce": [1, 1.5, 2, 3, 4, 5, 6],
+            },
+            "parts_par_pac_au_dela": 1,
+            "nombre_de_parts_charge_partagee": {
+                "zero_charge_principale": {
+                    "deux_premiers": 0.25, 
+                    "suivants": 0.5
+                },
+                "un_charge_principale": {
+                    "premier": 0.25, 
+                    
+                    "suivants": 0.5},
+                "deux_ou_plus_charge_principale": {"suivants": 0.5},
+            },
+            "bonus_parent_isole": {
+                "au_moins_un_charge_principale": 0.5,
+                "zero_principal_un_partage": 0.25,
+                "zero_principal_deux_ou_plus_partages": 0.5,
+            },
         }
     }
 }
