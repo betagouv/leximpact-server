@@ -207,7 +207,7 @@ def generate_nbptr_class(
             nb_parts_famille = enf + n2 + n4
 
             # # veufs  hors jeune_veuf
-            nb_parts_veuf = enf + n2 + n3 + n7 + n6
+            nb_parts_veuf = enf + n2 + n3 + n6
 
             # # celib div
             nb_parts_celib = enf + n2 + n3 + n6 + n7
