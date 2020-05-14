@@ -7,7 +7,13 @@ from pytest import fixture  # type: ignore
 from openfisca_core import periods  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 
+from Simulation_engine.simulate_pop_from_reform import (
+    dataframe_from_cas_types_description,
+    simulation
+)
+
 from Simulation_engine.reforms import (  # type: ignore
+    IncomeTaxReform,
     ParametricReform,
     bareme,
     decote,
@@ -32,6 +38,7 @@ def instant():
 
 @fixture
 def period():
+    # On s'assure que la réforme sera valide jusqu'en 2100.
     return periods.period("year:1900:200")
 
 
@@ -123,3 +130,62 @@ def test_reduction_ss_condition_revenus(parameters, instant, period, mocker):
         reform = ParametricReform(parameters, payload, instant, period)
         reform(reduction_ss_condition_revenus)
         node.update.assert_called_once_with(period=period, value=taux)
+
+
+
+@fixture
+def reform_config_2019():
+    return {
+    "impot_revenu": {
+        "bareme": {
+            "seuils": [0, 9964, 27159, 73779, 156244],
+            "taux": [0, 0.14, 0.30, 0.41, 0.45],
+        },
+        "decote": {"seuil_celib": 1196, "seuil_couple": 1970, "taux": 0.75},
+        "plafond_qf": {
+            "abat_dom": {
+                "taux_GuadMarReu": 0.3,
+                "plaf_GuadMarReu": 2450,
+                "taux_GuyMay": 0.4,
+                "plaf_GuyMay": 4050,
+            },
+            "maries_ou_pacses": 1551,
+            "celib_enf": 3660,
+            "celib": 927,
+            "reduc_postplafond": 1547,
+            "reduc_postplafond_veuf": 1728,
+            "reduction_ss_condition_revenus": {
+                "seuil_maj_enf": 3797,
+                "seuil1": 18985,
+                "seuil2": 21037,
+                "taux": 0.20,
+            },
+        },
+    }
+}
+
+
+def test_veuf_deux_enfants(reform_config_2019):
+    # données
+    veuf = { 
+        "nb_anciens_combattants": 0,
+        "nb_decl_invalides": 0,
+        "nb_decl_parent_isole": 0,
+        "nb_decl_veuf":  1,
+        "nb_pac_charge_partagee":  0,
+        "nb_pac_invalides":  0,
+        "nombre_declarants":  1,
+        "nombre_declarants_retraites":  0,
+        "nombre_personnes_a_charge":  2,
+        "outre_mer":  0,
+        "revenu":  120000,
+    }
+    data = dataframe_from_cas_types_description([veuf])
+    period = '2020'
+
+    # loi française + réforme IR
+    tbs_reforme_impot_revenu = IncomeTaxReform(FranceTaxBenefitSystem(), reform_config_2019, period)
+    built_simulation, dict_data_by_entity = simulation(period, data, tbs_reforme_impot_revenu)
+
+    nbptr = built_simulation.calculate('nbptr', period)
+    assert nbptr == [3]

@@ -675,8 +675,12 @@ def simulation_from_cas_types(descriptions):
     )
 
 
-# Transforme une description de cas types en un dataframe parsable. Good luck!
 def dataframe_from_cas_types_description(descriptions):
+    '''
+    Transforme une description de cas types (au format de l'API web) 
+    en un dataframe parsable. Good luck!
+    '''
+
     cols = [
         "index",
         "activite",
