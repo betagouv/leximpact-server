@@ -176,23 +176,17 @@ components:
                   type: object
                   properties:
                     parts_selon_nombre_personnes_a_charge:
-                      type: object
-                      properties:
-                        veuf:
-                          type: array
-                          items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          veuf:
                             type: number
-                        maries_ou_pacses:
-                          type: array
-                          items:
+                          maries_ou_pacses:
                             type: number
-                        celibataire:
-                          type: array
-                          items:
+                          celibataire:
                             type: number
-                        divorce:
-                          type: array
-                          items:
+                          divorce:
                             type: number
                     parts_par_pac_au_dela:
                       type: number

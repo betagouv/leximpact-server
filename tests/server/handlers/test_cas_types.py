@@ -105,12 +105,15 @@ def test_calculate_compare_success(client, headers):
                     },
                 },
                 "calcul_nombre_parts": {
-                    "parts_selon_nombre_personnes_a_charge": {  # Contenu du tableau, 4  cas distincts
-                        "veuf": [1, 2.5, 3, 4, 5, 6, 7],
-                        "maries_ou_pacses": [2, 2.5, 3, 4, 5, 6, 7],
-                        "celibataire": [1, 1.5, 2, 3, 4, 5, 6],
-                        "divorce": [1, 1.5, 2, 3, 4, 5, 6],
-                    },
+                    "parts_selon_nombre_personnes_a_charge": [
+                        {"veuf": 1, "maries_ou_pacses": 2, "celibataire": 1, "divorce": 1},
+                        {"veuf": 2.5, "maries_ou_pacses": 2.5, "celibataire": 1.5, "divorce": 1.5},
+                        {"veuf": 3, "maries_ou_pacses": 3, "celibataire": 2, "divorce": 2},
+                        {"veuf": 4, "maries_ou_pacses": 4, "celibataire": 3, "divorce": 3},
+                        {"veuf": 5, "maries_ou_pacses": 5, "celibataire": 4, "divorce": 4},
+                        {"veuf": 6, "maries_ou_pacses": 6, "celibataire": 5, "divorce": 5},
+                        {"veuf": 7, "maries_ou_pacses": 7, "celibataire": 6, "divorce": 6},
+                    ],
                     "parts_par_pac_au_dela": 1,  # LE "Et ainsi de suite..."
                     "nombre_de_parts_charge_partagee": {  # On a maintenant 12 cas différents en fonction du nobre d'enfants.
                         "zero_charge_principale": {

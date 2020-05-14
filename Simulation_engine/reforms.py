@@ -24,6 +24,7 @@ T = TypeVar("T", bound="ParametricReform")
 def generate_nbptr_class(
     calcul_nb_parts
 ):  # redéfinit le calcul des nbptr si spécifié par l'utilisateur
+    situations_familiales = ["veuf", "maries_ou_pacses", "celibataire", "divorce"]
     for nom_rubrique in [
         "parts_selon_nombre_personnes_a_charge",
         "parts_par_pac_au_dela",
@@ -35,29 +36,27 @@ def generate_nbptr_class(
                     nom_rubrique
                 )
             )
-    parts_pac_tableau = calcul_nb_parts["parts_selon_nombre_personnes_a_charge"]
-    longueurs_tableaux = []
-    for nom_situation in ["veuf", "maries_ou_pacses", "celibataire", "divorce"]:
-        if nom_situation not in parts_pac_tableau:
-            raise LexCeption(
-                "the field '{}' is missing from 'parts_selon_nombre_personnes_a_charge'. You can refer to the README to check valid format.".format(
-                    nom_situation
+    parts_pac_array_of_objects = calcul_nb_parts[
+        "parts_selon_nombre_personnes_a_charge"
+    ]
+    nb_cases_tableau = len(parts_pac_array_of_objects)
+    for nb_pac in range(nb_cases_tableau):
+        for nom_situation in situations_familiales:
+            if nom_situation not in parts_pac_array_of_objects[nb_pac]:
+                raise LexCeption(
+                    "the field '{}' is missing from {}-th element of 'parts_selon_nombre_personnes_a_charge'. You can refer to the README to check valid format.".format(
+                        nom_situation, nb_pac + 1
+                    )
                 )
-            )
-        longueurs_tableaux += [len(parts_pac_tableau[nom_situation])]
-    if max(longueurs_tableaux) != min(longueurs_tableaux):
-        raise LexCeption(
-            "the tables in 'parts_selon_nombre_personnes_a_charge' that correspond to situations should all be the same size. Sizes : {}".format(
-                {
-                    nom_situation: len(parts_pac_tableau[nom_situation])
-                    for nom_situation in parts_pac_tableau
-                }
-            )
-        )
 
-    nb_cases_tableau = max(
-        longueurs_tableaux
-    )  # nombre de nombre d'enfants dont la situation est décrite par le tableau
+    parts_pac_tableau = {
+        nom_situation: [
+            parts_pac_array_of_objects[nb_enfant][nom_situation]
+            for nb_enfant in range(nb_cases_tableau)
+        ]
+        for nom_situation in situations_familiales
+    }
+
     nb_enfants_tableau = nb_cases_tableau - 1  # car le zéro est décrit dans le tableau
     parts_supp_cp = calcul_nb_parts["nombre_de_parts_charge_partagee"]
     for nb_cp in [
@@ -241,12 +240,15 @@ def generate_nbptr_class(
 
 dicorefnbptr = {
     "calcul_nombre_parts": {
-        "parts_selon_nombre_personnes_a_charge": {  # Contenu du tableau, 4  cas distincts
-            "veuf": [1, 2.5, 3, 4, 5, 6, 7],
-            "maries_ou_pacses": [2, 2.5, 3, 4, 5, 6, 7],
-            "celibataire": [1, 1.5, 2, 3, 4, 5, 6],
-            "divorce": [1, 1.5, 2, 3, 4, 5, 6],
-        },
+        "parts_selon_nombre_personnes_a_charge": [
+            {"veuf": 1, "maries_ou_pacses": 2, "celibataire": 1, "divorce": 1},
+            {"veuf": 2.5, "maries_ou_pacses": 2.5, "celibataire": 1.5, "divorce": 1.5},
+            {"veuf": 3, "maries_ou_pacses": 3, "celibataire": 2, "divorce": 2},
+            {"veuf": 4, "maries_ou_pacses": 4, "celibataire": 3, "divorce": 3},
+            {"veuf": 5, "maries_ou_pacses": 5, "celibataire": 4, "divorce": 4},
+            {"veuf": 6, "maries_ou_pacses": 6, "celibataire": 5, "divorce": 5},
+            {"veuf": 7, "maries_ou_pacses": 7, "celibataire": 6, "divorce": 6},
+        ],
         "parts_par_pac_au_dela": 1,  # LE "Et ainsi de suite..."
         "nombre_de_parts_charge_partagee": {  # On a maintenant 12 cas différents en fonction du nobre d'enfants.
             "zero_charge_principale": {"deux_premiers": 0.25, "suivants": 0.5},
