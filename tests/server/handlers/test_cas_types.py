@@ -74,3 +74,102 @@ def test_calculate_compare_weights(client, payload, headers):
         assert set(actual["res_brut"]["wprm"].keys()) == set(
             actual["res_brut"][var_in_res_brut].keys()
         )
+
+
+def test_calculate_compare_success(client, headers):
+    payload2 = {
+        "reforme": {
+            "impot_revenu": {
+                "bareme": {
+                    "seuils": [10064, 25659, 73369, 157806],
+                    "taux": [0.11, 0.3, 0.41, 0.45],
+                },
+                "decote": {"seuil_celib": 777, "seuil_couple": 1286, "taux": 0.4525},
+                "plafond_qf": {
+                    "abat_dom": {
+                        "plaf_GuadMarReu": 2450,
+                        "plaf_GuyMay": 4050,
+                        "taux_GuadMarReu": 0.3,
+                        "taux_GuyMay": 0.4,
+                    },
+                    "celib": 936,
+                    "celib_enf": 3697,
+                    "maries_ou_pacses": 1567,
+                    "reduc_postplafond": 1562,
+                    "reduc_postplafond_veuf": 1745,
+                    "reduction_ss_condition_revenus": {
+                        "seuil1": 18984,
+                        "seuil2": 21036,
+                        "seuil_maj_enf": 3797,
+                        "taux": 0,
+                    },
+                },
+                "calcul_nombre_parts": {
+                    "parts_selon_nombre_personnes_a_charge": {  # Contenu du tableau, 4  cas distincts
+                        "veuf": [1, 2.5, 3, 4, 5, 6, 7],
+                        "maries_ou_pacses": [2, 2.5, 3, 4, 5, 6, 7],
+                        "celibataire": [1, 1.5, 2, 3, 4, 5, 6],
+                        "divorce": [1, 1.5, 2, 3, 4, 5, 6],
+                    },
+                    "parts_par_pac_au_dela": 1,  # LE "Et ainsi de suite..."
+                    "nombre_de_parts_charge_partagee": {  # On a maintenant 12 cas différents en fonction du nobre d'enfants.
+                        "zero_charge_principale": {
+                            "deux_premiers": 0.25,
+                            "suivants": 0.5,
+                        },
+                        "un_charge_principale": {"premier": 0.25, "suivants": 0.5},
+                        "deux_ou_plus_charge_principale": {"suivants": 0.5},
+                    },
+                    "bonus_parent_isole": {
+                        "au_moins_un_charge_principale": 0.5,
+                        "zero_principal_un_partage": 0.25,
+                        "zero_principal_deux_ou_plus_partages": 0.5,
+                    },
+                },
+            }
+        }
+    }
+    # Vérifie que les cas types des résultats apparaissent tous dans tous les champs
+    response_function = partial(client.post, "calculate/compare", headers=headers)
+    response = response_function(data=json.dumps(payload2))
+    assert response.status_code == 201
+
+
+def test_calculate_compare_lexception(client, headers):
+    requete = {
+        "reforme": {
+            "impot_revenu": {
+                "bareme": {
+                    "seuils": [10064, 25659, 73369, 157806],
+                    "taux": [0.11, 0.3, 0.41, 0.45],
+                },
+                "decote": {"seuil_celib": 777, "seuil_couple": 1286, "taux": 0.4525},
+                "plafond_qf": {
+                    "abat_dom": {
+                        "plaf_GuadMarReu": 2450,
+                        "plaf_GuyMay": 4050,
+                        "taux_GuadMarReu": 0.3,
+                        "taux_GuyMay": 0.4,
+                    },
+                    "celib": 936,
+                    "celib_enf": 3697,
+                    "maries_ou_pacses": 1567,
+                    "reduc_postplafond": 1562,
+                    "reduc_postplafond_veuf": 1745,
+                    "reduction_ss_condition_revenus": {
+                        "seuil1": 18984,
+                        "seuil2": 21036,
+                        "seuil_maj_enf": 3797,
+                        "taux": 0,
+                    },
+                },
+                "calcul_nombre_parts": {"nimportequoi": "salut"},
+            }
+        }
+    }
+    response_function = partial(client.post, "calculate/compare", headers=headers)
+    response = response_function(data=json.dumps(requete))
+    assert response.status_code == 200
+    assert json.loads(response.data) == {
+        "Error": "Threw an Exception : the field parts_selon_nombre_personnes_a_charge is missing from 'calcul_nombre_parts'. You can refer to the README to check valid format."
+    }
