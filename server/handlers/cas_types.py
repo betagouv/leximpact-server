@@ -9,6 +9,7 @@ from flask import Response
 
 from Simulation_engine.lexception import LexCeption
 
+
 def error_as_dict(errormessage):
     return {"Error": errormessage}
 

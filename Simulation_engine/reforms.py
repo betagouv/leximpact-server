@@ -30,7 +30,11 @@ def generate_nbptr_class(
         "nombre_de_parts_charge_partagee",
     ]:
         if nom_rubrique not in calcul_nb_parts:
-            raise LexCeption("the field {} is missing from 'calcul_nombre_parts'. You can refer to the README to check valid format.".format(nom_rubrique))
+            raise LexCeption(
+                "the field {} is missing from 'calcul_nombre_parts'. You can refer to the README to check valid format.".format(
+                    nom_rubrique
+                )
+            )
     parts_pac_tableau = calcul_nb_parts["parts_selon_nombre_personnes_a_charge"]
     longueurs_tableaux = []
     for nom_situation in ["veuf", "maries_ou_pacses", "celibataire", "divorce"]:
@@ -48,6 +52,7 @@ def generate_nbptr_class(
         "deux_ou_plus_charge_principale",
     ]:
         assert nb_cp in parts_supp_cp
+
     bonus_isole = calcul_nb_parts["bonus_parent_isole"]
 
     class nbptr(Variable):
