@@ -23,6 +23,8 @@ from Simulation_engine.reforms import (  # type: ignore
     reduction_ss_condition_revenus,
 )
 
+from numpy import array_equal
+
 TBS = lru_cache()(FranceTaxBenefitSystem)
 
 
@@ -133,14 +135,14 @@ def test_reduction_ss_condition_revenus(parameters, instant, period, mocker):
 
 
 @fixture
-def reform_config_2019():
+def reform_config_base_2020():
     return {
         "impot_revenu": {
             "bareme": {
-                "seuils": [0, 9964, 27159, 73779, 156244],
-                "taux": [0, 0.14, 0.30, 0.41, 0.45],
+                "seuils": [0, 10064, 25659, 73369, 157806],
+                "taux": [0, 0.11, 0.30, 0.41, 0.45],
             },
-            "decote": {"seuil_celib": 1196, "seuil_couple": 1970, "taux": 0.75},
+            "decote": {"seuil_celib": 777, "seuil_couple": 1286, "taux": 0.4525},
             "plafond_qf": {
                 "abat_dom": {
                     "taux_GuadMarReu": 0.3,
@@ -148,23 +150,50 @@ def reform_config_2019():
                     "taux_GuyMay": 0.4,
                     "plaf_GuyMay": 4050,
                 },
-                "maries_ou_pacses": 1551,
-                "celib_enf": 3660,
-                "celib": 927,
-                "reduc_postplafond": 1547,
-                "reduc_postplafond_veuf": 1728,
-                "reduction_ss_condition_revenus": {
-                    "seuil_maj_enf": 3797,
-                    "seuil1": 18985,
-                    "seuil2": 21037,
-                    "taux": 0.20,
-                },
+                "maries_ou_pacses": 1567,
+                "celib_enf": 3697,
+                "celib": 936,
+                "reduc_postplafond": 1562,
+                "reduc_postplafond_veuf": 1745,
             },
         }
     }
 
 
-def test_veuf_deux_enfants(reform_config_2019):
+@fixture
+def nbptr_parametres_par_defaut():
+    return {
+        "calcul_nombre_parts": {
+            "parts_selon_nombre_personnes_a_charge": [
+                {"veuf": 1, "maries_ou_pacses": 2, "celibataire": 1, "divorce": 1},
+                {
+                    "veuf": 2.5,
+                    "maries_ou_pacses": 2.5,
+                    "celibataire": 1.5,
+                    "divorce": 1.5,
+                },
+                {"veuf": 3, "maries_ou_pacses": 3, "celibataire": 2, "divorce": 2},
+                {"veuf": 4, "maries_ou_pacses": 4, "celibataire": 3, "divorce": 3},
+                {"veuf": 5, "maries_ou_pacses": 5, "celibataire": 4, "divorce": 4},
+                {"veuf": 6, "maries_ou_pacses": 6, "celibataire": 5, "divorce": 5},
+                {"veuf": 7, "maries_ou_pacses": 7, "celibataire": 6, "divorce": 6},
+            ],
+            "parts_par_pac_au_dela": 1,  # LE "Et ainsi de suite..."
+            "nombre_de_parts_charge_partagee": {  # On a maintenant 12 cas différents en fonction du nobre d'enfants.
+                "zero_charge_principale": {"deux_premiers": 0.25, "suivants": 0.5},
+                "un_charge_principale": {"premier": 0.25, "suivants": 0.5},
+                "deux_ou_plus_charge_principale": {"suivants": 0.5},
+            },
+            "bonus_parent_isole": {
+                "au_moins_un_charge_principale": 0.5,
+                "zero_principal_un_partage": 0.25,
+                "zero_principal_deux_ou_plus_partages": 0.5,
+            },
+        }
+    }
+
+
+def test_veuf_deux_enfants(reform_config_base_2020):
     # données
     veuf = {
         "nb_anciens_combattants": 0,
@@ -184,7 +213,7 @@ def test_veuf_deux_enfants(reform_config_2019):
 
     # loi française + réforme IR
     tbs_reforme_impot_revenu = IncomeTaxReform(
-        FranceTaxBenefitSystem(), reform_config_2019, period
+        FranceTaxBenefitSystem(), reform_config_base_2020, period
     )
     built_simulation, dict_data_by_entity = simulation(
         period, data, tbs_reforme_impot_revenu
@@ -192,3 +221,54 @@ def test_veuf_deux_enfants(reform_config_2019):
 
     nbptr = built_simulation.calculate("nbptr", period)
     assert nbptr == [3]
+
+
+def test_homemade_nbptr_function(reform_config_base_2020, nbptr_parametres_par_defaut):
+    # Verifie que les resultats de nbptr et irpp sont les mêmes avec la fonction par defaut
+    all_cas_types_to_test = []
+    period = "2020"
+    for situf in ["veuf", "marie", "celib", "divorce"]:
+        for nbpac in range(3):
+            for parentisole in [0, 1]:
+                for charge_part in range(min(nbpac, 2) + 1):
+                    for un_inval in [0, 1]:
+                        dicobase = {
+                            "nb_anciens_combattants": 0,
+                            "nb_decl_invalides": 0,
+                            "nb_decl_parent_isole": 0,
+                            "nb_decl_veuf": 0,
+                            "nb_pac_charge_partagee": 0,
+                            "nb_pac_invalides": 0,
+                            "nombre_declarants": 0,
+                            "nombre_declarants_retraites": 0,
+                            "nombre_personnes_a_charge": 0,
+                            "outre_mer": 0,
+                            "revenu": 120000,
+                        }
+                        dicobase["nombre_declarants"] = 1 if situf != "marie" else 2
+                        dicobase["nombre_personnes_a_charge"] = nbpac
+                        dicobase["nb_decl_parent_isole"] = parentisole
+                        dicobase["nb_pac_charge_partagee"] = charge_part
+                        dicobase["nb_decl_invalides"] = un_inval
+                        all_cas_types_to_test += [dicobase]
+    data = dataframe_from_cas_types_description(all_cas_types_to_test)
+    tbs_reforme_sans_nbptr = IncomeTaxReform(
+        FranceTaxBenefitSystem(), reform_config_base_2020, period
+    )
+    tbs_reforme_avec_nbptr = IncomeTaxReform(
+        FranceTaxBenefitSystem(),
+        {**reform_config_base_2020, **nbptr_parametres_par_defaut},
+        period,
+    )
+
+    sim_sans_nbptr, _ = simulation(period, data, tbs_reforme_sans_nbptr)
+    sim_avec_nbptr, _ = simulation(period, data, tbs_reforme_avec_nbptr)
+
+    assert array_equal(
+        sim_sans_nbptr.calculate("nbptr", period),
+        sim_avec_nbptr.calculate("nbptr", period),
+    )
+    assert array_equal(
+        sim_sans_nbptr.calculate("irpp", period),
+        sim_avec_nbptr.calculate("irpp", period),
+    )
