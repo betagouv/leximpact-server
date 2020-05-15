@@ -135,6 +135,41 @@ def test_reduction_ss_condition_revenus(parameters, instant, period, mocker):
 
 
 @fixture
+def various_cas_types():
+    """
+        Génère plein de cas types différents utilisés pour les tests de cohérence.
+    """
+    all_cas_types_to_test = []
+    for situf in ["veuf", "marie", "celib", "divorce"]:
+        for nbpac in range(3):
+            for parentisole in (
+                [0, 1] if nbpac else [0]
+            ):  # Dans notre paramétrisation des cas-types, le "parent"
+                # isolé de la caseT est le seul impacté, puisqu'on ne modifie que l'article 194
+                # et non le 195 qui décrit les parents isolés de la caseT (i.e. plus d'enfant à charge)
+                for charge_part in range(min(nbpac, 2) + 1):
+                    dicobase = {
+                        "nb_anciens_combattants": 0,
+                        "nb_decl_invalides": 0,
+                        "nb_decl_parent_isole": 0,
+                        "nb_decl_veuf": 0,
+                        "nb_pac_charge_partagee": 0,
+                        "nb_pac_invalides": 0,
+                        "nombre_declarants": 0,
+                        "nombre_declarants_retraites": 0,
+                        "nombre_personnes_a_charge": 0,
+                        "outre_mer": 0,
+                        "revenu": 120000,
+                    }
+                    dicobase["nombre_declarants"] = 1 if situf != "marie" else 2
+                    dicobase["nombre_personnes_a_charge"] = nbpac
+                    dicobase["nb_decl_parent_isole"] = parentisole
+                    dicobase["nb_pac_charge_partagee"] = charge_part
+                    all_cas_types_to_test += [dicobase]
+    return all_cas_types_to_test
+
+
+@fixture
 def reform_config_base_2020():
     return {
         "impot_revenu": {
@@ -178,8 +213,8 @@ def nbptr_parametres_par_defaut():
                 {"veuf": 6, "maries_ou_pacses": 6, "celibataire": 5, "divorce": 5},
                 {"veuf": 7, "maries_ou_pacses": 7, "celibataire": 6, "divorce": 6},
             ],
-            "parts_par_pac_au_dela": 1,  # LE "Et ainsi de suite..."
-            "nombre_de_parts_charge_partagee": {  # On a maintenant 12 cas différents en fonction du nobre d'enfants.
+            "parts_par_pac_au_dela": 1,
+            "nombre_de_parts_charge_partagee": {
                 "zero_charge_principale": {"deux_premiers": 0.25, "suivants": 0.5},
                 "un_charge_principale": {"premier": 0.25, "suivants": 0.5},
                 "deux_ou_plus_charge_principale": {"suivants": 0.5},
@@ -188,6 +223,28 @@ def nbptr_parametres_par_defaut():
                 "au_moins_un_charge_principale": 0.5,
                 "zero_principal_un_partage": 0.25,
                 "zero_principal_deux_ou_plus_partages": 0.5,
+            },
+        }
+    }
+
+
+@fixture
+def nbptr_zero():
+    return {
+        "calcul_nombre_parts": {
+            "parts_selon_nombre_personnes_a_charge": [
+                {"veuf": 0, "maries_ou_pacses": 0, "celibataire": 0, "divorce": 0}
+            ],
+            "parts_par_pac_au_dela": 0,
+            "nombre_de_parts_charge_partagee": {
+                "zero_charge_principale": {"deux_premiers": 0, "suivants": 0},
+                "un_charge_principale": {"premier": 0, "suivants": 0},
+                "deux_ou_plus_charge_principale": {"suivants": 0},
+            },
+            "bonus_parent_isole": {
+                "au_moins_un_charge_principale": 0,
+                "zero_principal_un_partage": 0,
+                "zero_principal_deux_ou_plus_partages": 0,
             },
         }
     }
@@ -223,46 +280,31 @@ def test_veuf_deux_enfants(reform_config_base_2020):
     assert nbptr == [3]
 
 
-def test_homemade_nbptr_function(reform_config_base_2020, nbptr_parametres_par_defaut):
+def test_homemade_nbptr_function(
+    reform_config_base_2020, nbptr_parametres_par_defaut, various_cas_types
+):
     # Verifie que les resultats de nbptr et irpp sont les mêmes avec la fonction par defaut
-    all_cas_types_to_test = []
     period = "2020"
-    for situf in ["veuf", "marie", "celib", "divorce"]:
-        for nbpac in range(3):
-            for parentisole in [0, 1]:
-                for charge_part in range(min(nbpac, 2) + 1):
-                    for un_inval in [0, 1]:
-                        dicobase = {
-                            "nb_anciens_combattants": 0,
-                            "nb_decl_invalides": 0,
-                            "nb_decl_parent_isole": 0,
-                            "nb_decl_veuf": 0,
-                            "nb_pac_charge_partagee": 0,
-                            "nb_pac_invalides": 0,
-                            "nombre_declarants": 0,
-                            "nombre_declarants_retraites": 0,
-                            "nombre_personnes_a_charge": 0,
-                            "outre_mer": 0,
-                            "revenu": 120000,
-                        }
-                        dicobase["nombre_declarants"] = 1 if situf != "marie" else 2
-                        dicobase["nombre_personnes_a_charge"] = nbpac
-                        dicobase["nb_decl_parent_isole"] = parentisole
-                        dicobase["nb_pac_charge_partagee"] = charge_part
-                        dicobase["nb_decl_invalides"] = un_inval
-                        all_cas_types_to_test += [dicobase]
-    data = dataframe_from_cas_types_description(all_cas_types_to_test)
+    data = dataframe_from_cas_types_description(various_cas_types)
     tbs_reforme_sans_nbptr = IncomeTaxReform(
         FranceTaxBenefitSystem(), reform_config_base_2020, period
     )
     tbs_reforme_avec_nbptr = IncomeTaxReform(
         FranceTaxBenefitSystem(),
-        {**reform_config_base_2020, **nbptr_parametres_par_defaut},
+        {
+            "impot_revenu": {
+                **(reform_config_base_2020["impot_revenu"]),
+                **nbptr_parametres_par_defaut,
+            }
+        },
         period,
     )
 
     sim_sans_nbptr, _ = simulation(period, data, tbs_reforme_sans_nbptr)
     sim_avec_nbptr, _ = simulation(period, data, tbs_reforme_avec_nbptr)
+
+    print("sans", sim_sans_nbptr.calculate("nbptr", period))
+    print("avec", sim_avec_nbptr.calculate("nbptr", period))
 
     assert array_equal(
         sim_sans_nbptr.calculate("nbptr", period),
@@ -272,3 +314,21 @@ def test_homemade_nbptr_function(reform_config_base_2020, nbptr_parametres_par_d
         sim_sans_nbptr.calculate("irpp", period),
         sim_avec_nbptr.calculate("irpp", period),
     )
+
+
+def test_zero_nbptr(reform_config_base_2020, nbptr_zero, various_cas_types):
+    # Verifie que les resultats de nbptr sont bien zero pour tout le monde si tous les param
+    # sont à zéro
+    period = "2020"
+    data = dataframe_from_cas_types_description(various_cas_types)
+    tbs_reforme_avec_nbptr = IncomeTaxReform(
+        FranceTaxBenefitSystem(),
+        {"impot_revenu": {**(reform_config_base_2020["impot_revenu"]), **nbptr_zero}},
+        period,
+    )
+
+    sim_avec_nbptr, _ = simulation(period, data, tbs_reforme_avec_nbptr)
+
+    resultats_nbptr = sim_avec_nbptr.calculate("nbptr", period)
+
+    assert not resultats_nbptr.any()
