@@ -603,13 +603,19 @@ def foyertodictcastype(idfoy, data=None):
     )
     nbveuf = len(data[(data["idfoy"] == idfoy) & (data["statut_marital"] == 4)])
     nb_decl_invalides = (
-        len(data[(data["idfoy"] == idfoy) & (data["quifoy"] <= 1) & (data["invalide"])])
-        if "invalide" in data
+        len(
+            data[
+                (data["idfoy"] == idfoy) & (data["quifoy"] <= 1) & (data["invalidite"])
+            ]
+        )
+        if "invalidite" in data
         else 0
     )
     nb_pac_invalides = (
-        len(data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1) & (data["invalide"])])
-        if "invalide" in data
+        len(
+            data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1) & (data["invalidite"])]
+        )
+        if "invalidite" in data
         else 0
     )
     nb_anciens_combattants = (
@@ -716,7 +722,9 @@ def dataframe_from_cas_types_description(descriptions):
         "residence_fiscale_guyane",
         "quifoyof",
         "quifamof",
+        "caseF",
         "caseL",
+        "caseP",
         "caseT",
         "caseW",
         "garde_alternee",
@@ -856,11 +864,18 @@ def dataframe_from_cas_types_description(descriptions):
             ] * nbd + [0] * nbc
             dres["retraite_brute"] += [0] * (nbd + nbc)
         indexfoyer += 1
-
+        # Finalement, invalides vont :
+        # Le premier du ménage compte pour caseP
+        # Le deuxième adulte compte pour caseF
+        # En plus de ça, on renseigne par individu la colonne "invalidite"
+        # parce qu'OF calcule bien à partir de cette colonne pour les PAC
+        # pas pour les déclarants
         dres["invalidite"] += [
             1 if id_declarant < ct["nb_decl_invalides"] else 0
             for id_declarant in range(nbd)
         ] + [1 if id_pac < ct["nb_pac_invalides"] else 0 for id_pac in range(nbc)]
+        dres["caseP"] += [1 if ct["nb_decl_invalides"] else 0] * (nbd + nbc)
+        dres["caseF"] += [1 if ct["nb_decl_invalides"] > 1 else 0] * (nbd + nbc)
         # TODO : be able to choose if garde_alternee personnes_a_charges are also the ones with invalidite or not
         dres["garde_alternee"] += [0] * nbd + [
             1 if id_pac < ct["nb_pac_charge_partagee"] else 0 for id_pac in range(nbc)
