@@ -279,6 +279,7 @@ def test_veuf_deux_enfants(reform_config_base_2020):
     nbptr = built_simulation.calculate("nbptr", period)
     assert nbptr == [3]
 
+
 def test_deux_adultes_dont_invalide_deux_enfants(reform_config_base_2020):
     # données
     foyer = {
@@ -307,6 +308,7 @@ def test_deux_adultes_dont_invalide_deux_enfants(reform_config_base_2020):
 
     nbptr = built_simulation.calculate("nbptr", period)
     assert nbptr == [3.5]
+
 
 def test_deux_adultes_invalides_deux_enfants(reform_config_base_2020):
     # données
@@ -337,6 +339,7 @@ def test_deux_adultes_invalides_deux_enfants(reform_config_base_2020):
     nbptr = built_simulation.calculate("nbptr", period)
     assert nbptr == [4]
 
+
 def test_deux_adultes_deux_enfants_dont_invalide(reform_config_base_2020):
     # données
     foyer = {
@@ -365,6 +368,7 @@ def test_deux_adultes_deux_enfants_dont_invalide(reform_config_base_2020):
 
     nbptr = built_simulation.calculate("nbptr", period)
     assert nbptr == [3.5]
+
 
 def test_deux_adultes_deux_enfants_charge_partagee(reform_config_base_2020):
     # données
@@ -395,6 +399,7 @@ def test_deux_adultes_deux_enfants_charge_partagee(reform_config_base_2020):
     nbptr = built_simulation.calculate("nbptr", period)
     assert nbptr == [2.5]
 
+
 def test_deux_adultes_ancien_combattants_deux_enfants(reform_config_base_2020):
     # données
     foyer = {
@@ -423,6 +428,7 @@ def test_deux_adultes_ancien_combattants_deux_enfants(reform_config_base_2020):
 
     nbptr = built_simulation.calculate("nbptr", period)
     assert nbptr == [3.5]
+
 
 def test_homemade_nbptr_function(
     reform_config_base_2020, nbptr_parametres_par_defaut, various_cas_types
