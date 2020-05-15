@@ -150,8 +150,6 @@ def generate_nbptr_class(
             celib = statut_marital == TypesStatutMarital.celibataire
             divorce = statut_marital == TypesStatutMarital.divorce
             nb_pac = nb_pac.astype(int)
-            print("nbpac", nb_pac)
-            print("nbH", nbH)
             enf3 = (
                 celib * nb_enfants_principal("celibataire")(nb_pac)
                 + divorce * nb_enfants_principal("divorce")(nb_pac)
