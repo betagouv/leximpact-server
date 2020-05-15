@@ -279,6 +279,150 @@ def test_veuf_deux_enfants(reform_config_base_2020):
     nbptr = built_simulation.calculate("nbptr", period)
     assert nbptr == [3]
 
+def test_deux_adultes_dont_invalide_deux_enfants(reform_config_base_2020):
+    # données
+    foyer = {
+        "nb_anciens_combattants": 0,
+        "nb_decl_invalides": 1,
+        "nb_decl_parent_isole": 0,
+        "nb_decl_veuf": 0,
+        "nb_pac_charge_partagee": 0,
+        "nb_pac_invalides": 0,
+        "nombre_declarants": 2,
+        "nombre_declarants_retraites": 0,
+        "nombre_personnes_a_charge": 2,
+        "outre_mer": 0,
+        "revenu": 120000,
+    }
+    data = dataframe_from_cas_types_description([foyer])
+    period = "2020"
+
+    # loi française + réforme IR
+    tbs_reforme_impot_revenu = IncomeTaxReform(
+        FranceTaxBenefitSystem(), reform_config_base_2020, period
+    )
+    built_simulation, dict_data_by_entity = simulation(
+        period, data, tbs_reforme_impot_revenu
+    )
+
+    nbptr = built_simulation.calculate("nbptr", period)
+    assert nbptr == [3.5]
+
+def test_deux_adultes_invalides_deux_enfants(reform_config_base_2020):
+    # données
+    foyer = {
+        "nb_anciens_combattants": 0,
+        "nb_decl_invalides": 2,
+        "nb_decl_parent_isole": 0,
+        "nb_decl_veuf": 0,
+        "nb_pac_charge_partagee": 0,
+        "nb_pac_invalides": 0,
+        "nombre_declarants": 2,
+        "nombre_declarants_retraites": 0,
+        "nombre_personnes_a_charge": 2,
+        "outre_mer": 0,
+        "revenu": 120000,
+    }
+    data = dataframe_from_cas_types_description([foyer])
+    period = "2020"
+
+    # loi française + réforme IR
+    tbs_reforme_impot_revenu = IncomeTaxReform(
+        FranceTaxBenefitSystem(), reform_config_base_2020, period
+    )
+    built_simulation, dict_data_by_entity = simulation(
+        period, data, tbs_reforme_impot_revenu
+    )
+
+    nbptr = built_simulation.calculate("nbptr", period)
+    assert nbptr == [4]
+
+def test_deux_adultes_deux_enfants_dont_invalide(reform_config_base_2020):
+    # données
+    foyer = {
+        "nb_anciens_combattants": 0,
+        "nb_decl_invalides": 0,
+        "nb_decl_parent_isole": 0,
+        "nb_decl_veuf": 0,
+        "nb_pac_charge_partagee": 0,
+        "nb_pac_invalides": 1,
+        "nombre_declarants": 2,
+        "nombre_declarants_retraites": 0,
+        "nombre_personnes_a_charge": 2,
+        "outre_mer": 0,
+        "revenu": 120000,
+    }
+    data = dataframe_from_cas_types_description([foyer])
+    period = "2020"
+
+    # loi française + réforme IR
+    tbs_reforme_impot_revenu = IncomeTaxReform(
+        FranceTaxBenefitSystem(), reform_config_base_2020, period
+    )
+    built_simulation, dict_data_by_entity = simulation(
+        period, data, tbs_reforme_impot_revenu
+    )
+
+    nbptr = built_simulation.calculate("nbptr", period)
+    assert nbptr == [3.5]
+
+def test_deux_adultes_deux_enfants_charge_partagee(reform_config_base_2020):
+    # données
+    foyer = {
+        "nb_anciens_combattants": 0,
+        "nb_decl_invalides": 0,
+        "nb_decl_parent_isole": 0,
+        "nb_decl_veuf": 0,
+        "nb_pac_charge_partagee": 2,
+        "nb_pac_invalides": 0,
+        "nombre_declarants": 2,
+        "nombre_declarants_retraites": 0,
+        "nombre_personnes_a_charge": 2,
+        "outre_mer": 0,
+        "revenu": 120000,
+    }
+    data = dataframe_from_cas_types_description([foyer])
+    period = "2020"
+
+    # loi française + réforme IR
+    tbs_reforme_impot_revenu = IncomeTaxReform(
+        FranceTaxBenefitSystem(), reform_config_base_2020, period
+    )
+    built_simulation, dict_data_by_entity = simulation(
+        period, data, tbs_reforme_impot_revenu
+    )
+
+    nbptr = built_simulation.calculate("nbptr", period)
+    assert nbptr == [2.5]
+
+def test_deux_adultes_ancien_combattants_deux_enfants(reform_config_base_2020):
+    # données
+    foyer = {
+        "nb_anciens_combattants": 2,
+        "nb_decl_invalides": 0,
+        "nb_decl_parent_isole": 0,
+        "nb_decl_veuf": 0,
+        "nb_pac_charge_partagee": 0,
+        "nb_pac_invalides": 0,
+        "nombre_declarants": 2,
+        "nombre_declarants_retraites": 0,
+        "nombre_personnes_a_charge": 2,
+        "outre_mer": 0,
+        "revenu": 120000,
+    }
+    data = dataframe_from_cas_types_description([foyer])
+    period = "2020"
+
+    # loi française + réforme IR
+    tbs_reforme_impot_revenu = IncomeTaxReform(
+        FranceTaxBenefitSystem(), reform_config_base_2020, period
+    )
+    built_simulation, dict_data_by_entity = simulation(
+        period, data, tbs_reforme_impot_revenu
+    )
+
+    nbptr = built_simulation.calculate("nbptr", period)
+    assert nbptr == [3.5]
 
 def test_homemade_nbptr_function(
     reform_config_base_2020, nbptr_parametres_par_defaut, various_cas_types
