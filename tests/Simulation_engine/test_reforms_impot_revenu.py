@@ -23,7 +23,7 @@ from Simulation_engine.reforms import (  # type: ignore
     reduction_ss_condition_revenus,
 )
 
-from numpy import array_equal
+from numpy import array_equal  # type: ignore
 
 TBS = lru_cache()(FranceTaxBenefitSystem)
 
