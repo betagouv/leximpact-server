@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 import os
 import re
 import pandas  # type: ignore
+import logging
 
 from openfisca_core.memory_config import MemoryConfig  # type: ignore
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
@@ -14,7 +15,6 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env")
 
 # Config
-
 data_path = os.getenv("DATA_PATH")  # type: Optional[str]
 nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional[str]
 if nom_table_resultats_base is None:
@@ -39,7 +39,7 @@ reforme_adresse = os.getenv("PLF_PATH")
 if reforme_adresse is not None:
     regex_secu = re.compile(r"^[^\s;]*$")
     if regex_secu.match(reforme_adresse) is None:
-        print(
+        logging.error(
             "Votre variable d'environnement PLF_PATH contient des ; ou des caractères vides. Elle n'a pas le droit. Nommez vos fichiers normalement s'il vous plaît. Bisous."
         )
         raise ImportError
@@ -51,14 +51,13 @@ if reforme_adresse is not None:
     ] = {}  # Declare une valeur par défaut, la valeur arrivant par des moyens détournés que le linter ne peut voir
     try:
         exec("from {} import {} as reforme_PLF".format(origine_import, nom_dic_import))
-    except (ImportError, ModuleNotFoundError, SyntaxError):
-        print(
+    except (ImportError, ModuleNotFoundError, SyntaxError) as e:
+        logging.error(
             "Si la variable PLF_PATH est renseignée, elle doit contenir un chemin valide vers un dictionnaire présentant la réforme."
         )
-        raise
+        raise e
     reformes_par_defaut["plf"] = reforme_PLF
 
-print(reformes_par_defaut)
 # Année sur la législation de laquelle les calculs seront menés.
 annee_de_calcul = os.getenv("YEAR_COMPUTATION")
 
@@ -487,12 +486,12 @@ DUMMY_DATA = (
 )
 
 # Initialisation des données utilisées pour le calcul sur la population
-print(
-    "Dummy Data loaded",
-    len(DUMMY_DATA),
-    "lines",
-    len(DUMMY_DATA["idfoy"].unique()),
-    "foyers fiscaux",
+logging.info(
+    "Dummy Data loaded "
+    + str(len(DUMMY_DATA))
+    + " lines "
+    + str(len(DUMMY_DATA["idfoy"].unique()))
+    + " foyers fiscaux"
 )
 # Resultats sur la population du code existant et, lorsqu'il y en a un de configuré, du PLF.
 # Ne change jamais donc pas besoin de fatiguer l'ordi à calculer : ils sont mémorisés en base de données.
@@ -502,11 +501,12 @@ resultats_de_base = from_postgres(nom_table_resultats_base)
 if (
     resultats_de_base is not None
 ):  # Si la table n'existe pas dans le schéma SQL (par exemple si la variable d'environnement comporte une erreur, ou si on n'a pas mis les données dans la base SQL du serveur), ce sera None et on les calcule nous même
-    print(
-        "table resultats de base used :",
-        nom_table_resultats_base,
-        len(resultats_de_base),
-        "rows",
+    logging.info(
+        "table resultats de base used : "
+        + nom_table_resultats_base
+        + " "
+        + str(len(resultats_de_base))
+        + " rows"
     )
     resultats_de_base = resultats_de_base.set_index("idfoy").sort_index()
 else:

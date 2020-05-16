@@ -1,6 +1,7 @@
 from mailjet_rest import Client  # type: ignore
 from os import getenv
 from dotenv import load_dotenv
+import logging
 
 load_dotenv(dotenv_path=".env")
 HOST = "in-v3.mailjet.com"
@@ -30,5 +31,6 @@ def send_mail(
         ]
     }
     result = mailjet.send.create(data=data)
+    logging.info("email sent to {}".format(recipient))
     if result.status_code != 200:
-        print("Error in sending email : ", result.json())
+        logging.error("error in sending email : {}".format(result.json()))
