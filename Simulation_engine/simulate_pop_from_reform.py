@@ -15,14 +15,14 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env")
 
 # Config
-data_path = os.getenv("DATA_PATH")  # type: Optional[str]
+data_path = os.getenv("POPULATION_TABLE_PATH")  # type: Optional[str]
 nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional[str]
 if nom_table_resultats_base is None:
     nom_table_resultats_base = "base_results"
 
 version_beta_sans_simu_pop = (
     data_path is None
-)  # Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
+)  # Si POPULATION_TABLE_PATH n'est pas renseigné dans .env, on lance sans simpop
 
 #  PARTIE CONFIGURABLE PAR L'UTILISATEUR
 
@@ -290,11 +290,11 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
 
         # TODO : interpolate quantiles instead of doing the granular approach
         # This is the only TODO part in this code, I highly doubt it's the most pressing matter
-        if os.getenv("EMPIRIC_VALUE") is not None:
+        if os.getenv("RECETTES_ETAT_EURO") is not None:
             # empiric = valeur de base sur laquelle calibrer (pour prendre en compte, par
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
             # prochaine dans le scénario "avant" (i.e. avec le code existant)).
-            empiric = int(os.getenv("EMPIRIC_VALUE"))  # type: ignore
+            empiric = int(os.getenv("RECETTES_ETAT_EURO"))  # type: ignore
             factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
             deciles: Deciles = adjust_deciles(factor, decdiffres)

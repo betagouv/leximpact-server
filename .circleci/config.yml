@@ -9,7 +9,7 @@ jobs:
           JWT_AUDIENCE: Toi
           JWT_ISSUER: Moi
           YEAR_COMPUTATION: "2020"
-          EMPIRIC_VALUE: "66_900_000_000"
+          RECETTES_ETAT_EURO: "66_900_000_000"
 
       - image: postgres:9.6.7
         environment:
