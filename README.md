@@ -288,51 +288,51 @@ En version `1.1.0`, la structure de la réforme est la suivante. Elle reproduit 
                 "taux":0
             }
         },
-        "calcul_nombre_parts": {
-            "parts_selon_nombre_personnes_a_charge": [
+        "calculNombreParts": {
+            "partsSelonNombrePAC": [
                 {
                     "veuf": 1,
-                    "maries_ou_pacses": 2,
+                    "mariesOuPacses": 2,
                     "celibataire": 1,
                     "divorce": 1
                 },
                 {
                     "veuf": 2.5,
-                    "maries_ou_pacses": 2.5,
+                    "mariesOuPacses": 2.5,
                     "celibataire": 1.5,
                     "divorce": 1.5
                 },
                 {
                     "veuf": 3,
-                    "maries_ou_pacses": 3,
+                    "mariesOuPacses": 3,
                     "celibataire": 2,
                     "divorce": 2
                 },
                 {
                     "veuf": 4,
-                    "maries_ou_pacses": 4,
+                    "mariesOuPacses": 4,
                     "celibataire": 3,
                     "divorce": 3
                 }
             ],
-            "parts_par_pac_au_dela": 1,
-            "nombre_de_parts_charge_partagee": {
-                "zero_charge_principale": {
-                    "deux_premiers": 0.25,
+            "partsParPACAuDela": 1,
+            "partsParPACChargePartagee": {
+                "zeroChargePrincipale": {
+                    "deuxPremiers": 0.25,
                     "suivants": 0.5
                 },
-                "un_charge_principale": {
+                "unChargePrincipale": {
                     "premier": 0.25,
                     "suivants": 0.5
                 },
-                "deux_ou_plus_charge_principale": {
+                "deuxOuPlusChargePrincipale": {
                     "suivants": 0.5
                 }
             },
-            "bonus_parent_isole": {
-                "au_moins_un_charge_principale": 0.5,
-                "zero_principal_un_partage": 0.25,
-                "zero_principal_deux_ou_plus_partages": 0.5
+            "bonusParentIsole": {
+                "auMoinsUnChargePrincipale": 0.5,
+                "zeroChargePrincipaleUnPartage": 0.25,
+                "zeroChargeprincipaleDeuxOuPlusPartage": 0.5
             }
         }
     }

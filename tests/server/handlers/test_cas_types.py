@@ -21,7 +21,7 @@ def payload() -> dict:
                         "taux_GuyMay": 0.4,
                         "plaf_GuyMay": 4050,
                     },
-                    "maries_ou_pacses": 1551,
+                    "mariesOuPacses": 1551,
                     "celib_enf": 3660,
                     "celib": 927,
                     "reduc_postplafond": 1547,
@@ -94,7 +94,7 @@ def test_calculate_compare_success(client, headers):
                     },
                     "celib": 936,
                     "celib_enf": 3697,
-                    "maries_ou_pacses": 1567,
+                    "mariesOuPacses": 1567,
                     "reduc_postplafond": 1562,
                     "reduc_postplafond_veuf": 1745,
                     "reduction_ss_condition_revenus": {
@@ -104,64 +104,64 @@ def test_calculate_compare_success(client, headers):
                         "taux": 0,
                     },
                 },
-                "calcul_nombre_parts": {
-                    "parts_selon_nombre_personnes_a_charge": [
+                "calculNombreParts": {
+                    "partsSelonNombrePAC": [
                         {
                             "veuf": 1,
-                            "maries_ou_pacses": 2,
+                            "mariesOuPacses": 2,
                             "celibataire": 1,
                             "divorce": 1,
                         },
                         {
                             "veuf": 2.5,
-                            "maries_ou_pacses": 2.5,
+                            "mariesOuPacses": 2.5,
                             "celibataire": 1.5,
                             "divorce": 1.5,
                         },
                         {
                             "veuf": 3,
-                            "maries_ou_pacses": 3,
+                            "mariesOuPacses": 3,
                             "celibataire": 2,
                             "divorce": 2,
                         },
                         {
                             "veuf": 4,
-                            "maries_ou_pacses": 4,
+                            "mariesOuPacses": 4,
                             "celibataire": 3,
                             "divorce": 3,
                         },
                         {
                             "veuf": 5,
-                            "maries_ou_pacses": 5,
+                            "mariesOuPacses": 5,
                             "celibataire": 4,
                             "divorce": 4,
                         },
                         {
                             "veuf": 6,
-                            "maries_ou_pacses": 6,
+                            "mariesOuPacses": 6,
                             "celibataire": 5,
                             "divorce": 5,
                         },
                         {
                             "veuf": 7,
-                            "maries_ou_pacses": 7,
+                            "mariesOuPacses": 7,
                             "celibataire": 6,
                             "divorce": 6,
                         },
                     ],
-                    "parts_par_pac_au_dela": 1,  # LE "Et ainsi de suite..."
-                    "nombre_de_parts_charge_partagee": {  # On a maintenant 12 cas différents en fonction du nobre d'enfants.
-                        "zero_charge_principale": {
-                            "deux_premiers": 0.25,
+                    "partsParPACAuDela": 1,  # LE "Et ainsi de suite..."
+                    "partsParPACChargePartagee": {  # On a maintenant 12 cas différents en fonction du nobre d'enfants.
+                        "zeroChargePrincipale": {
+                            "deuxPremiers": 0.25,
                             "suivants": 0.5,
                         },
-                        "un_charge_principale": {"premier": 0.25, "suivants": 0.5},
-                        "deux_ou_plus_charge_principale": {"suivants": 0.5},
+                        "unChargePrincipale": {"premier": 0.25, "suivants": 0.5},
+                        "deuxOuPlusChargePrincipale": {"suivants": 0.5},
                     },
-                    "bonus_parent_isole": {
-                        "au_moins_un_charge_principale": 0.5,
-                        "zero_principal_un_partage": 0.25,
-                        "zero_principal_deux_ou_plus_partages": 0.5,
+                    "bonusParentIsole": {
+                        "auMoinsUnChargePrincipale": 0.5,
+                        "zeroChargePrincipaleUnPartage": 0.25,
+                        "zeroChargeprincipaleDeuxOuPlusPartage": 0.5,
                     },
                 },
             }
@@ -191,7 +191,7 @@ def test_calculate_compare_lexception(client, headers):
                     },
                     "celib": 936,
                     "celib_enf": 3697,
-                    "maries_ou_pacses": 1567,
+                    "mariesOuPacses": 1567,
                     "reduc_postplafond": 1562,
                     "reduc_postplafond_veuf": 1745,
                     "reduction_ss_condition_revenus": {
@@ -201,7 +201,7 @@ def test_calculate_compare_lexception(client, headers):
                         "taux": 0,
                     },
                 },
-                "calcul_nombre_parts": {"nimportequoi": "salut"},
+                "calculNombreParts": {"nimportequoi": "salut"},
             }
         }
     }
@@ -209,5 +209,5 @@ def test_calculate_compare_lexception(client, headers):
     response = response_function(data=json.dumps(requete))
     assert response.status_code == 400
     assert json.loads(response.data) == {
-        "Error": "Error in request : the field 'parts_selon_nombre_personnes_a_charge' is missing from 'calcul_nombre_parts'. You can refer to the README to check valid format."
+        "Error": "Error in request : the field 'partsSelonNombrePAC' is missing from 'calculNombreParts'. You can refer to the README to check valid format."
     }

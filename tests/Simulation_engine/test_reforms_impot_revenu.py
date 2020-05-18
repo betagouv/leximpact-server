@@ -198,31 +198,31 @@ def reform_config_base_2020():
 @fixture
 def nbptr_parametres_par_defaut():
     return {
-        "calcul_nombre_parts": {
-            "parts_selon_nombre_personnes_a_charge": [
-                {"veuf": 1, "maries_ou_pacses": 2, "celibataire": 1, "divorce": 1},
+        "calculNombreParts": {
+            "partsSelonNombrePAC": [
+                {"veuf": 1, "mariesOuPacses": 2, "celibataire": 1, "divorce": 1},
                 {
                     "veuf": 2.5,
-                    "maries_ou_pacses": 2.5,
+                    "mariesOuPacses": 2.5,
                     "celibataire": 1.5,
                     "divorce": 1.5,
                 },
-                {"veuf": 3, "maries_ou_pacses": 3, "celibataire": 2, "divorce": 2},
-                {"veuf": 4, "maries_ou_pacses": 4, "celibataire": 3, "divorce": 3},
-                {"veuf": 5, "maries_ou_pacses": 5, "celibataire": 4, "divorce": 4},
-                {"veuf": 6, "maries_ou_pacses": 6, "celibataire": 5, "divorce": 5},
-                {"veuf": 7, "maries_ou_pacses": 7, "celibataire": 6, "divorce": 6},
+                {"veuf": 3, "mariesOuPacses": 3, "celibataire": 2, "divorce": 2},
+                {"veuf": 4, "mariesOuPacses": 4, "celibataire": 3, "divorce": 3},
+                {"veuf": 5, "mariesOuPacses": 5, "celibataire": 4, "divorce": 4},
+                {"veuf": 6, "mariesOuPacses": 6, "celibataire": 5, "divorce": 5},
+                {"veuf": 7, "mariesOuPacses": 7, "celibataire": 6, "divorce": 6},
             ],
-            "parts_par_pac_au_dela": 1,
-            "nombre_de_parts_charge_partagee": {
-                "zero_charge_principale": {"deux_premiers": 0.25, "suivants": 0.5},
-                "un_charge_principale": {"premier": 0.25, "suivants": 0.5},
-                "deux_ou_plus_charge_principale": {"suivants": 0.5},
+            "partsParPACAuDela": 1,
+            "partsParPACChargePartagee": {
+                "zeroChargePrincipale": {"deuxPremiers": 0.25, "suivants": 0.5},
+                "unChargePrincipale": {"premier": 0.25, "suivants": 0.5},
+                "deuxOuPlusChargePrincipale": {"suivants": 0.5},
             },
-            "bonus_parent_isole": {
-                "au_moins_un_charge_principale": 0.5,
-                "zero_principal_un_partage": 0.25,
-                "zero_principal_deux_ou_plus_partages": 0.5,
+            "bonusParentIsole": {
+                "auMoinsUnChargePrincipale": 0.5,
+                "zeroChargePrincipaleUnPartage": 0.25,
+                "zeroChargeprincipaleDeuxOuPlusPartage": 0.5,
             },
         }
     }
@@ -231,20 +231,20 @@ def nbptr_parametres_par_defaut():
 @fixture
 def nbptr_zero():
     return {
-        "calcul_nombre_parts": {
-            "parts_selon_nombre_personnes_a_charge": [
-                {"veuf": 0, "maries_ou_pacses": 0, "celibataire": 0, "divorce": 0}
+        "calculNombreParts": {
+            "partsSelonNombrePAC": [
+                {"veuf": 0, "mariesOuPacses": 0, "celibataire": 0, "divorce": 0}
             ],
-            "parts_par_pac_au_dela": 0,
-            "nombre_de_parts_charge_partagee": {
-                "zero_charge_principale": {"deux_premiers": 0, "suivants": 0},
-                "un_charge_principale": {"premier": 0, "suivants": 0},
-                "deux_ou_plus_charge_principale": {"suivants": 0},
+            "partsParPACAuDela": 0,
+            "partsParPACChargePartagee": {
+                "zeroChargePrincipale": {"deuxPremiers": 0, "suivants": 0},
+                "unChargePrincipale": {"premier": 0, "suivants": 0},
+                "deuxOuPlusChargePrincipale": {"suivants": 0},
             },
-            "bonus_parent_isole": {
-                "au_moins_un_charge_principale": 0,
-                "zero_principal_un_partage": 0,
-                "zero_principal_deux_ou_plus_partages": 0,
+            "bonusParentIsole": {
+                "auMoinsUnChargePrincipale": 0,
+                "zeroChargePrincipaleUnPartage": 0,
+                "zeroChargeprincipaleDeuxOuPlusPartage": 0,
             },
         }
     }

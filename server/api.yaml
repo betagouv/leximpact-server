@@ -172,54 +172,54 @@ components:
                           type: integer
                         plafond_2:
                           type: integer
-                calcul_nombre_parts:
+                calculNombreParts:
                   type: object
                   properties:
-                    parts_selon_nombre_personnes_a_charge:
+                    partsSelonNombrePAC:
                       type: array
                       items:
                         type: object
                         properties:
                           veuf:
                             type: number
-                          maries_ou_pacses:
+                          mariesOuPacses:
                             type: number
                           celibataire:
                             type: number
                           divorce:
                             type: number
-                    parts_par_pac_au_dela:
+                    partsParPACAuDela:
                       type: number
-                    nombre_de_parts_charge_partagee:
+                    partsParPACChargePartagee:
                       type: object
                       properties:
-                        zero_charge_principale:
+                        zeroChargePrincipale:
                           type: object
                           properties:
-                            deux_premiers:
+                            deuxPremiers:
                               type: number
-                            suivants: 
+                            suivants:
                               type: number
-                        un_charge_principale:
+                        unChargePrincipale:
                           type: object
                           properties:
                             premier:
                               type: number
                             suivants:
                               type: number
-                        deux_ou_plus_charge_principale:
+                        deuxOuPlusChargePrincipale:
                           type: object
                           properties:
                             suivants:
                               type: number
-                    bonus_parent_isole:
+                    bonusParentIsole:
                       type: object
                       properties:
-                        au_moins_un_charge_principale:
+                        auMoinsUnChargePrincipale:
                           type: number
-                        zero_principal_un_partage:
+                        zeroChargePrincipaleUnPartage:
                           type: number
-                        zero_principal_deux_ou_plus_partages:
+                        zeroChargeprincipaleDeuxOuPlusPartage:
                           type: number
         description_cas_types:
           type: array
