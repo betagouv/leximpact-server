@@ -272,7 +272,7 @@ def test_veuf_deux_enfants(reform_config_base_2020):
     tbs_reforme_impot_revenu = IncomeTaxReform(
         FranceTaxBenefitSystem(), reform_config_base_2020, period
     )
-    built_simulation, dict_data_by_entity = simulation(
+    built_simulation, _dict_data_by_entity = simulation(
         period, data, tbs_reforme_impot_revenu
     )
 
@@ -302,7 +302,7 @@ def test_deux_adultes_dont_invalide_deux_enfants(reform_config_base_2020):
     tbs_reforme_impot_revenu = IncomeTaxReform(
         FranceTaxBenefitSystem(), reform_config_base_2020, period
     )
-    built_simulation, dict_data_by_entity = simulation(
+    built_simulation, _dict_data_by_entity = simulation(
         period, data, tbs_reforme_impot_revenu
     )
 
@@ -332,7 +332,7 @@ def test_deux_adultes_invalides_deux_enfants(reform_config_base_2020):
     tbs_reforme_impot_revenu = IncomeTaxReform(
         FranceTaxBenefitSystem(), reform_config_base_2020, period
     )
-    built_simulation, dict_data_by_entity = simulation(
+    built_simulation, _dict_data_by_entity = simulation(
         period, data, tbs_reforme_impot_revenu
     )
 
@@ -362,7 +362,7 @@ def test_deux_adultes_deux_enfants_dont_invalide(reform_config_base_2020):
     tbs_reforme_impot_revenu = IncomeTaxReform(
         FranceTaxBenefitSystem(), reform_config_base_2020, period
     )
-    built_simulation, dict_data_by_entity = simulation(
+    built_simulation, _dict_data_by_entity = simulation(
         period, data, tbs_reforme_impot_revenu
     )
 
@@ -392,7 +392,7 @@ def test_deux_adultes_deux_enfants_charge_partagee(reform_config_base_2020):
     tbs_reforme_impot_revenu = IncomeTaxReform(
         FranceTaxBenefitSystem(), reform_config_base_2020, period
     )
-    built_simulation, dict_data_by_entity = simulation(
+    built_simulation, _dict_data_by_entity = simulation(
         period, data, tbs_reforme_impot_revenu
     )
 
@@ -422,7 +422,7 @@ def test_deux_adultes_ancien_combattants_deux_enfants(reform_config_base_2020):
     tbs_reforme_impot_revenu = IncomeTaxReform(
         FranceTaxBenefitSystem(), reform_config_base_2020, period
     )
-    built_simulation, dict_data_by_entity = simulation(
+    built_simulation, _dict_data_by_entity = simulation(
         period, data, tbs_reforme_impot_revenu
     )
 

@@ -151,10 +151,7 @@ def test_calculate_compare_success(client, headers):
                     ],
                     "partsParPACAuDela": 1,  # LE "Et ainsi de suite..."
                     "partsParPACChargePartagee": {  # On a maintenant 12 cas différents en fonction du nobre d'enfants.
-                        "zeroChargePrincipale": {
-                            "deuxPremiers": 0.25,
-                            "suivants": 0.5,
-                        },
+                        "zeroChargePrincipale": {"deuxPremiers": 0.25, "suivants": 0.5},
                         "unChargePrincipale": {"premier": 0.25, "suivants": 0.5},
                         "deuxOuPlusChargePrincipale": {"suivants": 0.5},
                     },

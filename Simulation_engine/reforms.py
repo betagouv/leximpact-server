@@ -36,9 +36,7 @@ def generate_nbptr_class(
                     nom_rubrique
                 )
             )
-    parts_pac_array_of_objects = calcul_nb_parts[
-        "partsSelonNombrePAC"
-    ]
+    parts_pac_array_of_objects = calcul_nb_parts["partsSelonNombrePAC"]
     nb_cases_tableau = len(parts_pac_array_of_objects)
     for nb_pac in range(nb_cases_tableau):
         for nom_situation in situations_familiales:
@@ -168,8 +166,7 @@ def generate_nbptr_class(
                 (nb_pac == 1)
                 * (
                     parts_supp_cp["unChargePrincipale"]["premier"] * min_(nbH, 1)
-                    + parts_supp_cp["unChargePrincipale"]["suivants"]
-                    * max_(nbH - 1, 0)
+                    + parts_supp_cp["unChargePrincipale"]["suivants"] * max_(nbH - 1, 0)
                 )
                 + (nb_pac > 1)
                 * (parts_supp_cp["deuxOuPlusChargePrincipale"]["suivants"] * nbH)
@@ -236,32 +233,6 @@ def generate_nbptr_class(
     return nbptr
 
 
-dicorefnbptr = {
-    "calculNombreParts": {
-        "partsSelonNombrePAC": [
-            {"veuf": 1, "mariesOuPacses": 2, "celibataire": 1, "divorce": 1},
-            {"veuf": 2.5, "mariesOuPacses": 2.5, "celibataire": 1.5, "divorce": 1.5},
-            {"veuf": 3, "mariesOuPacses": 3, "celibataire": 2, "divorce": 2},
-            {"veuf": 4, "mariesOuPacses": 4, "celibataire": 3, "divorce": 3},
-            {"veuf": 5, "mariesOuPacses": 5, "celibataire": 4, "divorce": 4},
-            {"veuf": 6, "mariesOuPacses": 6, "celibataire": 5, "divorce": 5},
-            {"veuf": 7, "mariesOuPacses": 7, "celibataire": 6, "divorce": 6},
-        ],
-        "partsParPACAuDela": 1,
-        "partsParPACChargePartagee": {
-            "zeroChargePrincipale": {"deuxPremiers": 0.25, "suivants": 0.5},
-            "unChargePrincipale": {"premier": 0.25, "suivants": 0.5},
-            "deuxOuPlusChargePrincipale": {"suivants": 0.5},
-        },
-        "bonusParentIsole": {
-            "auMoinsUnChargePrincipale": 0.5,
-            "zeroChargePrincipaleUnPartage": 0.25,
-            "zeroChargeprincipaleDeuxOuPlusPartage": 0.5,
-        },
-    }
-}
-
-
 class IncomeTaxReform(Reform):
     """Une réforme de l'impôt sur le revenu"""
 
@@ -277,8 +248,8 @@ class IncomeTaxReform(Reform):
         return parameters
 
     def apply(self) -> None:
-        if "calcul_nombre_parts" in self.payload:
-            function_nbptr = generate_nbptr_class(self.payload["calcul_nombre_parts"])
+        if "calculNombreParts" in self.payload:
+            function_nbptr = generate_nbptr_class(self.payload["calculNombreParts"])
             self.update_variable(function_nbptr)
         self.modify_parameters(modifier_function=self.modifier)
 

@@ -27,7 +27,12 @@ reforme_base = {
         "calculNombreParts": {
             "partsSelonNombrePAC": [
                 {"veuf": 1, "mariesOuPacses": 2, "celibataire": 1, "divorce": 1},
-                {"veuf": 2.5, "mariesOuPacses": 2.5, "celibataire": 1.5, "divorce": 1.5},
+                {
+                    "veuf": 2.5,
+                    "mariesOuPacses": 2.5,
+                    "celibataire": 1.5,
+                    "divorce": 1.5,
+                },
                 {"veuf": 3, "mariesOuPacses": 3, "celibataire": 2, "divorce": 2},
                 {"veuf": 4, "mariesOuPacses": 4, "celibataire": 3, "divorce": 3},
                 {"veuf": 5, "mariesOuPacses": 5, "celibataire": 4, "divorce": 4},
