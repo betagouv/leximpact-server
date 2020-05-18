@@ -98,7 +98,7 @@ def generate_nbptr_class(
             quotient_familial.edcd : enfant issu du mariage avec conjoint décédé;
             """
             nb_pac = foyer_fiscal("nb_pac", period)
-            mariesOuPacses = foyer_fiscal("mariesOuPacses", period)
+            maries_ou_pacses = foyer_fiscal("maries_ou_pacses", period)
             celibataire_ou_divorce = foyer_fiscal("celibataire_ou_divorce", period)
             veuf = foyer_fiscal("veuf", period)
             jeune_veuf = foyer_fiscal("jeune_veuf", period)
@@ -151,7 +151,7 @@ def generate_nbptr_class(
             enf3 = (
                 celib * nb_enfants_principal("celibataire")(nb_pac)
                 + divorce * nb_enfants_principal("divorce")(nb_pac)
-                + mariesOuPacses * nb_enfants_principal("mariesOuPacses")(nb_pac)
+                + maries_ou_pacses * nb_enfants_principal("mariesOuPacses")(nb_pac)
                 + veuf * nb_enfants_principal("veuf")(nb_pac)
             )
 
@@ -225,7 +225,7 @@ def generate_nbptr_class(
             # # celib div
             nb_parts_celib = enf + n2 + n3 + n6 + n7
             return (
-                (mariesOuPacses | jeune_veuf) * nb_parts_famille
+                (maries_ou_pacses | jeune_veuf) * nb_parts_famille
                 + (veuf & not_(jeune_veuf)) * nb_parts_veuf
                 + celibataire_ou_divorce * nb_parts_celib
             )
