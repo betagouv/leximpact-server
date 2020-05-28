@@ -21,7 +21,7 @@ def exit_on_missing_mandatory_key(calcul_nb_parts):
     ]:
         if nom_rubrique not in calcul_nb_parts:
             raise LexCeption(
-                "the field '{}' is missing from 'calculNombreParts'. You can refer to the README to check valid format.".format(
+                "The field '{}' is missing from 'calculNombreParts'. You can refer to the README to check valid format.".format(
                     nom_rubrique
                 )
             )
@@ -34,7 +34,7 @@ def exit_on_missing_mandatory_key(calcul_nb_parts):
     ]:
         if nb_cp not in parts_supp_cp:
             raise LexCeption(
-                "the field '{}' is missing from 'partsParPACChargePartagee'. You can refer to the README to check valid format.".format(
+                "The field '{}' is missing from 'partsParPACChargePartagee'. You can refer to the README to check valid format.".format(
                     nb_cp
                 )
             )
@@ -47,7 +47,7 @@ def exit_on_inconsistent_partsSelonNombrePAC(
         for nom_situation in situations_familiales:
             if nom_situation not in parts_pac_array_of_objects[nb_pac]:
                 raise LexCeption(
-                    "the field '{}' is missing from {}-th element of 'partsSelonNombrePAC'. You can refer to the README to check valid format.".format(
+                    "The field '{}' is missing from {}-th element of 'partsSelonNombrePAC'. You can refer to the README to check valid format.".format(
                         nom_situation, nb_pac + 1
                     )
                 )
