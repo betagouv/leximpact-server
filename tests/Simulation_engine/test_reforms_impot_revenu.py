@@ -453,8 +453,8 @@ def test_homemade_nbptr_function(
     sim_sans_nbptr, _ = simulation(period, data, tbs_reforme_sans_nbptr)
     sim_avec_nbptr, _ = simulation(period, data, tbs_reforme_avec_nbptr)
 
-    print("sans réforme nbptr", sim_sans_nbptr.calculate("nbptr", period))
-    print("avec réforme nbptr", sim_avec_nbptr.calculate("nbptr", period))
+    print("sans", sim_sans_nbptr.calculate("nbptr", period))
+    print("avec", sim_avec_nbptr.calculate("nbptr", period))
 
     assert array_equal(
         sim_sans_nbptr.calculate("nbptr", period),
