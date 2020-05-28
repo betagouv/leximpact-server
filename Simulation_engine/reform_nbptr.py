@@ -13,58 +13,61 @@ from openfisca_france.model.base import (  # type: ignore
 from Simulation_engine.lexception import LexCeption
 
 
+def exit_on_missing_mandatory_key(calcul_nb_parts):
+    for nom_rubrique in [
+        "partsSelonNombrePAC",
+        "partsParPACAuDela",
+        "partsParPACChargePartagee",
+    ]:
+        if nom_rubrique not in calcul_nb_parts:
+            raise LexCeption(
+                "the field '{}' is missing from 'calculNombreParts'. You can refer to the README to check valid format.".format(
+                    nom_rubrique
+                )
+            )
+
+    parts_supp_cp = calcul_nb_parts["partsParPACChargePartagee"]
+    for nb_cp in [
+        "zeroChargePrincipale",
+        "unChargePrincipale",
+        "deuxOuPlusChargePrincipale",
+    ]:
+        if nb_cp not in parts_supp_cp:
+            raise LexCeption(
+                "the field '{}' is missing from 'partsParPACChargePartagee'. You can refer to the README to check valid format.".format(
+                    nb_cp
+                )
+            )
+
+
+def exit_on_inconsistent_partsSelonNombrePAC(
+    parts_pac_array_of_objects, nb_situations, situations_familiales
+):
+    for nb_pac in range(nb_situations):
+        for nom_situation in situations_familiales:
+            if nom_situation not in parts_pac_array_of_objects[nb_pac]:
+                raise LexCeption(
+                    "the field '{}' is missing from {}-th element of 'partsSelonNombrePAC'. You can refer to the README to check valid format.".format(
+                        nom_situation, nb_pac + 1
+                    )
+                )
+
+
+def build_parts_by_situation_familiale(
+    parts_pac_array_of_objects, nb_situations, situations_familiales
+):
+    return {
+        nom_situation: [
+            parts_pac_array_of_objects[nb_enfant][nom_situation]
+            for nb_enfant in range(nb_situations)
+        ]
+        for nom_situation in situations_familiales
+    }
+
+
 def generate_nbptr_class(
     calcul_nb_parts
 ):  # redéfinit le calcul des nbptr si spécifié par l'utilisateur
-
-    def exit_on_missing_mandatory_key(calcul_nb_parts):
-        for nom_rubrique in [
-            "partsSelonNombrePAC",
-            "partsParPACAuDela",
-            "partsParPACChargePartagee",
-        ]:
-            if nom_rubrique not in calcul_nb_parts:
-                raise LexCeption(
-                    "the field '{}' is missing from 'calculNombreParts'. You can refer to the README to check valid format.".format(
-                        nom_rubrique
-                    )
-                )
-
-        parts_supp_cp = calcul_nb_parts["partsParPACChargePartagee"]
-        for nb_cp in [
-            "zeroChargePrincipale",
-            "unChargePrincipale",
-            "deuxOuPlusChargePrincipale",
-        ]:
-            if nb_cp not in parts_supp_cp:
-                raise LexCeption(
-                    "the field '{}' is missing from 'partsParPACChargePartagee'. You can refer to the README to check valid format.".format(
-                        nb_cp
-                    )
-                )
-
-    def exit_on_inconsistent_partsSelonNombrePAC(
-        parts_pac_array_of_objects, nb_situations, situations_familiales
-    ):
-        for nb_pac in range(nb_situations):
-            for nom_situation in situations_familiales:
-                if nom_situation not in parts_pac_array_of_objects[nb_pac]:
-                    raise LexCeption(
-                        "the field '{}' is missing from {}-th element of 'partsSelonNombrePAC'. You can refer to the README to check valid format.".format(
-                            nom_situation, nb_pac + 1
-                        )
-                    )
-
-    def build_parts_by_situation_familiale(
-        parts_pac_array_of_objects, nb_situations, situations_familiales
-    ):
-        return {
-            nom_situation: [
-                parts_pac_array_of_objects[nb_enfant][nom_situation]
-                for nb_enfant in range(nb_situations)
-            ]
-            for nom_situation in situations_familiales
-        }
 
     exit_on_missing_mandatory_key(calcul_nb_parts)
     parts_pac_array_of_objects = calcul_nb_parts["partsSelonNombrePAC"]
@@ -74,8 +77,12 @@ def generate_nbptr_class(
     situations_familiales = ["veuf", "mariesOuPacses", "celibataire", "divorce"]
     nb_situations = len(parts_pac_array_of_objects)
 
-    exit_on_inconsistent_partsSelonNombrePAC(parts_pac_array_of_objects, nb_situations, situations_familiales)
-    parts_pac_tableau = build_parts_by_situation_familiale(parts_pac_array_of_objects, nb_situations, situations_familiales)
+    exit_on_inconsistent_partsSelonNombrePAC(
+        parts_pac_array_of_objects, nb_situations, situations_familiales
+    )
+    parts_pac_tableau = build_parts_by_situation_familiale(
+        parts_pac_array_of_objects, nb_situations, situations_familiales
+    )
     nb_enfants_tableau = nb_situations - 1  # car le zéro personne à charge est décrit dans le tableau
 
     class nbptr(Variable):
