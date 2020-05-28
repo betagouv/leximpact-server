@@ -39,7 +39,7 @@ reforme_base = {
                 {"veuf": 6, "mariesOuPacses": 6, "celibataire": 5, "divorce": 5},
                 {"veuf": 7, "mariesOuPacses": 7, "celibataire": 6, "divorce": 6},
             ],
-            "partsParPACAuDela": 1,  # LE "Et ainsi de suite..."
+            "partsParPACAuDela": 1,  # Le "Et ainsi de suite..." pour toute PAC au-delà du tableau "partsSelonNombrePAC".
             "partsParPACChargePartagee": {  # On a maintenant 12 cas différents en fonction du nobre d'enfants.
                 "zeroChargePrincipale": {"deuxPremiers": 0.25, "suivants": 0.5},
                 "unChargePrincipale": {"premier": 0.25, "suivants": 0.5},
