@@ -253,12 +253,15 @@ Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'
     {
         "reforme" : décrit la réforme,
         "deciles": deprecated - n'a plus d'impact,
-        "description_cas_types": array de descriptions de cas-types (pour la structure, cf. le guide du endpoint /metadata/description_cas_types) ; champ optionnel, si non fourni, utilise les descriptions de cas types par défaut,
+        "description_cas_types": array de descriptions de cas-types (pour la structure, cf. le guide du endpoint 
+        /metadata/description_cas_types) ; champ optionnel, si non fourni, utilise les descriptions de cas types par défaut,
         "timestamp" : chaîne de caractères qui sera renvoyé tel quel par le programme ; champ optionnel, si non fourni, la réponse ne contiendra pas de champ "timestamp"
     }
     ``` 
 
-En version `1.0.0`, la structure de la réforme est la suivante. Elle reproduit presque la structure d'OpenFisca. Si un paramètre est omis, il est remplacé par la version par défaut d'OpenFisca (donc le code existant) :
+En version `1.1.0` de la [spécification de l'API Web](./server/api.yaml), la structure de la réforme étend les possibilités d'amendement du quotient familial et cela est défini par un nouveau champ `calculNombreParts`. 
+
+Elle reproduit presque la structure d'OpenFisca-France. Si un paramètre est omis, il est remplacé par la version par défaut d'OpenFisca-France (donc le code de loi existant). Le champ `calculNombreParts` est optionnel, mais s'il figure, tous ses champs doivent y figurer, et les élément du tableau associés aux quatre situations familiales doivent faire la même longueur :
 
 
 ```json
@@ -287,11 +290,58 @@ En version `1.0.0`, la structure de la réforme est la suivante. Elle reproduit 
                 "seuil2":21037,
                 "taux":0
             }
+        },
+        "calculNombreParts": {
+            "partsSelonNombrePAC": [
+                {
+                    "veuf": 1,
+                    "mariesOuPacses": 2,
+                    "celibataire": 1,
+                    "divorce": 1
+                },
+                {
+                    "veuf": 2.5,
+                    "mariesOuPacses": 2.5,
+                    "celibataire": 1.5,
+                    "divorce": 1.5
+                },
+                {
+                    "veuf": 3,
+                    "mariesOuPacses": 3,
+                    "celibataire": 2,
+                    "divorce": 2
+                },
+                {
+                    "veuf": 4,
+                    "mariesOuPacses": 4,
+                    "celibataire": 3,
+                    "divorce": 3
+                }
+            ],
+            "partsParPACAuDela": 1,
+            "partsParPACChargePartagee": {
+                "zeroChargePrincipale": {
+                    "deuxPremiers": 0.25,
+                    "suivants": 0.5
+                },
+                "unChargePrincipale": {
+                    "premier": 0.25,
+                    "suivants": 0.5
+                },
+                "deuxOuPlusChargePrincipale": {
+                    "suivants": 0.5
+                }
+            },
+            "bonusParentIsole": {
+                "auMoinsUnChargePrincipale": 0.5,
+                "zeroChargePrincipaleUnPartage": 0.25,
+                "zeroChargeprincipaleDeuxOuPlusPartage": 0.5
+            }
         }
     }
 }
 ```
-
+Où `PAC` désigne `personne à charge`.
 
 - Réponse - contenu du body : 
   - res_brut : Impôts payés par les cas-types : 
@@ -355,9 +405,10 @@ En version `1.0.0`, la structure de la réforme est la suivante. Elle reproduit 
 
     ```
     {
-        "reforme" : décrit la réforme,
-        "timestamp" : chaîne de caractères qui sera renvoyée telle quelle par le programme. Champ optionnel, si non fourni, la réponse ne contiendra pas de champ "timestamp",
-        "token" : le token d'authentification temporaire qui a été fourni dans l'email
+        "reforme" : décrit la réforme au même format que la réforme de l'itinéraire /calculate/compare,
+        "timestamp" : chaîne de caractères qui sera renvoyée telle quelle par le programme.
+            Champ optionnel, si non fourni, la réponse ne contiendra pas de champ "timestamp",
+        "token" : le token d'authentification temporaire qui a été fourni dans l'email.
     }
     ```
 

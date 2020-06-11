@@ -2,7 +2,7 @@ openapi: "3.0.0"
 
 info:
   title: LexImpact
-  version: 1.0.0
+  version: 1.1.0
 
 paths:
   /:
@@ -172,6 +172,55 @@ components:
                           type: integer
                         plafond_2:
                           type: integer
+                calculNombreParts:
+                  type: object
+                  properties:
+                    partsSelonNombrePAC:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          veuf:
+                            type: number
+                          mariesOuPacses:
+                            type: number
+                          celibataire:
+                            type: number
+                          divorce:
+                            type: number
+                    partsParPACAuDela:
+                      type: number
+                    partsParPACChargePartagee:
+                      type: object
+                      properties:
+                        zeroChargePrincipale:
+                          type: object
+                          properties:
+                            deuxPremiers:
+                              type: number
+                            suivants:
+                              type: number
+                        unChargePrincipale:
+                          type: object
+                          properties:
+                            premier:
+                              type: number
+                            suivants:
+                              type: number
+                        deuxOuPlusChargePrincipale:
+                          type: object
+                          properties:
+                            suivants:
+                              type: number
+                    bonusParentIsole:
+                      type: object
+                      properties:
+                        auMoinsUnChargePrincipale:
+                          type: number
+                        zeroChargePrincipaleUnPartage:
+                          type: number
+                        zeroChargeprincipaleDeuxOuPlusPartage:
+                          type: number
         description_cas_types:
           type: array
           items:

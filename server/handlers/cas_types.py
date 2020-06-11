@@ -7,6 +7,8 @@ from server.services import check_user, with_session
 import json
 from flask import Response
 
+from Simulation_engine.lexception import LexCeption
+
 
 def error_as_dict(errormessage):
     return {"Error": errormessage}
@@ -39,12 +41,16 @@ class SimulationRunner(object):
         if "description_cas_types" in dbod:
             dct = dbod["description_cas_types"]
             if not len(dct):
-                return error_as_dict("Empty list of cas types received"), 200
+                return error_as_dict("Empty list of cas types received"), 400
         if "reforme" not in dbod:
-            return error_as_dict("missing 'reforme' field in body of your request"), 200
-        dic_resultat = CompareOldNew(
-            taux=None, isdecile=False, dictreform=dbod["reforme"], castypedesc=dct
-        )
+            return error_as_dict("missing 'reforme' field in body of your request"), 400
+        try:
+            dic_resultat = CompareOldNew(
+                taux=None, isdecile=False, dictreform=dbod["reforme"], castypedesc=dct
+            )
+        except LexCeption as exc:
+            return error_as_dict("Error in request : " + str(exc)), 400
+
         if "timestamp" in dbod:
             dic_resultat["timestamp"] = dbod["timestamp"]
         return (dic_resultat, 201)
@@ -57,22 +63,22 @@ class SimulationRunner(object):
                 json.dumps(
                     error_as_dict("missing 'reforme' field in body of your request")
                 ),
-                status=200,
+                status=400,
             )
         if "token" not in dbod:
             return Response(
                 json.dumps(error_as_dict("missing token: necessary for this request")),
-                status=200,
+                status=400,
             )
         CU = check_user(session, dbod["token"])
         if CU["success"] is False:
-            return Response(json.dumps(error_as_dict(CU["error"])), status=200)
+            return Response(json.dumps(error_as_dict(CU["error"])), status=403)
         if "description_cas_types" in dbod:
             return Response(
                 json.dumps(
                     error_as_dict("bad request, no description_cas_types should appear")
                 ),
-                status=200,
+                status=400,
             )
         return Response(
             simpop_stream(dbod), status=200, content_type="application/json"

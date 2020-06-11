@@ -7,6 +7,9 @@ from openfisca_core import periods  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 from openfisca_france.model.base import Reform  # type: ignore
 
+from Simulation_engine.reform_nbptr import generate_nbptr_class
+
+
 T = TypeVar("T", bound="ParametricReform")
 
 
@@ -25,6 +28,9 @@ class IncomeTaxReform(Reform):
         return parameters
 
     def apply(self) -> None:
+        if "calculNombreParts" in self.payload:
+            function_nbptr = generate_nbptr_class(self.payload["calculNombreParts"])
+            self.update_variable(function_nbptr)
         self.modify_parameters(modifier_function=self.modifier)
 
 
