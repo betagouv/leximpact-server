@@ -79,6 +79,19 @@ paths:
             description: L'usager a pu étre authentifié·e
           '401':
             description: L'usager n'est pas dans la liste validée par l'INSEE
+  /dotations:
+    post:
+      summary: Demande le calcul de l'impact des articles de loi sur les dotations aux collectivités.
+      operationId: server.handlers.Dotations.simule_dotations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dotations'
+      responses:
+          '201':
+            description: Résultat de la simulation des dotations aux collectivités.
 components:
   schemas:
     Greetings:
@@ -256,3 +269,8 @@ components:
       properties:
         email:
           type: string
+    dotations:
+      type: object
+      properties:
+        dotations:
+          type: object

@@ -1,6 +1,6 @@
 class Dotations(object):
 
-    def home(**params: dict) -> tuple:
+    def simule_dotations(**params: dict) -> tuple:
         request_body = params["body"]
 
         # vérifier le format
