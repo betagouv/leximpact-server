@@ -1,3 +1,5 @@
+from Simulation_engine.simulate_dotations import simulate
+
 class Dotations(object):
 
     def simule_dotations(**params: dict) -> tuple:
@@ -8,6 +10,7 @@ class Dotations(object):
             return {"Error": "Missing 'dotations' field in request body."}, 400
 
         # calculer
+        simulation_result = simulate(request_body)
 
         # constuire la réponse
-        return {"hello": "coucou"}, 200
+        return simulation_result, 200
