@@ -1,5 +1,6 @@
 from Simulation_engine.simulate_dotations import simulate
 
+
 class Dotations(object):
 
     def simule_dotations(**params: dict) -> tuple:
