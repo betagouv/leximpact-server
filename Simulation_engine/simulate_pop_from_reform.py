@@ -205,6 +205,9 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         impots_par_reforme = next(iter(dictionnaire_simulations.values()))[1][
             "foyer_fiscal"
         ][["wprm"]]
+    nbptr_par_reforme = next(iter(dictionnaire_simulations.values()))[1][
+        "foyer_fiscal"
+    ][["wprm"]]
     for nom_simulation in dictionnaire_simulations:
         impots_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
             0
@@ -213,6 +216,9 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
             impots_par_reforme["rfr"] = dictionnaire_simulations[nom_simulation][
                 0
             ].calculate("rfr", period)
+        nbptr_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
+            0
+        ].calculate("nbptr", period)
 
     for nom_res_base in liste_noms_reformes_avec_apres:
         res[nom_res_base] = -(
@@ -287,7 +293,11 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         for simu in dic_res_brut:
             for cas_type in dic_res_brut[simu]:
                 dic_res_brut[simu][cas_type] = int(round(dic_res_brut[simu][cas_type]))
-        resultat = {"total": total, "res_brut": dic_res_brut}
+        dic_nbptr = nbptr_par_reforme.to_dict()
+        for simu in dic_nbptr:
+            for cas_type in dic_nbptr[simu]:
+                dic_nbptr[simu][cas_type] = dic_nbptr[simu][cas_type]
+        resultat = {"total": total, "res_brut": dic_res_brut, "nbreParts": dic_nbptr}
 
     return resultat
 
