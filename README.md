@@ -347,7 +347,11 @@ Où `PAC` désigne `personne à charge`.
   - res_brut : Impôts payés par les cas-types : 
     - res_brut.avant : Impôt payé avec le code existant 
     - res_brut.plf : Impôt payé avec le PLF 
-    - res_brut.apres : Impot payé avec la réforme sépcifiée par la requête.
+    - res_brut.apres : Impot payé avec la réforme spécifiée par la requête.
+  - nbreParts : Nombre de parts fiscales des cas-types : 
+    - nbreParts.avant : Nombre de parts avec le code existant 
+    - nbreParts.plf : Nombre de parts avec le PLF 
+    - nbreParts.apres : Nombre de parts avec la réforme spécifiée par la requête.
   - timestamp : Chaîne de caractères reçue dans la requête 
   - total : somme des impôts payés par les cas-types dans les trois scénarios. Inutile pour cette requête. 
 
@@ -377,15 +381,33 @@ Où `PAC` désigne `personne à charge`.
              "3":0,
              "4":-1655,
              "5":-772
-          },
-          "wprm":{
-             "0":1,
-             "1":1,
-             "2":1,
-             "3":1,
-             "4":1,
-             "5":1
           }
+       },       
+        "nbreParts":{
+          "apres": {
+            "0": 1.0,
+            "1": 1.5,
+            "2": 2.0,
+            "3": 2.0,
+            "4": 3.0,
+            "5": 3.0
+            },
+          "avant": {
+            "0": 1.0,
+            "1": 1.5,
+            "2": 2.0,
+            "3": 2.0,
+            "4": 3.0,
+            "5": 3.0
+            },
+          "plf": {
+            "0": 1.0,
+            "1": 1.5,
+            "2": 2.0,
+            "3": 2.0,
+            "4": 3.0,
+            "5": 3.0
+            }
        },
        "timestamp":"1234564689",
        "total":{
