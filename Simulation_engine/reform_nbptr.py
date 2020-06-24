@@ -195,15 +195,9 @@ def generate_nbptr_class(
             # # note 3 : Pas de personne à charge
             # - invalide
 
-            n31a = quotient_familial.not31a * (no_pac & no_alt & caseP)
-            # - ancien combatant
-            n31b = quotient_familial.not31b * (no_pac & no_alt & (caseW | caseG))
-            n31 = max_(n31a, n31b)
-            # - personne seule ayant élevé des enfants
-            n32 = quotient_familial.not32 * (
-                no_pac & no_alt & ((caseE | caseK | caseL) & not_(caseN))
-            )
-            n3 = max_(n31, n32)
+            # La formulation de l'article 195 nous pousse à faire ceci pour plus de cohérence.
+            # Ce sont les cas couverts par l'alinéa 1 de l'article 195 du CGI
+            n3 = (1.5 - enf) * (no_pac & no_alt & (caseW | caseG | caseP | ((caseE | caseK | caseL) & not_(caseN))))
             # # note 4 Invalidité de la personne ou du conjoint pour les mariés ou
             # # jeunes veuf(ve)s
             n4 = max_(
