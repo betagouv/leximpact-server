@@ -65,13 +65,15 @@ def test_calculate_compare_with_cas_types(client, payload, headers):
     assert actual["timestamp"] == expected["timestamp"]
 
 
-def test_calculate_compare_weights(client, payload, headers):
+def test_calculate_compare_presence_cas_types(client, payload, headers):
     # Vérifie que les cas types des résultats apparaissent tous dans tous les champs
     response = partial(client.post, "calculate/compare", headers=headers)
     actual = json.loads(response(data=json.dumps(payload)).data)
-
+    master_to_compare = None
     for var_in_res_brut in actual["res_brut"].keys():
-        assert set(actual["res_brut"]["wprm"].keys()) == set(
+        if master_to_compare is None:
+            master_to_compare = set(actual["res_brut"][var_in_res_brut].keys())
+        assert master_to_compare == set(
             actual["res_brut"][var_in_res_brut].keys()
         )
 
