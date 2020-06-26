@@ -3,24 +3,7 @@ from openfisca_core.reforms import Reform  # type: ignore
 from openfisca_core.parameters import ParameterNode  # type: ignore
 from functools import reduce
 
-
-# Retourne un dictionnaire flattened à partir d'un nested dictionnaire
-def flattened_dict(dict_to_traverse, prechain="", delimiter="."):
-    res = {}
-    pc = [prechain] if len(prechain) else []
-    for k, v in dict_to_traverse.items():
-        if isinstance(v, dict):
-            res = {**res, **flattened_dict(v, prechain=delimiter.join(pc + [k]))}
-        else:
-            res[delimiter.join(pc + [k])] = v
-    return res
-
-
-def test_flattened_dict():
-    a = {"a": {"b": {"c": 3, "d": {"e": 4, "f": "chaton"}}}}
-    b = {"a.b.c": 3, "a.b.d.e": 4, "a.b.d.f": "chaton"}
-    assert(flattened_dict(a) == b)
-
+from utils_dict import flattened_dict
 
 class DotationReform(Reform):
 
