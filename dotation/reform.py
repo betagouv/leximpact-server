@@ -3,6 +3,7 @@ from openfisca_core.reforms import Reform  # type: ignore
 from openfisca_core.parameters import ParameterNode  # type: ignore
 from functools import reduce
 
+
 # Retourne un dictionnaire flattened à partir d'un nested dictionnaire
 def flattened_dict(dict_to_traverse, prechain="", delimiter="."):
     res = {}
