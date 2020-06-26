@@ -1,4 +1,4 @@
-import pandas
+import pandas  # type: ignore
 
 
 # Quelques noms de colonne utiles:

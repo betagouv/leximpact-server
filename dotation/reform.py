@@ -1,9 +1,10 @@
-from openfisca_core import periods
+from openfisca_core import periods  # type: ignore
 from openfisca_core.reforms import Reform  # type: ignore
 from openfisca_core.parameters import ParameterNode  # type: ignore
 from functools import reduce
 
 from utils_dict import flattened_dict
+
 
 class DotationReform(Reform):
 
@@ -25,7 +26,3 @@ class DotationReform(Reform):
 
     def apply(self) -> None:
         self.modify_parameters(modifier_function=self.modifier)
-
-
-if __name__ == "__main__":
-    test_flattened_dict()
