@@ -67,7 +67,6 @@ def load_dgcl_file(path="2019-communes-criteres-repartition.csv"):
     #
     part_population_canton = variables_openfisca_presentes_fichier["part_population_canton"]
     data.loc[(data[code_comm] == 57163) | (data[code_comm] == 87116), part_population_canton] -= 0.0001
-    print(data[(data[code_comm] == 57163) | (data[code_comm] == 87116)][[nom_comm, part_population_canton]])
     #
     # introduit la valeur d'outre mer
     #
