@@ -14,7 +14,12 @@ def test_dotations_request_body_error(client, headers):
 
 def test_dotations(client, headers):
     request = {
-        "dotations": {}
+        "reforme": {
+            "dotations": {
+                "montants": {"dgf": 16},
+                "communes": {}
+            }
+        }
     }
 
     response_function = partial(client.post, "dotations", headers=headers)
