@@ -12,7 +12,6 @@ def set_brackets(brackets, target):
         del brackets[0]
     for params_bracket in target:
         new_bracket = Bracket(
-            'new_bracket',
             data = {
                 key: {'1900-01-01': {'value': value}} for key,value in params_bracket.items()
                 },
