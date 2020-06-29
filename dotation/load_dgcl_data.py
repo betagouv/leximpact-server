@@ -19,7 +19,6 @@ variables_openfisca_presentes_fichier = {
     'population_dgf': "Informations générales - Population DGF Année N'",
     'population_dgf_agglomeration': "Dotation de solidarité rurale Bourg-centre - Population DGF des communes de l'agglomération",
     'population_dgf_departement_agglomeration': "Dotation de solidarité rurale Bourg-centre - Population départementale de référence de l'agglomération",
-    'population_dgf_plafonnee': 'Dotation de solidarité rurale Bourg-centre - Population DGF plafonnée',
     'population_insee': 'Informations générales - Population INSEE Année N ',
     'potentiel_financier': 'Potentiel fiscal et financier des communes - Potentiel financier',
     'potentiel_financier_par_habitant': 'Potentiel fiscal et financier des communes - Potentiel financier par habitant',
