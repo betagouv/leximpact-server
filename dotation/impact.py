@@ -1,6 +1,6 @@
 from simulation import resultfromreforms
 from utils_dict import translate_dict
-
+from copy import deepcopy
 
 table_transcription_leximpact_ofdl = {"communes.dsr.eligibilite.popMax": "dotation_solidarite_rurale.seuil_nombre_habitants",
                                       "communes.dsr.eligibilite.popChefLieuMax": "dotation_solidarite_rurale.bourg_centre.eligibilite.seuil_nombre_habitants_chef_lieu",
@@ -17,7 +17,20 @@ table_transcription_leximpact_ofdl = {"communes.dsr.eligibilite.popMax": "dotati
 
 
 def format_reforme_openfisca(reforme_a_traduire):
-    return translate_dict(reforme_a_traduire, table_transcription_leximpact_ofdl)
+    # passage des dictionnaires avec nombre de clefs variables au format
+    # list de dictionnaire : evite de se retrouver avec des champs qui ne correspondent pas 
+    # à des hiérarchies de variables openfisca)
+    # et qui seront consommés par les parsers ad hoc de la réforme
+    ref=deepcopy(reforme_a_traduire)
+    try:
+        dictionnaire_a_tableautiser = deepcopy(ref["communes"]["dsr"]["bourgCentre"]["attribution"]["plafonnementPopulation"])
+        ref["communes"]["dsr"]["bourgCentre"]["attribution"]["plafonnementPopulation"] = sorted([{"threshold":seuil,"amount":plafond} for seuil,plafond in dictionnaire_a_tableautiser.items()],
+            key=lambda x:x["threshold"])
+    except KeyError:
+        # on choisit de ne rien soulever si ce champ n'est pas présent dans la réforme.
+        # Ca fait qu'une absence de ce paramètre ne fera pas échouer la requête.
+        pass
+    return translate_dict(ref, table_transcription_leximpact_ofdl)
 
 
 def impacts_reforme_dotation(reforme):
