@@ -99,6 +99,14 @@ if __name__ == "__main__":
     reforme_example_api = {
         "communes" : {
             "dsr" : {
+                "bourgCentre":{
+                    "attribution":{
+                        "plafonnementPopulation" :{
+                            0: 9999,
+                            2000000: 10000000
+                        }
+                    }
+                },
                 "cible": {
                     "eligibilite": {
                         "premieresCommunes": 23
