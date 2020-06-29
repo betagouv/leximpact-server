@@ -87,7 +87,7 @@ if __name__ == "__main__":
         "communes" : {
             "dsr" : {
                 "cible": {
-                    "eligibilie": {
+                    "eligibilite": {
                         "premieresCommunes": 23
                     }
                 }
