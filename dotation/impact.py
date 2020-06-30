@@ -40,11 +40,11 @@ def impacts_reforme_dotation(reforme):
     df_results = resultfromreforms({"apres" : reforme}, to_compute)
     res = {}
     scenario_names = {"avant": "base", "apres": "amendement", "plf": "plf"}
-
+    code_comm = "Informations générales - Code INSEE de la commune"
     prefix_dsr_eligible = "dsr_eligible_"
     for scenario in ["avant", "apres"]:
         df_results[prefix_dsr_eligible + scenario] = df_results["dsr_eligible_fraction_bourg_centre" + "_" + scenario] | df_results["dsr_eligible_fraction_perequation" + "_" + scenario] | df_results["dsr_eligible_fraction_cible" + "_" + scenario]
-        print(scenario, df_results["dsr_eligible_fraction_bourg_centre" + "_" + scenario].sum())
+    communes_cas_types = ["76384", "76214"]
     for scenario in ["avant", "apres"]:
         scenario_api = scenario_names[scenario]
         res[scenario_api] = {
@@ -56,6 +56,10 @@ def impacts_reforme_dotation(reforme):
                 }
             }
         }
+        res[scenario_api]["dotations"]["communes"]["dsr"]["communes"] = []
+        for cas_type in communes_cas_types:
+            cas_type_eligible = df_results[df_results[code_comm].astype(str) == cas_type][prefix_dsr_eligible + scenario].values[0]
+            res[scenario_api]["dotations"]["communes"]["dsr"]["communes"] += [{"code" : cas_type, "eligible": cas_type_eligible}]
         res[scenario_api]["dotations"]["communes"]["dsr"]["eligibles"] = df_results[prefix_dsr_eligible + scenario].sum()
         if scenario != "avant":
             res[scenario_api]["dotations"]["communes"]["dsr"]["nouvellementEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (~df_results[prefix_dsr_eligible + "avant"])])
@@ -79,6 +83,7 @@ def impacts_reforme_dotation(reforme):
             nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles_dsr"] - resultats_agreges_bornes[id_borne + 1]["eligibles_dsr"]
             res_strates[id_borne]["eligibles"] = nb_elig_strate
         res[scenario_api]["dotations"]["communes"]["dsr"]["strates"] = res_strates
+
     return res
 
 
