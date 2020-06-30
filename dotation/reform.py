@@ -12,12 +12,12 @@ def set_brackets(brackets, target):
         del brackets[0]
     for params_bracket in target:
         new_bracket = Bracket(
-            data = {
-                key: {'1900-01-01': {'value': value}} for key,value in params_bracket.items()
-                },
-            )
+            data={
+                key: {'1900-01-01': {'value': value}} for key, value in params_bracket.items()
+            },
+        )
         brackets.append(new_bracket)
-        
+
 
 class DotationReform(Reform):
 
@@ -31,7 +31,6 @@ class DotationReform(Reform):
         # Ceux qui ne sont pas des dictionnaires seront mis à ce niveau dans ofdl
         flatpayload = flattened_dict(self.payload)
 
-
         # Quand des champs complexes entrent en compte, un traitement ad hoc est nécessaire pour ces champs
         # pour éviter qu'ils passent dans la moulinette d'en bas.
         # Schéma pour les variables qui ne correspondent pas à un chemin OFDL
@@ -44,9 +43,9 @@ class DotationReform(Reform):
 
         # Variables correspondant à un chemin OFDL : Tous les éléments de la réforme qui n'ont
         # pas été retirés précédemment  vont être directement fixés à un niveau dans les parametres
-        # Ca raisera les mêmes erreurs que parameters.mon.chemin.qui.nexiste.pas.update(valeur) si le 
-        # chemin n'existe pas 
-    
+        # Ca raisera les mêmes erreurs que parameters.mon.chemin.qui.nexiste.pas.update(valeur) si le
+        # chemin n'existe pas
+
         for field_to_update, value in flatpayload.items():
             reduce(getattr, field_to_update.split("."), parameters).update(period=self.period, value=value)
 
