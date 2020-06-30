@@ -236,3 +236,14 @@ def test_calculate_compare_response(client, headers, payload):
 
     nbreParts_apres = dpath.get(response_json, 'nbreParts/apres')
     assert list(nbreParts_apres.keys()) == ['0', '1', '2', '3', '4', '5']  # 6 cas types par défaut
+
+
+def test_calculate_compare_response_on_nbptr(client, headers, payload):
+    request_data = json.dumps(payload)
+    response = client.post("calculate/compare", data=request_data, headers=headers)
+
+    assert response.status_code == CREATED  # 201
+
+    response_json = json.loads(response.data.decode('utf-8'))
+    nombre_parts_cas_types_2020 = { "0": 1.0, "1": 1.5, "2": 2.0, "3": 2.0, "4": 3.0, "5": 3.0 }
+    assert dpath.get(response_json, 'nbreParts/avant') == nombre_parts_cas_types_2020
