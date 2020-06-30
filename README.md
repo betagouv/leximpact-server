@@ -180,7 +180,7 @@ END
 ```
 
 
-## Endpoints de l'API Web
+## Endpoints de l'API Web - Impôt sur le revenu
 
 L'API Web dispose des itinéraires suivants :
 
@@ -442,7 +442,29 @@ Où `PAC` désigne `personne à charge`.
   - foyers_fiscaux_touches : dictionnaire contenant les clefs `avant_to_plf`, `avant_to_apres`, `plf_to_apres`. Chaque élément du dictionnaire divise les foyers fiscaux en 5 catégories : `gagnant`, `perdant`, `neutre`, `neutre_zero`, `perdant_zero` : Ils décrivent si les foyers fiscaux payent plus ou moins d'impôts à l'arrivée qu'au départ. Les catégories finissant par `_zero` décrivent le foyers fiscaux qui étaient exonérés d'impôt au départ.
  Par exemple, `neutre_zero` désigne le nombre de personnes pour lesquelles l'impact est neutre (avant = après) et qui sont exonérées d'impôt (donc, avant = après = 0).
 
+## Endpoints de l'API Web - Dotations aux collectivités locales
 
+L'API Web traite également d'une thématique isolée de l'impôt sur le revenu : les dotations
+de l'État aux collectivités locales.
+
+### /dotations
+
+- Type : POST
+- Description :
+- Requête - contenu du body :
+  > En cours de définition. Valeur par défaut :
+  ```
+  {
+    "reforme": {  # décrit la réforme
+        "dotations": {  # configure les éléments de la réforme des dotations
+            "montants": {"dgf": montant de la DGF},
+            "communes": {}
+        }
+    }
+  }
+  ```
+- Réponse - contenu du body :
+  > En cours de définition. Valeur par défaut `{"hello": "coucou"}`
 
 ## Base de données
 
