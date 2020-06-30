@@ -1,7 +1,10 @@
-from functools import partial
-import json
-from datetime import datetime
 import pytest  # type: ignore
+import json
+import dpath
+
+from functools import partial
+from datetime import datetime
+from http.client import CREATED
 
 
 @pytest.fixture
@@ -210,3 +213,19 @@ def test_calculate_compare_lexception(client, headers):
     assert json.loads(response.data) == {
         "Error": "Error in request : the field 'partsSelonNombrePAC' is missing from 'calculNombreParts'. You can refer to the README to check valid format."
     }
+
+
+def test_calculate_compare_response(client, headers, payload):
+    request_data = json.dumps(payload)
+    response = client.post("calculate/compare", data=request_data, headers=headers)
+
+    assert response.status_code == CREATED  # 201
+    response_json = json.loads(response.data.decode('utf-8'))
+
+    res_brut = dpath.get(response_json, 'res_brut')
+    assert res_brut is not None
+    assert list(res_brut.keys()) == ['apres', 'avant']
+
+    nbreParts = dpath.get(response_json, 'nbreParts')
+    assert nbreParts is not None
+    assert list(nbreParts.keys()) == ['apres', 'avant']
