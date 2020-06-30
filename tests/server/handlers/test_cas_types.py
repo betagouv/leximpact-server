@@ -1,6 +1,6 @@
 import pytest  # type: ignore
+import dpath  # type: ignore
 import json
-import dpath
 
 from functools import partial
 from datetime import datetime
@@ -216,6 +216,7 @@ def test_calculate_compare_lexception(client, headers):
 
 
 def test_calculate_compare_response(client, headers, payload):
+    # Par défaut, la réponse contient l'impôt et le nombre de parts par cas type
     request_data = json.dumps(payload)
     response = client.post("calculate/compare", data=request_data, headers=headers)
 
@@ -226,6 +227,12 @@ def test_calculate_compare_response(client, headers, payload):
     assert res_brut is not None
     assert list(res_brut.keys()) == ['apres', 'avant']
 
+    res_brut_apres = dpath.get(response_json, 'res_brut/apres')
+    assert list(res_brut_apres.keys()) == ['0', '1', '2', '3', '4', '5']  # 6 cas types par défaut
+
     nbreParts = dpath.get(response_json, 'nbreParts')
     assert nbreParts is not None
     assert list(nbreParts.keys()) == ['apres', 'avant']
+
+    nbreParts_apres = dpath.get(response_json, 'nbreParts/apres')
+    assert list(nbreParts_apres.keys()) == ['0', '1', '2', '3', '4', '5']  # 6 cas types par défaut
