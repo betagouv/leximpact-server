@@ -3,7 +3,7 @@ from openfisca_core.reforms import Reform  # type: ignore
 from openfisca_core.parameters import ParameterNode  # type: ignore
 from functools import reduce
 
-from utils_dict import flattened_dict
+from dotation.utils_dict import flattened_dict  # type: ignore
 
 
 class DotationReform(Reform):
