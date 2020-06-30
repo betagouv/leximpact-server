@@ -4,7 +4,7 @@ setup(
     name="LexImpact Server",
     author="LexImpact Team",
     author_email="leximpact@openfisca.org",
-    version="1.1.0",
+    version="1.2.0",
     license="https://www.fsf.org/licensing/licenses/agpl-3.0.html",
     url="https://github.com/betagouv/leximpact",
     classifiers=[

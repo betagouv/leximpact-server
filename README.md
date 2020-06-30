@@ -348,7 +348,8 @@ Où `PAC` désigne `personne à charge`.
     - res_brut.avant : Impôt payé avec le code existant 
     - res_brut.plf : Impôt payé avec le PLF 
     - res_brut.apres : Impot payé avec la réforme spécifiée par la requête.
-  - nbreParts : Nombre de parts fiscales des cas-types : 
+  - nbreParts : Nombre de parts fiscales des cas-types :
+    > Le champ `nbreParts` est ajouté à la réponse en version `1.2.0`.
     - nbreParts.avant : Nombre de parts avec le code existant 
     - nbreParts.plf : Nombre de parts avec le PLF 
     - nbreParts.apres : Nombre de parts avec la réforme spécifiée par la requête.
