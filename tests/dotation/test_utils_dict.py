@@ -1,4 +1,4 @@
-from dotation.utils_dict import translate_dict, flattened_dict, unflattened_dict
+from dotation.utils_dict import translate_dict, flattened_dict, unflattened_dict  # type: ignore
 
 
 def test_translate_conditions_reelles():
