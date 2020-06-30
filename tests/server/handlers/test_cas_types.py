@@ -245,5 +245,5 @@ def test_calculate_compare_response_on_nbptr(client, headers, payload):
     assert response.status_code == CREATED  # 201
 
     response_json = json.loads(response.data.decode('utf-8'))
-    nombre_parts_cas_types_2020 = { "0": 1.0, "1": 1.5, "2": 2.0, "3": 2.0, "4": 3.0, "5": 3.0 }
+    nombre_parts_cas_types_2020 = {"0": 1.0, "1": 1.5, "2": 2.0, "3": 2.0, "4": 3.0, "5": 3.0}
     assert dpath.get(response_json, 'nbreParts/avant') == nombre_parts_cas_types_2020

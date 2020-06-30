@@ -88,9 +88,11 @@ def generate_nbptr_class(
     class nbptr(Variable):
         value_type = float
         entity = FoyerFiscal
-        label = "Nombre de parts"
-        reference = "http://vosdroits.service-public.fr/particuliers/F2705.xhtml"
         definition_period = YEAR
+        label = "Nombre de parts"
+        reference = [
+            "http://vosdroits.service-public.fr/particuliers/F2705.xhtml",
+            "https://www.legifrance.gouv.fr/affichCodeArticle.do?cidTexte=LEGITEXT000006069577&idArticle=LEGIARTI000006308287"]
 
         def formula(foyer_fiscal, period, parameters):
             """
