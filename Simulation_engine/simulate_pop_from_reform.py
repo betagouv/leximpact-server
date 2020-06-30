@@ -194,6 +194,11 @@ def calcule_personnes_touchees(impots_par_reforme):
     return foyers_fiscaux_touches
 
 
+def dataframe_pondere(dictionnaire_simulations: Dict) -> pandas.DataFrame:
+    # Pondération des foyers fiscaux : une ligne par foyer fiscal, une colonne pour le poids (wprm)
+    return next(iter(dictionnaire_simulations.values()))[1]["foyer_fiscal"][["wprm"]]
+
+
 def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     res: Total = {}
     if (
@@ -202,12 +207,8 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         # Donc il doit déjà être dans resulats_de_base
         impots_par_reforme = resultats_de_base.copy()
     else:
-        impots_par_reforme = next(iter(dictionnaire_simulations.values()))[1][
-            "foyer_fiscal"
-        ][["wprm"]]
-    nbptr_par_reforme = next(iter(dictionnaire_simulations.values()))[1][
-        "foyer_fiscal"
-    ][["wprm"]]
+        impots_par_reforme = dataframe_pondere(dictionnaire_simulations)
+    nbptr_par_reforme = dataframe_pondere(dictionnaire_simulations)
     for nom_simulation in dictionnaire_simulations:
         impots_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
             0
