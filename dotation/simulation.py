@@ -1,8 +1,8 @@
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
-from load_dgcl_data import load_dgcl_file
+from dotation.load_dgcl_data import load_dgcl_file  # type: ignore
 # Actually runs the simulations
 from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: ignore
-from reform import DotationReform
+from dotation.reform import DotationReform  # type: ignore
 
 
 def simulation_from_dgcl_csv(period, data, tbs):

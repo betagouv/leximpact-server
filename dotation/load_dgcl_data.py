@@ -40,7 +40,7 @@ variables_openfisca_presentes_fichier = {
 
 
 # Fichiers disponibles sur https://www.data.gouv.fr/fr/datasets/dotations-globales-de-fonctionnement/
-def load_dgcl_file(path="2019-communes-criteres-repartition.csv"):
+def load_dgcl_file(path="dotation/2019-communes-criteres-repartition.csv"):
     data = pandas.read_csv(path, decimal=",")
     extracolumns = {}
     #
