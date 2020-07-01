@@ -30,7 +30,7 @@ def format_reforme_openfisca(reforme_a_traduire):
         # on choisit de ne rien soulever si ce champ n'est pas présent dans la réforme.
         # Ca fait qu'une absence de ce paramètre ne fera pas échouer la requête.
         pass
-    return translate_dict(ref, table_transcription_leximpact_ofdl)
+    return {"dgf": translate_dict(ref, table_transcription_leximpact_ofdl)}
 
 
 def impacts_reforme_dotation(reforme):
@@ -44,7 +44,7 @@ def impacts_reforme_dotation(reforme):
     prefix_dsr_eligible = "dsr_eligible_"
     for scenario in ["avant", "apres"]:
         df_results[prefix_dsr_eligible + scenario] = df_results["dsr_eligible_fraction_bourg_centre" + "_" + scenario] | df_results["dsr_eligible_fraction_perequation" + "_" + scenario] | df_results["dsr_eligible_fraction_cible" + "_" + scenario]
-
+        print(scenario, df_results["dsr_eligible_fraction_bourg_centre" + "_" + scenario].sum())
     for scenario in ["avant", "apres"]:
         scenario_api = scenario_names[scenario]
         res[scenario_api] = {
