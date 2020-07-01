@@ -72,12 +72,12 @@ def test_calculate_compare_presence_cas_types(client, payload, headers):
     # Vérifie que les cas types des résultats apparaissent tous dans tous les champs
     response = partial(client.post, "calculate/compare", headers=headers)
     actual = json.loads(response(data=json.dumps(payload)).data)
-    master_to_compare = None
-    for var_in_res_brut in actual["res_brut"].keys():
-        if master_to_compare is None:
-            master_to_compare = set(actual["res_brut"][var_in_res_brut].keys())
-        assert master_to_compare == set(
-            actual["res_brut"][var_in_res_brut].keys()
+    first_simulation_cas_type_ids = None
+    for simulation_name in actual["res_brut"].keys():
+        if first_simulation_cas_type_ids is None:
+            first_simulation_cas_type_ids = set(actual["res_brut"][simulation_name].keys())
+        assert first_simulation_cas_type_ids == set(
+            actual["res_brut"][simulation_name].keys()
         )
 
 
