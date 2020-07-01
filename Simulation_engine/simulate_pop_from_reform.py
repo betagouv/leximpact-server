@@ -294,15 +294,10 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         dic_res_brut = impots_par_reforme.to_dict()
         del dic_res_brut["wprm"]
         for simu in dic_res_brut:
-            if simu != "wprm":
-                for cas_type in dic_res_brut[simu]:
-                    dic_res_brut[simu][cas_type] = int(round(dic_res_brut[simu][cas_type]))
+            for cas_type in dic_res_brut[simu]:
+                dic_res_brut[simu][cas_type] = int(round(dic_res_brut[simu][cas_type]))
         dic_nbptr = nbptr_par_reforme.to_dict()
         del dic_nbptr["wprm"]
-        for simu in dic_nbptr:
-            if simu != "wprm":
-                for cas_type in dic_nbptr[simu]:
-                    dic_nbptr[simu][cas_type] = dic_nbptr[simu][cas_type]
         resultat = {"total": total, "res_brut": dic_res_brut, "nbreParts": dic_nbptr}
 
     return resultat
