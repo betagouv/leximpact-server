@@ -199,7 +199,10 @@ def generate_nbptr_class(
 
             # La formulation de l'article 195 nous pousse à faire ceci pour plus de cohérence.
             # Ce sont les cas couverts par l'alinéa 1 de l'article 195 du CGI
-            n3 = (1.5 - enf) * (no_pac & no_alt & (caseW | caseG | caseP | ((caseE | caseK | caseL) & not_(caseN))))
+            conditions_invalidite = caseP
+            conditions_combattant = caseW | caseG
+            conditions_seul_enfants = (caseE | caseK | caseL) & not_(caseN)  # demie-part supplémentaire
+            n3 = (1.5 - enf) * (no_pac & no_alt & (conditions_combattant | conditions_invalidite | conditions_seul_enfants))
             # # note 4 Invalidité de la personne ou du conjoint pour les mariés ou
             # # jeunes veuf(ve)s
             n4 = max_(
