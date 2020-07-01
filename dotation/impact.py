@@ -1,5 +1,5 @@
-from simulation import resultfromreforms
-from utils_dict import translate_dict
+from dotation.simulation import resultfromreforms  # type: ignore
+from dotation.utils_dict import translate_dict  # type: ignore
 from copy import deepcopy
 
 table_transcription_leximpact_ofdl = {"communes.dsr.eligibilite.popMax": "dotation_solidarite_rurale.seuil_nombre_habitants",
