@@ -59,9 +59,9 @@ def impacts_reforme_dotation(reforme):
         }
         res[scenario_api]["dotations"]["communes"]["dsr"]["communes"] = []
         for cas_type in communes_cas_types:
-            cas_type_eligible = df_results[df_results[code_comm].astype(str) == cas_type][prefix_dsr_eligible + scenario].values[0]
+            cas_type_eligible = bool(df_results[df_results[code_comm].astype(str) == cas_type][prefix_dsr_eligible + scenario].values[0])
             res[scenario_api]["dotations"]["communes"]["dsr"]["communes"] += [{"code" : cas_type, "eligible": cas_type_eligible}]
-        res[scenario_api]["dotations"]["communes"]["dsr"]["eligibles"] = df_results[prefix_dsr_eligible + scenario].sum()
+        res[scenario_api]["dotations"]["communes"]["dsr"]["eligibles"] = int(df_results[prefix_dsr_eligible + scenario].sum())
         if scenario != "avant":
             res[scenario_api]["dotations"]["communes"]["dsr"]["nouvellementEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (~df_results[prefix_dsr_eligible + "avant"])])
             res[scenario_api]["dotations"]["communes"]["dsr"]["plusEligibles"] = len(df_results[(~df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "avant"])])
@@ -71,9 +71,9 @@ def impacts_reforme_dotation(reforme):
         for id_borne in range(len(bornes_inf)):  # id borne : the borne identity
             borne = bornes_inf[id_borne]
             df_strate = df_results[df_results["population_insee"] >= borne]
-            resultats_agreges_bornes[id_borne]["population_insee"] = df_strate["population_insee"].sum()
-            resultats_agreges_bornes[id_borne]["potentiel_financier"] = df_strate["potentiel_financier" + "_" + scenario].sum()
-            resultats_agreges_bornes[id_borne]["eligibles_dsr"] = df_strate[prefix_dsr_eligible + scenario].sum()
+            resultats_agreges_bornes[id_borne]["population_insee"] = int(df_strate["population_insee"].sum())
+            resultats_agreges_bornes[id_borne]["potentiel_financier"] = float(df_strate["potentiel_financier" + "_" + scenario].sum())
+            resultats_agreges_bornes[id_borne]["eligibles_dsr"] = int(df_strate[prefix_dsr_eligible + scenario].sum())
         res_strates = [{} for borne in bornes_inf[:-1]]
         for id_borne in range(len(bornes_inf) - 1):
             res_strates[id_borne]["habitants"] = bornes_inf[id_borne]
