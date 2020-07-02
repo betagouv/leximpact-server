@@ -194,6 +194,11 @@ def calcule_personnes_touchees(impots_par_reforme):
     return foyers_fiscaux_touches
 
 
+def dataframe_pondere(dictionnaire_simulations: Dict) -> pandas.DataFrame:
+    # Pondération des foyers fiscaux : une ligne par foyer fiscal, une colonne pour le poids (wprm)
+    return next(iter(dictionnaire_simulations.values()))[1]["foyer_fiscal"][["wprm"]]
+
+
 def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     res: Total = {}
     if (
@@ -202,9 +207,8 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
         # Donc il doit déjà être dans resulats_de_base
         impots_par_reforme = resultats_de_base.copy()
     else:
-        impots_par_reforme = next(iter(dictionnaire_simulations.values()))[1][
-            "foyer_fiscal"
-        ][["wprm"]]
+        impots_par_reforme = dataframe_pondere(dictionnaire_simulations)
+    nbptr_par_reforme = dataframe_pondere(dictionnaire_simulations)
     for nom_simulation in dictionnaire_simulations:
         impots_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
             0
@@ -213,6 +217,10 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
             impots_par_reforme["rfr"] = dictionnaire_simulations[nom_simulation][
                 0
             ].calculate("rfr", period)
+        else:  # Evitons de calculer le nbptr quand on fait toute la population
+            nbptr_par_reforme[nom_simulation] = dictionnaire_simulations[nom_simulation][
+                0
+            ].calculate("nbptr", period)
 
     for nom_res_base in liste_noms_reformes_avec_apres:
         res[nom_res_base] = -(
@@ -284,10 +292,13 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
     else:  # This only interests us for the castypes
         # On arrondit les résultats des cas-types
         dic_res_brut = impots_par_reforme.to_dict()
+        del dic_res_brut["wprm"]
         for simu in dic_res_brut:
             for cas_type in dic_res_brut[simu]:
                 dic_res_brut[simu][cas_type] = int(round(dic_res_brut[simu][cas_type]))
-        resultat = {"total": total, "res_brut": dic_res_brut}
+        dic_nbptr = nbptr_par_reforme.to_dict()
+        del dic_nbptr["wprm"]
+        resultat = {"total": total, "res_brut": dic_res_brut, "nbreParts": dic_nbptr}
 
     return resultat
 

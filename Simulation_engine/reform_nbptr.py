@@ -88,9 +88,11 @@ def generate_nbptr_class(
     class nbptr(Variable):
         value_type = float
         entity = FoyerFiscal
-        label = "Nombre de parts"
-        reference = "http://vosdroits.service-public.fr/particuliers/F2705.xhtml"
         definition_period = YEAR
+        label = "Nombre de parts"
+        reference = [
+            "http://vosdroits.service-public.fr/particuliers/F2705.xhtml",
+            "https://www.legifrance.gouv.fr/affichCodeArticle.do?cidTexte=LEGITEXT000006069577&idArticle=LEGIARTI000006308287"]
 
         def formula(foyer_fiscal, period, parameters):
             """
@@ -195,15 +197,12 @@ def generate_nbptr_class(
             # # note 3 : Pas de personne à charge
             # - invalide
 
-            n31a = quotient_familial.not31a * (no_pac & no_alt & caseP)
-            # - ancien combatant
-            n31b = quotient_familial.not31b * (no_pac & no_alt & (caseW | caseG))
-            n31 = max_(n31a, n31b)
-            # - personne seule ayant élevé des enfants
-            n32 = quotient_familial.not32 * (
-                no_pac & no_alt & ((caseE | caseK | caseL) & not_(caseN))
-            )
-            n3 = max_(n31, n32)
+            # La formulation de l'article 195 nous pousse à faire ceci pour plus de cohérence.
+            # Ce sont les cas couverts par l'alinéa 1 de l'article 195 du CGI
+            conditions_invalidite = caseP
+            conditions_combattant = caseW | caseG
+            conditions_seul_enfants = (caseE | caseK | caseL) & not_(caseN)  # demie-part supplémentaire
+            n3 = (1.5 - enf) * (no_pac & no_alt & (conditions_combattant | conditions_invalidite | conditions_seul_enfants))
             # # note 4 Invalidité de la personne ou du conjoint pour les mariés ou
             # # jeunes veuf(ve)s
             n4 = max_(
@@ -234,7 +233,7 @@ def generate_nbptr_class(
             nb_parts_famille = enf + n2 + n4
 
             # # veufs  hors jeune_veuf
-            nb_parts_veuf = enf + n2 + n3 + n6
+            nb_parts_veuf = enf + n2 + n3 + n6 + n7
 
             # # celib div
             nb_parts_celib = enf + n2 + n3 + n6 + n7

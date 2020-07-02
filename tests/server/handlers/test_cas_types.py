@@ -1,7 +1,10 @@
-from functools import partial
-import json
-from datetime import datetime
 import pytest  # type: ignore
+import dpath  # type: ignore
+import json
+
+from functools import partial
+from datetime import datetime
+from http.client import CREATED
 
 
 @pytest.fixture
@@ -65,14 +68,16 @@ def test_calculate_compare_with_cas_types(client, payload, headers):
     assert actual["timestamp"] == expected["timestamp"]
 
 
-def test_calculate_compare_weights(client, payload, headers):
+def test_calculate_compare_presence_cas_types(client, payload, headers):
     # Vérifie que les cas types des résultats apparaissent tous dans tous les champs
     response = partial(client.post, "calculate/compare", headers=headers)
     actual = json.loads(response(data=json.dumps(payload)).data)
-
-    for var_in_res_brut in actual["res_brut"].keys():
-        assert set(actual["res_brut"]["wprm"].keys()) == set(
-            actual["res_brut"][var_in_res_brut].keys()
+    first_simulation_cas_type_ids = None
+    for simulation_name in actual["res_brut"].keys():
+        if first_simulation_cas_type_ids is None:
+            first_simulation_cas_type_ids = set(actual["res_brut"][simulation_name].keys())
+        assert first_simulation_cas_type_ids == set(
+            actual["res_brut"][simulation_name].keys()
         )
 
 
@@ -208,3 +213,37 @@ def test_calculate_compare_lexception(client, headers):
     assert json.loads(response.data) == {
         "Error": "Error in request : the field 'partsSelonNombrePAC' is missing from 'calculNombreParts'. You can refer to the README to check valid format."
     }
+
+
+def test_calculate_compare_response(client, headers, payload):
+    # Par défaut, la réponse contient l'impôt et le nombre de parts par cas type
+    request_data = json.dumps(payload)
+    response = client.post("calculate/compare", data=request_data, headers=headers)
+
+    assert response.status_code == CREATED  # 201
+    response_json = json.loads(response.data.decode('utf-8'))
+
+    res_brut = dpath.get(response_json, 'res_brut')
+    assert res_brut is not None
+    assert list(res_brut.keys()) == ['apres', 'avant']
+
+    res_brut_apres = dpath.get(response_json, 'res_brut/apres')
+    assert list(res_brut_apres.keys()) == ['0', '1', '2', '3', '4', '5']  # 6 cas types par défaut
+
+    nbreParts = dpath.get(response_json, 'nbreParts')
+    assert nbreParts is not None
+    assert list(nbreParts.keys()) == ['apres', 'avant']
+
+    nbreParts_apres = dpath.get(response_json, 'nbreParts/apres')
+    assert list(nbreParts_apres.keys()) == ['0', '1', '2', '3', '4', '5']  # 6 cas types par défaut
+
+
+def test_calculate_compare_response_on_nbptr(client, headers, payload):
+    request_data = json.dumps(payload)
+    response = client.post("calculate/compare", data=request_data, headers=headers)
+
+    assert response.status_code == CREATED  # 201
+
+    response_json = json.loads(response.data.decode('utf-8'))
+    nombre_parts_cas_types_2020 = {"0": 1.0, "1": 1.5, "2": 2.0, "3": 2.0, "4": 3.0, "5": 3.0}
+    assert dpath.get(response_json, 'nbreParts/avant') == nombre_parts_cas_types_2020
