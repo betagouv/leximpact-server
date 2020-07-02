@@ -28,7 +28,14 @@ def simulation_from_dgcl_csv(period, data, tbs):
 def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bourg_centre", "dsr_eligible_fraction_perequation", "dsr_eligible_fraction_cible")):
     PERIOD = "2020"
     # some of these can be preloaded in memory to improve performance.
-    DATA = load_dgcl_file()
+    try:
+        # Will work when app is launched with the command in Procfile
+        # (for example in Scalingo)
+        DATA = load_dgcl_file("../assets/data/2019-communes-criteres-repartition.csv")
+    except FileNotFoundError:
+        # Will work when app is launched from home folder (with make run, or in circleCI)
+        DATA = load_dgcl_file("assets/data/2019-communes-criteres-repartition.csv")
+
     TBS = CountryTaxBenefitSystem()
     dict_sims = {"avant": simulation_from_dgcl_csv(PERIOD, DATA, TBS)}
     # création d'un dictionnaire contenant une simulation par output
