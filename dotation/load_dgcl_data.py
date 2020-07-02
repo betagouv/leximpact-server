@@ -1,5 +1,5 @@
 import pandas  # type: ignore
-
+import os
 
 # Quelques noms de colonne utiles:
 elig_bc_dgcl = "Eligible fraction bourg-centre selon DGCL"
@@ -39,9 +39,15 @@ variables_openfisca_presentes_fichier = {
 # les colonnes non-openfisca contiennent un espace. Je sais, c'est propre.
 
 
-# Fichiers disponibles sur https://www.data.gouv.fr/fr/datasets/dotations-globales-de-fonctionnement/
+# Fichiers disponibles sur https://www.data.gouv.fr/fr/datasets/criteres-de-repartition-des-dotations-versees-par-letat-aux-collectivites-territoriales/
 def load_dgcl_file(path="assets/data/2019-communes-criteres-repartition.csv"):
-    data = pandas.read_csv(path, decimal=",")
+    try:
+        data = pandas.read_csv(path, decimal=",")
+    except FileNotFoundError:
+        print("file", path, "was not found")
+        print("ls :", os.listdir("."))
+        print("cwd :", os.getcwd())
+        raise
     extracolumns = {}
     #
     # add_plus_grande_commune_agglo_column
