@@ -39,7 +39,7 @@ def format_reforme_openfisca(reforme_a_traduire):
     return {"dgf": translate_dict(ref, TABLE_LEXIMPACT_TO_OFDL)}
 
 
-def simulate(request_body, prefix_dsr_eligible):
+def simulate(request_body, prefix_dsr_eligible, prefix_montant):
     variables_nombre_communes = [
         "dsr_eligible_fraction_bourg_centre",
         "dsr_eligible_fraction_perequation",
@@ -51,8 +51,6 @@ def simulate(request_body, prefix_dsr_eligible):
 
     reforme = format_reforme_openfisca(request_body["reforme"])
     df_results: DataFrame = resultfromreforms({"amendement" : reforme}, to_compute)
-
-    prefix_montant = "dsr_montant_"
 
     for scenario in ["base", "amendement"]:
         df_results[prefix_dsr_eligible + scenario] = (

@@ -40,6 +40,7 @@ class Dotations(object):
 
         # calculer
         prefix_dsr_eligible = "dsr_eligible_"
+        prefix_dsr_montant = "dsr_montant_"
         df_results = simulate(request_body, prefix_dsr_eligible)
 
         # constuire la réponse
@@ -47,14 +48,14 @@ class Dotations(object):
             "amendement": {
                 "dotations": {
                     "communes": {
-                        "dsr": build_response_dsr("amendement", df_results, prefix_dsr_eligible)
+                        "dsr": build_response_dsr("amendement", df_results, prefix_dsr_eligible, prefix_dsr_montant)
                     }
                 }
             },
             "base": {
                 "dotations": {
                     "communes": {
-                        "dsr": build_response_dsr("base", df_results, prefix_dsr_eligible)
+                        "dsr": build_response_dsr("base", df_results, prefix_dsr_eligible, prefix_dsr_montant)
                     }
                 }
             }
