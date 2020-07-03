@@ -23,7 +23,9 @@ variables_openfisca_presentes_fichier = {
     'potentiel_financier': 'Potentiel fiscal et financier des communes - Potentiel financier',
     'potentiel_financier_par_habitant': 'Potentiel fiscal et financier des communes - Potentiel financier par habitant',
     'revenu_total': 'Dotation de solidarité urbaine - Revenu imposable des habitants de la commune',
-    'strate_demographique': 'Informations générales - Strate démographique Année N'
+    'strate_demographique': 'Informations générales - Strate démographique Année N',
+    'zrr':'Dotation de solidarité rurale - Bourg-centre - Commune située en ZRR',
+    'effort_fiscal':'Effort fiscal - Effort fiscal'
 }
 
 # A partir de l'adresse du tableau publié par la DGCL, produit un tableau contenant toutes les colonnes nécessaires
@@ -239,7 +241,7 @@ def adapt_dgcl_data(data):
     data.columns = [column if column not in invert_dict else invert_dict[column] for column in data.columns]
 
     # Passe les "booléens dgf" (oui/non) en booléens normaux
-    liste_columns_to_real_bool = ["bureau_centralisateur", "chef_lieu_arrondissement", "chef_lieu_departement_dans_agglomeration"]
+    liste_columns_to_real_bool = ["bureau_centralisateur", "chef_lieu_arrondissement","zrr", "chef_lieu_departement_dans_agglomeration"]
     for col in liste_columns_to_real_bool:
         data[col] = (data[col].str.contains(pat="oui", case=False))
 
