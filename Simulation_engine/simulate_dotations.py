@@ -52,11 +52,14 @@ def simulate(request_body, prefix_dsr_eligible):
     reforme = format_reforme_openfisca(request_body["reforme"])
     df_results: DataFrame = resultfromreforms({"amendement" : reforme}, to_compute)
 
+    prefix_montant = "dsr_montant_"
+
     for scenario in ["base", "amendement"]:
         df_results[prefix_dsr_eligible + scenario] = (
             df_results["dsr_eligible_fraction_bourg_centre" + "_" + scenario]
             | df_results["dsr_eligible_fraction_perequation" + "_" + scenario]
             | df_results["dsr_eligible_fraction_cible" + "_" + scenario]
         )
+        df_results[prefix_montant + scenario] = df_results["dsr_montant_hors_garanties_fraction_bourg_centre" + "_" + scenario]
 
     return df_results
