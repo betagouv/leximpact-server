@@ -37,7 +37,7 @@ def build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible):
     return response
 
 
-def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible):
+def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant):
     # [scenario_api]["dotations"]["communes"]["dsr"]
     # > ["strates"]
 
@@ -52,6 +52,7 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible):
         resultats_agreges_bornes[id_borne]["population_insee"] = int(df_strate["population_insee"].sum())
         resultats_agreges_bornes[id_borne]["potentiel_financier"] = float(df_strate["potentiel_financier" + "_" + scenario].sum())
         resultats_agreges_bornes[id_borne]["eligibles_dsr"] = int(df_strate[prefix_dsr_eligible + scenario].sum())
+        resultats_agreges_bornes[id_borne]["montant_dsr"] = int(df_strate[prefix_dsr_montant + scenario].sum())
 
     res_strates = [{} for borne in BORNES_STRATES[:-1]]
     for id_borne in range(len(BORNES_STRATES) - 1):
@@ -62,6 +63,8 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible):
         res_strates[id_borne]["potentielFinancierMoyenParHabitant"] = pot_strate / pop_strate
         nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles_dsr"] - resultats_agreges_bornes[id_borne + 1]["eligibles_dsr"]
         res_strates[id_borne]["eligibles"] = nb_elig_strate
+        res_strates[id_borne]["dotationMoyenneParHab"] = (resultats_agreges_bornes[id_borne]["montant_dsr"] - resultats_agreges_bornes[id_borne + 1]["montant_dsr"]) / pop_strate
+        res_strates[id_borne]["partDotationTotale"] = ((resultats_agreges_bornes[id_borne]["montant_dsr"] - resultats_agreges_bornes[id_borne + 1]["montant_dsr"]) / resultats_agreges_bornes[0]["montant_dsr"]) if resultats_agreges_bornes[0]["montant_dsr"] else 0
 
     return res_strates
 
@@ -71,5 +74,5 @@ def build_response_dsr(scenario: str, df_results: DataFrame, prefix_dsr_eligible
     return {
         "communes": build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant),
         **eligibilites,
-        "strates": build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible)
+        "strates": build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant)
     }
