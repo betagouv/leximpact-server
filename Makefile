@@ -10,6 +10,9 @@ install:
 	pip install --upgrade pip
 	pip install --editable .[dev] --upgrade
 
+clean:
+	find . -name '*.pyc' -exec rm \{\} \;
+
 check-style:
 	@# Do not analyse .gitignored files.
 	@# `make` needs `$$` to output `$`. Ref: http://stackoverflow.com/questions/2382764.
@@ -34,7 +37,7 @@ migrate:
 run:
 	FLASK_ENV=development PORT=5000 python ./server/app.py
 
-test: check-style check-types
+test: clean check-style check-types
 	pytest
 
 stress-server:
