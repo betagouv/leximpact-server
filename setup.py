@@ -1,5 +1,28 @@
 from setuptools import setup, find_packages  # type: ignore
 
+basic_requirements = [
+    "alembic >= 1.0.11, < 2.0.0",
+    "connexion[swagger-ui] >= 2.6.0, < 3.0.0",
+    "flask-cors >= 3.0.7, < 3.1.0",
+    "gunicorn >= 20.0.0, < 21.0.0",
+    "mailjet-rest >= 1.3.3, < 2.0.0",
+    "pandas >= 0.24.0, < 0.25.0",
+    "psycopg2 >= 2.8.3, < 3.0.0",
+    "pyjwt >= 1.7.1, < 2.0.0",
+    "python-dotenv >= 0.10.3, < 1.0.0",
+    "sqlalchemy >= 1.3.5, < 2.0.0",
+    "toolz >= 0.9.0, < 1.0.0",
+]
+
+impot_revenu_requirements = [
+    "openfisca-core >= 34.2.8, < 35.0.0",
+    "openfisca-france >= 48.10.6, < 49.0.0",
+]
+
+dotations_requirements = [
+    "openfisca-france-dotations-locales >= 0.2.0, < 1.0.0",
+]
+
 setup(
     name="LexImpact Server",
     author="LexImpact Team",
@@ -19,20 +42,9 @@ setup(
         "Topic :: Scientific/Engineering :: Information Analysis",
     ],
     install_requires=[
-        "alembic >= 1.0.11, < 2.0.0",
-        "connexion[swagger-ui] >= 2.6.0, < 3.0.0",
-        "flask-cors >= 3.0.7, < 3.1.0",
-        "gunicorn >= 20.0.0, < 21.0.0",
-        "mailjet-rest >= 1.3.3, < 2.0.0",
-        "openfisca-core >= 34.2.8, < 35.0.0",
-        "openfisca-france >= 48.10.6, < 49.0.0",
-        "openfisca-france-dotations-locales >= 0.2.0, < 1.0.0",
-        "pandas >= 0.24.0, < 0.25.0",
-        "psycopg2 >= 2.8.3, < 3.0.0",
-        "pyjwt >= 1.7.1, < 2.0.0",
-        "python-dotenv >= 0.10.3, < 1.0.0",
-        "sqlalchemy >= 1.3.5, < 2.0.0",
-        "toolz >= 0.9.0, < 1.0.0",
+        impot_revenu_requirements,
+        dotations_requirements,
+        basic_requirements
     ],
     extras_require={
         "dev": [
