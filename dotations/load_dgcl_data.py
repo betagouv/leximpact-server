@@ -50,7 +50,7 @@ def load_dgcl_file(path="assets/data/2019-communes-criteres-repartition.csv"):
         raise
     extracolumns = {}
     #
-    # add_plus_grande_commune_agglo_column
+    # add plus grande commune agglo column
     #
     # Niveau ceinture blanche : on groupe by la taille totale de l'agglo (c'est ce qu'on fait icis)
     # Niveau ceinture orange : en plus de ce critère, utiliser des critères géographiques pour localiser les agglos.
@@ -67,8 +67,10 @@ def load_dgcl_file(path="assets/data/2019-communes-criteres-repartition.csv"):
     extracolumns["population_dgf_maximum_commune_agglomeration"] = plus_grosse_commune
 
     #
-    # deux communes ont une part ui apparait >= à 15% du canton mais en fait non. On triche mais pas beaucoup, la part dans la population du canton
+    # deux communes ont une part qui apparait >= à 15% du canton mais en fait non.
+    # On triche mais pas beaucoup, la part dans la population du canton
     # n'est pas une info facile à choper exactement.
+    # Manquant : nombre d'habitants du canton mais nous avons la part population canton (malheureusement arrondie).
     #
     part_population_canton = variables_openfisca_presentes_fichier["part_population_canton"]
     data.loc[(data[code_comm] == 57163) | (data[code_comm] == 87116), part_population_canton] -= 0.0001
@@ -110,7 +112,7 @@ def load_dgcl_file(path="assets/data/2019-communes-criteres-repartition.csv"):
     data = data.merge(tableau_donnees_par_strate[[revenu_moyen_strate]], left_on=strate, right_index=True)
 
     # Avant de corriger les revenus, il nous faut calculer les revenus moyens par strate
-    # Certains revenus sont ignorés dans le calcul du revenu moyen de la strate, on sait pas pourquoi
+    # Les revenus de certaines communes sont ignorés dans le calcul du revenu moyen de la strate, on sait pas pourquoi
     # (ptet la DGCL préserve le secret statistique dans ses metrics agrégées?)
     # La conséquence de la ligne de code qui suit est qu'on utilise la même méthodo que la DGCL
     # donc on a un classement cible plus proche de la vérité.
@@ -133,6 +135,8 @@ def load_dgcl_file(path="assets/data/2019-communes-criteres-repartition.csv"):
     # Il contient toutes les variables qu'on rentrera dans openfisca au format openfisca
     # + Des variables utiles qu'on ne rentre pas dans openfisca
     #
+    # colonnes = colonnes du fichier dgcl qui deviennent les inputs pour les calculs openfisca
+    # lignes = 1 ligne par commune
     # Restriction aux colonnes intéressantes :
     rang_indice_synthetique = "Dotation de solidarité rurale - Cible - Rang DSR Cible"
     translation_cols = {**variables_openfisca_presentes_fichier, **extracolumns}

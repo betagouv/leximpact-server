@@ -1,6 +1,8 @@
+from pandas import DataFrame  # type: ignore
+from copy import deepcopy
+
 from dotations.simulation import resultfromreforms  # type: ignore
 from dotations.utils_dict import translate_dict  # type: ignore
-from copy import deepcopy
 
 
 BORNES_STRATES = [0, 500, 2000, 5000, 10000, 20000, 50000, 100000, 1000000000000]  # bornes inf des strates en terme de POP INSEE
@@ -37,18 +39,32 @@ def format_reforme_openfisca(reforme_a_traduire):
     return {"dgf": translate_dict(ref, table_transcription_leximpact_ofdl)}
 
 
+def get_cas_types_codes_insee():
+    return ["76384", "76214"]
+
+
 def impacts_reforme_dotation(reforme):
-    variables_nombre_communes = ["dsr_eligible_fraction_bourg_centre", "dsr_eligible_fraction_perequation", "dsr_eligible_fraction_cible"]
+    variables_nombre_communes = [
+        "dsr_eligible_fraction_bourg_centre",
+        "dsr_eligible_fraction_perequation",
+        "dsr_eligible_fraction_cible"
+    ]
     variables_aggregations = ["potentiel_financier"]
     to_compute = variables_nombre_communes + variables_aggregations
-    df_results = resultfromreforms({"apres" : reforme}, to_compute)
+
+    df_results: DataFrame = resultfromreforms({"apres" : reforme}, to_compute)
+
     res = {}
     scenario_names = {"avant": "base", "apres": "amendement", "plf": "plf"}
-    code_comm = "Informations générales - Code INSEE de la commune"
+
     prefix_dsr_eligible = "dsr_eligible_"
     for scenario in ["avant", "apres"]:
-        df_results[prefix_dsr_eligible + scenario] = df_results["dsr_eligible_fraction_bourg_centre" + "_" + scenario] | df_results["dsr_eligible_fraction_perequation" + "_" + scenario] | df_results["dsr_eligible_fraction_cible" + "_" + scenario]
-    communes_cas_types = ["76384", "76214"]
+        df_results[prefix_dsr_eligible + scenario] = (
+            df_results["dsr_eligible_fraction_bourg_centre" + "_" + scenario]
+            | df_results["dsr_eligible_fraction_perequation" + "_" + scenario]
+            | df_results["dsr_eligible_fraction_cible" + "_" + scenario]
+        )
+
     for scenario in ["avant", "apres"]:
         scenario_api = scenario_names[scenario]
         res[scenario_api] = {
@@ -60,7 +76,10 @@ def impacts_reforme_dotation(reforme):
                 }
             }
         }
+
         res[scenario_api]["dotations"]["communes"]["dsr"]["communes"] = []
+        code_comm = "Informations générales - Code INSEE de la commune"
+        communes_cas_types = get_cas_types_codes_insee()
         for cas_type in communes_cas_types:
             cas_type_eligible = bool(df_results[df_results[code_comm].astype(str) == cas_type][prefix_dsr_eligible + scenario].values[0])
             res[scenario_api]["dotations"]["communes"]["dsr"]["communes"] += [{"code" : cas_type, "eligible": cas_type_eligible}]
@@ -70,6 +89,8 @@ def impacts_reforme_dotation(reforme):
             res[scenario_api]["dotations"]["communes"]["dsr"]["plusEligibles"] = len(df_results[(~df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "avant"])])
         # tableau nombre de communes éligibles par strate
         resultats_agreges_bornes = [{} for borne in BORNES_STRATES]
+
+        # pour une borne, aggrège les résultats de toute la population située au niveau supérieur ou égal à la borne
         for id_borne in range(len(BORNES_STRATES)):  # id borne : the borne identity
             borne = BORNES_STRATES[id_borne]
             df_strate = df_results[df_results["population_insee"] >= borne]
@@ -88,4 +109,3 @@ def impacts_reforme_dotation(reforme):
         res[scenario_api]["dotations"]["communes"]["dsr"]["strates"] = res_strates
 
     return res
-
