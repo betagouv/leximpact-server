@@ -1,4 +1,5 @@
-from dotations.impact import BORNES_STRATES, format_reforme_openfisca, impacts_reforme_dotation  # type: ignore
+from dotations.impact import BORNES_STRATES, format_reforme_openfisca  # type: ignore
+from Simulation_engine.simulate_dotations import simulate as impacts_reforme_dotation
 
 
 def test_format_reforme_openfisca():

@@ -15,7 +15,7 @@ def test_resultfromreforms_default_inputs():
 
 def test_resultfromreforms():
     openfisca_variables_to_compute = ("dsr_eligible_fraction_perequation",)
-    scenario_name = "apres"
+    scenario_name = "amendement"
     reforme_as_openfisca = {}
 
     result = resultfromreforms({scenario_name : reforme_as_openfisca}, openfisca_variables_to_compute)

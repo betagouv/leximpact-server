@@ -37,7 +37,7 @@ def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bour
         DATA = load_dgcl_file("assets/data/2019-communes-criteres-repartition.csv")
 
     TBS = CountryTaxBenefitSystem()
-    dict_sims = {"avant": simulation_from_dgcl_csv(PERIOD, DATA, TBS)}
+    dict_sims = {"base": simulation_from_dgcl_csv(PERIOD, DATA, TBS)}
     # création d'un dictionnaire contenant une simulation par output
     if dict_ref is not None:
         for nom_scenario, reforme_scenario in dict_ref.items():
@@ -62,4 +62,4 @@ if __name__ == "__main__":
             }
         }
     }
-    print(resultfromreforms({"apres": payload_example}))
+    print(resultfromreforms({"amendement": payload_example}))

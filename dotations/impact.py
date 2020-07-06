@@ -1,7 +1,6 @@
 from pandas import DataFrame  # type: ignore
 from copy import deepcopy
 
-from dotations.simulation import resultfromreforms  # type: ignore
 from dotations.utils_dict import translate_dict  # type: ignore
 
 
@@ -43,69 +42,56 @@ def get_cas_types_codes_insee():
     return ["76384", "76214"]
 
 
-def impacts_reforme_dotation(reforme):
-    variables_nombre_communes = [
-        "dsr_eligible_fraction_bourg_centre",
-        "dsr_eligible_fraction_perequation",
-        "dsr_eligible_fraction_cible"
-    ]
-    variables_aggregations = ["potentiel_financier"]
-    to_compute = variables_nombre_communes + variables_aggregations
+def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible):
+    # [scenario_api]["dotations"]["communes"]["dsr"]
+    # > ["communes"]
+    response = []
 
-    df_results: DataFrame = resultfromreforms({"apres" : reforme}, to_compute)
+    code_comm = "Informations générales - Code INSEE de la commune"
+    communes_cas_types = get_cas_types_codes_insee()
+    for cas_type in communes_cas_types:
+        cas_type_eligible = bool(df_results[df_results[code_comm].astype(str) == cas_type][prefix_dsr_eligible + scenario].values[0])
+        response += [{"code" : cas_type, "eligible": cas_type_eligible}]
 
-    res = {}
-    scenario_names = {"avant": "base", "apres": "amendement", "plf": "plf"}
+    return response
 
-    prefix_dsr_eligible = "dsr_eligible_"
-    for scenario in ["avant", "apres"]:
-        df_results[prefix_dsr_eligible + scenario] = (
-            df_results["dsr_eligible_fraction_bourg_centre" + "_" + scenario]
-            | df_results["dsr_eligible_fraction_perequation" + "_" + scenario]
-            | df_results["dsr_eligible_fraction_cible" + "_" + scenario]
-        )
 
-    for scenario in ["avant", "apres"]:
-        scenario_api = scenario_names[scenario]
-        res[scenario_api] = {
-            "dotations": {
-                "communes": {
-                    "dsr": {
+def build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible):
+    # [scenario_api]["dotations"]["communes"]["dsr"]
+    # > ["eligibles"]/["nouvellementEligibles"]/["plusEligibles"]
+    response = {}
 
-                    }
-                }
-            }
-        }
+    response["eligibles"] = int(df_results[prefix_dsr_eligible + scenario].sum())
+    if scenario != "base":
+        response["nouvellementEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (~df_results[prefix_dsr_eligible + "base"])])
+        response["plusEligibles"] = len(df_results[(~df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "base"])])
 
-        res[scenario_api]["dotations"]["communes"]["dsr"]["communes"] = []
-        code_comm = "Informations générales - Code INSEE de la commune"
-        communes_cas_types = get_cas_types_codes_insee()
-        for cas_type in communes_cas_types:
-            cas_type_eligible = bool(df_results[df_results[code_comm].astype(str) == cas_type][prefix_dsr_eligible + scenario].values[0])
-            res[scenario_api]["dotations"]["communes"]["dsr"]["communes"] += [{"code" : cas_type, "eligible": cas_type_eligible}]
-        res[scenario_api]["dotations"]["communes"]["dsr"]["eligibles"] = int(df_results[prefix_dsr_eligible + scenario].sum())
-        if scenario != "avant":
-            res[scenario_api]["dotations"]["communes"]["dsr"]["nouvellementEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (~df_results[prefix_dsr_eligible + "avant"])])
-            res[scenario_api]["dotations"]["communes"]["dsr"]["plusEligibles"] = len(df_results[(~df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "avant"])])
-        # tableau nombre de communes éligibles par strate
-        resultats_agreges_bornes = [{} for borne in BORNES_STRATES]
+    return response
 
-        # pour une borne, aggrège les résultats de toute la population située au niveau supérieur ou égal à la borne
-        for id_borne in range(len(BORNES_STRATES)):  # id borne : the borne identity
-            borne = BORNES_STRATES[id_borne]
-            df_strate = df_results[df_results["population_insee"] >= borne]
-            resultats_agreges_bornes[id_borne]["population_insee"] = int(df_strate["population_insee"].sum())
-            resultats_agreges_bornes[id_borne]["potentiel_financier"] = float(df_strate["potentiel_financier" + "_" + scenario].sum())
-            resultats_agreges_bornes[id_borne]["eligibles_dsr"] = int(df_strate[prefix_dsr_eligible + scenario].sum())
-        res_strates = [{} for borne in BORNES_STRATES[:-1]]
-        for id_borne in range(len(BORNES_STRATES) - 1):
-            res_strates[id_borne]["habitants"] = BORNES_STRATES[id_borne]
-            pop_strate = resultats_agreges_bornes[id_borne]["population_insee"] - resultats_agreges_bornes[id_borne + 1]["population_insee"]
-            res_strates[id_borne]["partPopTotale"] = pop_strate / resultats_agreges_bornes[0]["population_insee"]
-            pot_strate = resultats_agreges_bornes[id_borne]["potentiel_financier"] - resultats_agreges_bornes[id_borne + 1]["potentiel_financier"]
-            res_strates[id_borne]["potentielFinancierMoyenParHabitant"] = pot_strate / pop_strate
-            nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles_dsr"] - resultats_agreges_bornes[id_borne + 1]["eligibles_dsr"]
-            res_strates[id_borne]["eligibles"] = nb_elig_strate
-        res[scenario_api]["dotations"]["communes"]["dsr"]["strates"] = res_strates
+def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible):
+    # [scenario_api]["dotations"]["communes"]["dsr"]
+    # > ["strates"]
 
-    return res
+    # tableau nombre de communes éligibles par strate
+    resultats_agreges_bornes = [{} for borne in BORNES_STRATES]
+
+    # pour une borne, aggrège les résultats de toute la population 
+    # située au niveau supérieur ou égal à la borne
+    for id_borne in range(len(BORNES_STRATES)):  # id borne : the borne identity
+        borne = BORNES_STRATES[id_borne]
+        df_strate = df_results[df_results["population_insee"] >= borne]
+        resultats_agreges_bornes[id_borne]["population_insee"] = int(df_strate["population_insee"].sum())
+        resultats_agreges_bornes[id_borne]["potentiel_financier"] = float(df_strate["potentiel_financier" + "_" + scenario].sum())
+        resultats_agreges_bornes[id_borne]["eligibles_dsr"] = int(df_strate[prefix_dsr_eligible + scenario].sum())
+
+    res_strates = [{} for borne in BORNES_STRATES[:-1]]
+    for id_borne in range(len(BORNES_STRATES) - 1):
+        res_strates[id_borne]["habitants"] = BORNES_STRATES[id_borne]
+        pop_strate = resultats_agreges_bornes[id_borne]["population_insee"] - resultats_agreges_bornes[id_borne + 1]["population_insee"]
+        res_strates[id_borne]["partPopTotale"] = pop_strate / resultats_agreges_bornes[0]["population_insee"]
+        pot_strate = resultats_agreges_bornes[id_borne]["potentiel_financier"] - resultats_agreges_bornes[id_borne + 1]["potentiel_financier"]
+        res_strates[id_borne]["potentielFinancierMoyenParHabitant"] = pot_strate / pop_strate
+        nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles_dsr"] - resultats_agreges_bornes[id_borne + 1]["eligibles_dsr"]
+        res_strates[id_borne]["eligibles"] = nb_elig_strate
+
+    return res_strates
