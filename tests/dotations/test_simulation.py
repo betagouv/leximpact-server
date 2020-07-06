@@ -21,5 +21,5 @@ def test_resultfromreforms():
     result = resultfromreforms({scenario_name : reforme_as_openfisca}, openfisca_variables_to_compute)
 
     assert isinstance(result, DataFrame)
-    assert "dsr_eligible_fraction_perequation_avant" in result.columns
+    assert "dsr_eligible_fraction_perequation_base" in result.columns
     assert "dsr_eligible_fraction_perequation" + "_" + scenario_name in result.columns

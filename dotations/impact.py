@@ -1,45 +1,11 @@
 from pandas import DataFrame  # type: ignore
-from copy import deepcopy
-
-from dotations.utils_dict import translate_dict  # type: ignore
 
 
 BORNES_STRATES = [0, 500, 2000, 5000, 10000, 20000, 50000, 100000, 1000000000000]  # bornes inf des strates en terme de POP INSEE
 
-table_transcription_leximpact_ofdl = {"dotations.communes.dsr.eligibilite.popMax": "dotation_solidarite_rurale.seuil_nombre_habitants",
-                                      "dotations.communes.dsr.eligibilite.popChefLieuMax": "dotation_solidarite_rurale.bourg_centre.eligibilite.seuil_nombre_habitants_chef_lieu",
-                                      "dotations.communes.dsr.bourgcentre.eligibilite.partPopCantonMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.seuil_part_population_canton",
-                                      "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.agglomeration.partPopDepartementMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_part_population_dgf_agglomeration_departement",
-                                      "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.agglomeration.popMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_population_dgf_agglomeration",
-                                      "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.agglomeration.popCommuneMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_population_dgf_maximum_commune_agglomeration",
-                                      "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.canton.popChefLieuMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_population_dgf_chef_lieu_de_canton",
-                                      "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.potentielFinancierParHab.rapportPotentielFinancierMoyenParHab": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_rapport_pfi_10000",
-                                      "dotations.communes.dsr.bourgCentre.attribution.plafonnementPopulation": "population.plafond_dgf",
-                                      "dotations.communes.dsr.cible.eligibilite.premieresCommunes": "dotation_solidarite_rurale.cible.eligibilite.seuil_classement",
-                                      "dotations.communes.dsr.cible.eligibilite.indiceSynthetique.ponderationPotentielFinancier": "dotation_solidarite_rurale.cible.eligibilite.indice_synthetique.poids_potentiel_financier",
-                                      "dotations.communes.dsr.cible.eligibilite.indiceSynthetique.ponderationRevenuParHab": "dotation_solidarite_rurale.cible.eligibilite.indice_synthetique.poids_revenu", }
-
-
-def format_reforme_openfisca(reforme_a_traduire):
-    # passage des dictionnaires avec nombre de clefs variables au format
-    # list de dictionnaire : evite de se retrouver avec des champs qui ne correspondent pas
-    # à des hiérarchies de variables openfisca)
-    # et qui seront consommés par les parsers ad hoc de la réforme
-    ref = deepcopy(reforme_a_traduire)
-    del ref["dotations"]["montants"]  # not implemented in ofdl yet
-    try:
-        dictionnaire_a_tableautiser = deepcopy(ref["communes"]["dsr"]["bourgCentre"]["attribution"]["plafonnementPopulation"])
-        ref["communes"]["dsr"]["bourgCentre"]["attribution"]["plafonnementPopulation"] = sorted([{"threshold": seuil, "amount": plafond} for seuil, plafond in dictionnaire_a_tableautiser.items()],
-                                                                                                key=lambda x: x["threshold"])
-    except KeyError:
-        # on choisit de ne rien soulever si ce champ n'est pas présent dans la réforme.
-        # Ca fait qu'une absence de ce paramètre ne fera pas échouer la requête.
-        pass
-    return {"dgf": translate_dict(ref, table_transcription_leximpact_ofdl)}
-
 
 def get_cas_types_codes_insee():
-    return ["76384", "76214"]
+    return ["76384", "76214"]  # sera paramétrable par l'usager
 
 
 def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible):
@@ -68,6 +34,7 @@ def build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible):
 
     return response
 
+
 def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible):
     # [scenario_api]["dotations"]["communes"]["dsr"]
     # > ["strates"]
@@ -75,7 +42,7 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible):
     # tableau nombre de communes éligibles par strate
     resultats_agreges_bornes = [{} for borne in BORNES_STRATES]
 
-    # pour une borne, aggrège les résultats de toute la population 
+    # pour une borne, aggrège les résultats de toute la population
     # située au niveau supérieur ou égal à la borne
     for id_borne in range(len(BORNES_STRATES)):  # id borne : the borne identity
         borne = BORNES_STRATES[id_borne]
@@ -95,3 +62,12 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible):
         res_strates[id_borne]["eligibles"] = nb_elig_strate
 
     return res_strates
+
+
+def build_response_dsr(scenario: str, df_results: DataFrame, prefix_dsr_eligible: str) -> dict:
+    eligibilites = build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible)
+    return {
+        "communes": build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible),
+        **eligibilites,
+        "strates": build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible)
+    }

@@ -1,5 +1,6 @@
 from http.client import OK, BAD_REQUEST
 
+from dotations.impact import build_response_dsr  # type: ignore
 from Simulation_engine.simulate_dotations import simulate
 
 # Checks whether all dictionnaries in the model exist in the target dict.
@@ -38,7 +39,25 @@ class Dotations(object):
             return check_result
 
         # calculer
-        simulation_result = simulate(request_body)
+        prefix_dsr_eligible = "dsr_eligible_"
+        df_results = simulate(request_body, prefix_dsr_eligible)
 
         # constuire la réponse
+        simulation_result = {
+            "amendement": {
+                "dotations": {
+                    "communes": {
+                        "dsr": build_response_dsr("amendement", df_results, prefix_dsr_eligible)
+                    }
+                }
+            },
+            "base": {
+                "dotations": {
+                    "communes": {
+                        "dsr": build_response_dsr("base", df_results, prefix_dsr_eligible)
+                    }
+                }
+            }
+        }
+
         return simulation_result, OK
