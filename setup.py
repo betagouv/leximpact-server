@@ -6,6 +6,7 @@ basic_requirements = [
     "flask-cors >= 3.0.7, < 3.1.0",
     "gunicorn >= 20.0.0, < 21.0.0",
     "mailjet-rest >= 1.3.3, < 2.0.0",
+    "numpy == 1.17",
     "pandas >= 0.24.0, < 0.25.0",
     "psycopg2 >= 2.8.3, < 3.0.0",
     "pyjwt >= 1.7.1, < 2.0.0",
@@ -15,7 +16,6 @@ basic_requirements = [
 ]
 
 impot_revenu_requirements = [
-    "openfisca-core >= 34.2.8, < 35.0.0",
     "openfisca-france >= 48.10.6, < 49.0.0",
 ]
 
@@ -42,12 +42,13 @@ setup(
         "Topic :: Scientific/Engineering :: Information Analysis",
     ],
     install_requires=[
+        basic_requirements,
         impot_revenu_requirements,
-        dotations_requirements,
-        basic_requirements
+        dotations_requirements
     ],
     extras_require={
         "dev": [
+            "pycodestyle<2.6.0,>=2.5.0",
             "autopep8 >= 1.4.0, < 1.5.0",
             "black",
             "flake8 >= 3.7.0, < 3.8.0",
