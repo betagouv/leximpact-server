@@ -1,4 +1,4 @@
-from dotation.impact import impacts_reforme_dotation, format_reforme_openfisca  # type: ignore
+from dotations.impact import impacts_reforme_dotation, format_reforme_openfisca  # type: ignore
 
 
 def simulate(request_body):

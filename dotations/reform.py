@@ -3,7 +3,7 @@ from openfisca_core.reforms import Reform  # type: ignore
 from openfisca_core.parameters import ParameterNode, Bracket  # type: ignore
 from functools import reduce
 
-from dotation.utils_dict import flattened_dict  # type: ignore
+from dotations.utils_dict import flattened_dict  # type: ignore
 
 
 def set_brackets(brackets, target):

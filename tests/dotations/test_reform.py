@@ -1,4 +1,4 @@
-from dotation.reform import DotationReform  # type: ignore
+from dotations.reform import DotationReform  # type: ignore
 from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: ignore
 
 

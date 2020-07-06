@@ -1,5 +1,5 @@
-from dotation.simulation import simulation_from_dgcl_csv  # type: ignore
-from dotation.load_dgcl_data import load_dgcl_file  # type: ignore
+from dotations.simulation import simulation_from_dgcl_csv  # type: ignore
+from dotations.load_dgcl_data import load_dgcl_file  # type: ignore
 from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: ignore
 from time import time
 
