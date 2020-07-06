@@ -502,7 +502,7 @@ if (
     resultats_de_base is not None
 ):  # Si la table n'existe pas dans le schéma SQL (par exemple si la variable d'environnement comporte une erreur, ou si on n'a pas mis les données dans la base SQL du serveur), ce sera None et on les calcule nous même
     logging.info(
-        "table resultats de base used : "
+        "Table resultats de base used : "
         + nom_table_resultats_base
         + " "
         + str(len(resultats_de_base))
