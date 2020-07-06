@@ -102,23 +102,3 @@ if __name__ == "__main__":
     }
     print(impacts_reforme_dotation(reforme_example))
 
-    reforme_example_api = {
-        "communes" : {
-            "dsr" : {
-                "bourgCentre": {
-                    "attribution": {
-                        "plafonnementPopulation" : {
-                            0: 9999,
-                            2000000: 10000000
-                        }
-                    }
-                },
-                "cible": {
-                    "eligibilite": {
-                        "premieresCommunes": 23
-                    }
-                }
-            }
-        }
-    }
-    print(impacts_reforme_dotation(format_reforme_openfisca(reforme_example_api)))
