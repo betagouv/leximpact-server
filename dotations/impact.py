@@ -2,6 +2,9 @@ from dotations.simulation import resultfromreforms  # type: ignore
 from dotations.utils_dict import translate_dict  # type: ignore
 from copy import deepcopy
 
+
+BORNES_STRATES = [0, 500, 2000, 5000, 10000, 20000, 50000, 100000, 1000000000000]  # bornes inf des strates en terme de POP INSEE
+
 table_transcription_leximpact_ofdl = {"dotations.communes.dsr.eligibilite.popMax": "dotation_solidarite_rurale.seuil_nombre_habitants",
                                       "dotations.communes.dsr.eligibilite.popChefLieuMax": "dotation_solidarite_rurale.bourg_centre.eligibilite.seuil_nombre_habitants_chef_lieu",
                                       "dotations.communes.dsr.bourgcentre.eligibilite.partPopCantonMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.seuil_part_population_canton",
@@ -66,17 +69,16 @@ def impacts_reforme_dotation(reforme):
             res[scenario_api]["dotations"]["communes"]["dsr"]["nouvellementEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (~df_results[prefix_dsr_eligible + "avant"])])
             res[scenario_api]["dotations"]["communes"]["dsr"]["plusEligibles"] = len(df_results[(~df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "avant"])])
         # tableau nombre de communes éligibles par strate
-        bornes_inf = [0, 500, 2000, 5000, 10000, 20000, 50000, 100000, 1000000000000]  # bornes inf des strates en terme de POP INSEE
-        resultats_agreges_bornes = [{} for borne in bornes_inf]
-        for id_borne in range(len(bornes_inf)):  # id borne : the borne identity
-            borne = bornes_inf[id_borne]
+        resultats_agreges_bornes = [{} for borne in BORNES_STRATES]
+        for id_borne in range(len(BORNES_STRATES)):  # id borne : the borne identity
+            borne = BORNES_STRATES[id_borne]
             df_strate = df_results[df_results["population_insee"] >= borne]
             resultats_agreges_bornes[id_borne]["population_insee"] = int(df_strate["population_insee"].sum())
             resultats_agreges_bornes[id_borne]["potentiel_financier"] = float(df_strate["potentiel_financier" + "_" + scenario].sum())
             resultats_agreges_bornes[id_borne]["eligibles_dsr"] = int(df_strate[prefix_dsr_eligible + scenario].sum())
-        res_strates = [{} for borne in bornes_inf[:-1]]
-        for id_borne in range(len(bornes_inf) - 1):
-            res_strates[id_borne]["habitants"] = bornes_inf[id_borne]
+        res_strates = [{} for borne in BORNES_STRATES[:-1]]
+        for id_borne in range(len(BORNES_STRATES) - 1):
+            res_strates[id_borne]["habitants"] = BORNES_STRATES[id_borne]
             pop_strate = resultats_agreges_bornes[id_borne]["population_insee"] - resultats_agreges_bornes[id_borne + 1]["population_insee"]
             res_strates[id_borne]["partPopTotale"] = pop_strate / resultats_agreges_bornes[0]["population_insee"]
             pot_strate = resultats_agreges_bornes[id_borne]["potentiel_financier"] - resultats_agreges_bornes[id_borne + 1]["potentiel_financier"]
@@ -86,19 +88,4 @@ def impacts_reforme_dotation(reforme):
         res[scenario_api]["dotations"]["communes"]["dsr"]["strates"] = res_strates
 
     return res
-
-
-if __name__ == "__main__":
-    reforme_example = {
-        "dgf": {
-            "dotation_solidarite_rurale": {
-                "cible": {
-                    "eligibilite": {
-                        "seuil_classement": 23
-                    }
-                }
-            }
-        }
-    }
-    print(impacts_reforme_dotation(reforme_example))
 
