@@ -1,4 +1,9 @@
+#!/bin/bash
+
 .PHONY: server
+
+COLOR_CYAN='\033[0;36m'
+COLOR_STOP='\033[0m'
 
 uninstall:
 	@# Uninstall all installed libraries of your current Python workspace.
@@ -39,6 +44,8 @@ run:
 
 test: clean check-style check-types
 	pytest
+	@echo -e ${COLOR_CYAN}"Comparaison des calculs DGCL et LexImpact..."${COLOR_STOP}
+	python ./tests/dotations/compare_with_dgcl.py
 
 stress-server:
 	./tests/server/stress/server.sh
