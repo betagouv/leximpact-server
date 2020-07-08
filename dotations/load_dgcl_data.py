@@ -185,8 +185,8 @@ def adapt_dgcl_data(data):
     data = ajoute_population_chef_lieu_canton(data, pop_dgf, pop_dgf_chef_lieu_canton, code_comm)
     extracolumns["population_dgf_chef_lieu_de_canton"] = pop_dgf_chef_lieu_canton
 
-    # Corrige les infos sur le revenu total de la commune quand il est à 0 et que l'indice synthétique est renseigné
-    # Certains revenus moyens sont missing...
+    # Corrige les infos sur le revenu _total_ de la commune quand il est à 0
+    # et que l'indice synthétique est renseigné. Certains revenus _moyens_ sont missing...
     # Avant de corriger les revenus, il nous faut calculer les revenus moyens par strate
     revenu_moyen_strate = " Revenu imposable moyen par habitant de la strate"
     data = corrige_revenu_moyen_strate(data, variables_openfisca_presentes_fichier, revenu_moyen_strate, outre_mer_dgcl)

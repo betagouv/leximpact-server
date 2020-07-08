@@ -1,6 +1,8 @@
-from pytest import fixture
+# Vérifications au format pytest mais elles ne seront pas exécutées automatiquement
+# avec les autres tests grâce à un nom de fichier ne démarrant pas par "test".
+from pytest import fixture  # type: ignore
 
-from dotations.load_dgcl_data import nom_comm, code_comm, load_dgcl_file
+from dotations.load_dgcl_data import nom_comm, code_comm, load_dgcl_file  # type: ignore
 
 
 nb_communes_guadeloupe = 32
