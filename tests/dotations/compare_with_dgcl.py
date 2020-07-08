@@ -1,5 +1,5 @@
 from dotations.simulation import simulation_from_dgcl_csv  # type: ignore
-from dotations.load_dgcl_data import load_dgcl_file  # type: ignore
+from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data  # type: ignore
 from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: ignore
 from time import time
 
@@ -33,7 +33,7 @@ def check_variables_bool(data):
 
 def print_eligible_comparison():
     PERIOD = "2020"
-    DATA = load_dgcl_file()
+    DATA = adapt_dgcl_data(load_dgcl_file())
     TBS = CountryTaxBenefitSystem()
     sim = simulation_from_dgcl_csv(PERIOD, DATA, TBS)
     colonnes_to_compare = ["dsr_eligible_fraction_bourg_centre",
