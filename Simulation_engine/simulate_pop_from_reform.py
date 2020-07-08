@@ -53,7 +53,9 @@ if reforme_adresse is not None:
         exec("from {} import {} as reforme_PLF".format(origine_import, nom_dic_import))
     except (ImportError, ModuleNotFoundError, SyntaxError) as e:
         logging.error(
-            "Si la variable PLF_PATH est renseignée, elle doit contenir un chemin valide vers un dictionnaire présentant la réforme."
+            "Si la variable PLF_PATH est renseignée, elle doit contenir un chemin\
+            valide vers un dictionnaire présentant la réforme. PLF_PATH renseigné\
+            : {}".format(reforme_adresse)
         )
         raise e
     reformes_par_defaut["plf"] = reforme_PLF
