@@ -10,7 +10,7 @@ from dotations.load_dgcl_data import (  # type: ignore
     # ajoute_est_chef_lieu_canton,
     # ajoute_population_chef_lieu_canton,
     # corrige_revenu_moyen_strate,
-    # corrige_revenu_moyen_commune
+    # corrige_revenu_total_commune
 )
 
 from check_dgcl_data import (

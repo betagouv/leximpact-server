@@ -146,9 +146,10 @@ def corrige_revenu_moyen_strate(data, variables_openfisca_presentes_fichier, rev
     return data.merge(tableau_donnees_par_strate[[revenu_moyen_strate]], left_on=strate, right_index=True)
 
 
-def corrige_revenu_moyen_commune(data, variables_openfisca_presentes_fichier, revenu_moyen_strate: str):
+def corrige_revenu_total_commune(data, variables_openfisca_presentes_fichier, revenu_moyen_strate: str):
     # Corrige les infos sur le revenu _total_ de la commune quand il est à 0
-    # et que l'indice synthétique est renseigné. Certains revenus _moyens_ sont missing...
+    # et que l'indice synthétique est renseigné.
+    # Certains revenus _moyens_ de communes sont missing alors qu'ils interviennent dans le calcul de l'indice synthétique...
     actual_indice_synthetique = "Dotation de solidarité rurale - Cible - Indice synthétique"
     pot_fin_strate = "Potentiel fiscal et financier des communes - Potentiel financier moyen de la strate"
     pot_fin_par_hab = "Potentiel fiscal et financier des communes - Potentiel financier par habitant"
@@ -158,9 +159,12 @@ def corrige_revenu_moyen_commune(data, variables_openfisca_presentes_fichier, re
 
     # On essaye de remplir les revenus moyens manquants grâce à notre super equation:
     # RT = pop_insee * (0.3*RMStrate)/(IS-0.7 * PF(strate)/PF)
-    data.loc[(data[revenu_total_dgcl] == 0) & (data[pop_insee] > 0) & (data[actual_indice_synthetique] > 0), revenu_total_dgcl] = (
-        0.3 * data[revenu_moyen_strate] / (data[actual_indice_synthetique] - 0.7 * data[pot_fin_strate] / data[pot_fin_par_hab])
-    ) * data[pop_insee]
+    revenu_moyen_par_habitant_commune = (
+        0.3 * data[revenu_moyen_strate] / (
+            data[actual_indice_synthetique] - 0.7 * data[pot_fin_strate] / data[pot_fin_par_hab]
+        )
+    )
+    data.loc[(data[revenu_total_dgcl] == 0) & (data[pop_insee] > 0) & (data[actual_indice_synthetique] > 0), revenu_total_dgcl] = revenu_moyen_par_habitant_commune * data[pop_insee]
 
     return data
 
@@ -207,7 +211,7 @@ def adapt_dgcl_data(data):
     data = corrige_revenu_moyen_strate(data, variables_openfisca_presentes_fichier, revenu_moyen_strate, outre_mer_dgcl)
     extracolumns["revenu_par_habitant_moyen"] = revenu_moyen_strate
 
-    data = corrige_revenu_moyen_commune(data, variables_openfisca_presentes_fichier, revenu_moyen_strate)
+    data = corrige_revenu_total_commune(data, variables_openfisca_presentes_fichier, revenu_moyen_strate)
 
     #
     # Génère le dataframe au format final :
