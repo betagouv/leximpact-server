@@ -125,11 +125,7 @@ def ajoute_population_chef_lieu_canton(data, pop_dgf, pop_dgf_chef_lieu_canton, 
 
 
 def corrige_revenu_moyen_strate(data, variables_openfisca_presentes_fichier, revenu_moyen_strate, outre_mer_dgcl):
-    # Corrige les infos sur le revenu total de la commune quand il est à 0
-    # et que l'indice synthétique est renseigné
-    # Certains revenus moyens sont missing...
-    # On essaye de les remplir grâce à notre super equation:
-    # RT = pop_insee * (0.3*RMStrate)/(IS-0.7 * PF(strate)/PF)
+    # Certains revenus moyens de communes sont missing...
     # pour ceci, calculons le revenu moyen de chaque strate
     strate = variables_openfisca_presentes_fichier["strate_demographique"]
     revenu_total_dgcl = variables_openfisca_presentes_fichier["revenu_total"]
@@ -148,6 +144,25 @@ def corrige_revenu_moyen_strate(data, variables_openfisca_presentes_fichier, rev
     # prise en compte dans la moyenne de revenu moyen par strate?" , mais le calcul de cette variable
     # n'est pas dans la loi.
     return data.merge(tableau_donnees_par_strate[[revenu_moyen_strate]], left_on=strate, right_index=True)
+
+
+def corrige_revenu_moyen_commune(data, variables_openfisca_presentes_fichier, revenu_moyen_strate: str):
+    # Corrige les infos sur le revenu _total_ de la commune quand il est à 0
+    # et que l'indice synthétique est renseigné. Certains revenus _moyens_ sont missing...
+    actual_indice_synthetique = "Dotation de solidarité rurale - Cible - Indice synthétique"
+    pot_fin_strate = "Potentiel fiscal et financier des communes - Potentiel financier moyen de la strate"
+    pot_fin_par_hab = "Potentiel fiscal et financier des communes - Potentiel financier par habitant"
+
+    revenu_total_dgcl = variables_openfisca_presentes_fichier["revenu_total"]
+    pop_insee = variables_openfisca_presentes_fichier["population_insee"]
+
+    # On essaye de remplir les revenus moyens manquants grâce à notre super equation:
+    # RT = pop_insee * (0.3*RMStrate)/(IS-0.7 * PF(strate)/PF)
+    data.loc[(data[revenu_total_dgcl] == 0) & (data[pop_insee] > 0) & (data[actual_indice_synthetique] > 0), revenu_total_dgcl] = (
+        0.3 * data[revenu_moyen_strate] / (data[actual_indice_synthetique] - 0.7 * data[pot_fin_strate] / data[pot_fin_par_hab])
+    ) * data[pop_insee]
+
+    return data
 
 
 def adapt_dgcl_data(data):
@@ -192,15 +207,7 @@ def adapt_dgcl_data(data):
     data = corrige_revenu_moyen_strate(data, variables_openfisca_presentes_fichier, revenu_moyen_strate, outre_mer_dgcl)
     extracolumns["revenu_par_habitant_moyen"] = revenu_moyen_strate
 
-    actual_indice_synthetique = "Dotation de solidarité rurale - Cible - Indice synthétique"
-    revenu_moyen_strate = " Revenu imposable moyen par habitant de la strate"
-    pot_fin_strate = "Potentiel fiscal et financier des communes - Potentiel financier moyen de la strate"
-    pot_fin_par_hab = "Potentiel fiscal et financier des communes - Potentiel financier par habitant"
-    revenu_total_dgcl = variables_openfisca_presentes_fichier["revenu_total"]
-    pop_insee = variables_openfisca_presentes_fichier["population_insee"]
-    data.loc[(data[revenu_total_dgcl] == 0) & (data[pop_insee] > 0) & (data[actual_indice_synthetique] > 0), revenu_total_dgcl] = (
-        0.3 * data[revenu_moyen_strate] / (data[actual_indice_synthetique] - 0.7 * data[pot_fin_strate] / data[pot_fin_par_hab])
-    ) * data[pop_insee]
+    data = corrige_revenu_moyen_commune(data, variables_openfisca_presentes_fichier, revenu_moyen_strate)
 
     #
     # Génère le dataframe au format final :
@@ -219,6 +226,7 @@ def adapt_dgcl_data(data):
     # Au delà des colonnes traduites, on garde ces colonnes dans le dataframe de sortie.
     # Pour comparer nos résultats aux résultats calculés, et pour garder des informations
     # pour identifier la commune
+    actual_indice_synthetique = "Dotation de solidarité rurale - Cible - Indice synthétique"
     autres_cols_interessantes = [code_comm, nom_comm, rang_indice_synthetique, actual_indice_synthetique, elig_bc_dgcl, elig_pq_dgcl, elig_cible_dgcl]
     data = data[autres_cols_interessantes + list(translation_cols.values())]
 
