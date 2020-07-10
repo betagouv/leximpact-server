@@ -3,14 +3,17 @@ import os
 import re
 import pandas  # type: ignore
 import logging
+from dotenv import load_dotenv
 
 from openfisca_core.memory_config import MemoryConfig  # type: ignore
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
+
 from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
+from Simulation_engine.lexception import ConfigurationException
 from Simulation_engine.non_cached_variables import non_cached_variables
-from dotenv import load_dotenv
+
 
 load_dotenv(dotenv_path=".env")
 
@@ -62,6 +65,9 @@ if reforme_adresse is not None:
 
 # Année sur la législation de laquelle les calculs seront menés.
 annee_de_calcul = os.getenv("YEAR_COMPUTATION")
+if annee_de_calcul is None:
+    raise ConfigurationException(
+        "'YEAR_COMPUTATION' is missing in your '.env' configuration file. To set its value, check the README at: https://github.com/leximpact/leximpact-server#fichier-de-configuration-env")
 
 # FIN DE LA PARTIE CONFIGURABLE PAR L'UTILISATEUR
 
