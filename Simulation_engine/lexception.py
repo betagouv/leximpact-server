@@ -5,3 +5,6 @@
 
 class LexCeption(Exception):
     pass
+
+class ConfigurationException(Exception):
+    pass
