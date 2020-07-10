@@ -1,30 +1,29 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import os
-
+import re
 import pandas  # type: ignore
+import logging
+from dotenv import load_dotenv
 
 from openfisca_core.memory_config import MemoryConfig  # type: ignore
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
 from openfisca_france import FranceTaxBenefitSystem  # type: ignore
+
 from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
+from Simulation_engine.exceptions import ConfigurationException
 from Simulation_engine.non_cached_variables import non_cached_variables
-from dotenv import load_dotenv
+
 
 load_dotenv(dotenv_path=".env")
 
-
 # Config
-
-data_path = os.getenv("DATA_PATH")  # type: Optional[str]
+data_path = os.getenv("POPULATION_TABLE_PATH")  # type: Optional[str]
 nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional[str]
-if nom_table_resultats_base is None:
-    nom_table_resultats_base = "base_results"
 
 version_beta_sans_simu_pop = (
     data_path is None
-)  # Si DATA_PATH n'est pas renseigné dans .env, on lance sans simpop
-adjust_results = True
+)  # Si POPULATION_TABLE_PATH n'est pas renseigné dans .env, on lance sans simpop
 
 #  PARTIE CONFIGURABLE PAR L'UTILISATEUR
 
@@ -34,11 +33,39 @@ adjust_results = True
 # un résultat "apres" (reforme renseignée dans la requete)
 # et un résultat par réforme présente dans reformes_par_defaut
 reformes_par_defaut: Dict[str, Dict] = {}
-# from Simulation_engine.reformePLF import reforme_PLF_2020
-# reformes_par_defaut["plf"] = reforme_PLF_2020  Ca c'était le PLF 2020. Moins intéressant depuis qu'il est la loi
+
+# On verifie dans la variable d'environnement PLF_PATH si on doit inclure le PLF ou pas.
+reforme_adresse = os.getenv("PLF_PATH")
+# Ce reforme path doit contenir le path vers une librairie python qui contient un dictionnaire au bon format.
+if reforme_adresse is not None:
+    regex_secu = re.compile(r"^[^\s;]*$")
+    if regex_secu.match(reforme_adresse) is None:
+        logging.error(
+            "Votre variable d'environnement PLF_PATH contient des ; ou des caractères vides. Elle n'a pas le droit. Nommez vos fichiers normalement s'il vous plaît. Bisous."
+        )
+        raise ImportError
+    elements = reforme_adresse.split(".")
+    origine_import = ".".join(elements[:-1])
+    nom_dic_import = elements[-1]
+    reforme_PLF: Dict[
+        Any, Any
+    ] = {}  # Declare une valeur par défaut, la valeur arrivant par des moyens détournés que le linter ne peut voir
+    try:
+        exec("from {} import {} as reforme_PLF".format(origine_import, nom_dic_import))
+    except (ImportError, ModuleNotFoundError, SyntaxError) as e:
+        logging.error(
+            "Si la variable PLF_PATH est renseignée, elle doit contenir un chemin\
+            valide vers un dictionnaire présentant la réforme. PLF_PATH renseigné\
+            : {}".format(reforme_adresse)
+        )
+        raise e
+    reformes_par_defaut["plf"] = reforme_PLF
 
 # Année sur la législation de laquelle les calculs seront menés.
-annee_de_calcul = 2020
+annee_de_calcul = os.getenv("YEAR_COMPUTATION")
+if annee_de_calcul is None:
+    raise ConfigurationException(
+        "'YEAR_COMPUTATION' is missing in your '.env' configuration file. To set its value, check the README at: https://github.com/leximpact/leximpact-server#fichier-de-configuration-env")
 
 # FIN DE LA PARTIE CONFIGURABLE PAR L'UTILISATEUR
 
@@ -269,12 +296,11 @@ def compare(period: str, dictionnaire_simulations, compute_deciles=True):
 
         # TODO : interpolate quantiles instead of doing the granular approach
         # This is the only TODO part in this code, I highly doubt it's the most pressing matter
-
-        if adjust_results:
+        if os.getenv("RECETTES_ETAT_EURO") is not None:
             # empiric = valeur de base sur laquelle calibrer (pour prendre en compte, par
             # exemple les crédits d'impôts. Représente le montant total d'IR récolté l'année
-            # prochaine dans le scénario "avant" (i.e. avec le code existant))
-            empiric = 66900 * 10 ** 6
+            # prochaine dans le scénario "avant" (i.e. avec le code existant)).
+            empiric = int(os.getenv("RECETTES_ETAT_EURO"))  # type: ignore
             factor = adjustment(empiric, total)
             total = adjust_total(factor, total)
             deciles: Deciles = adjust_deciles(factor, decdiffres)
@@ -466,26 +492,36 @@ DUMMY_DATA = (
 )
 
 # Initialisation des données utilisées pour le calcul sur la population
-print(
-    "Dummy Data loaded",
-    len(DUMMY_DATA),
-    "lines",
-    len(DUMMY_DATA["idfoy"].unique()),
-    "foyers fiscaux",
+NB_FOYERS_FISCAUX_SIMULES = len(DUMMY_DATA["idfoy"].unique())
+logging.info(
+    "Dummy Data loaded "
+    + str(len(DUMMY_DATA))
+    + " lines "
+    + str(NB_FOYERS_FISCAUX_SIMULES)
+    + " foyers fiscaux"
 )
 # Resultats sur la population du code existant et, lorsqu'il y en a un de configuré, du PLF.
 # Ne change jamais donc pas besoin de fatiguer l'ordi à calculer : ils sont mémorisés en base de données.
 # Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
 # sur le data_path
-resultats_de_base = from_postgres(nom_table_resultats_base)
+resultats_de_base: pandas.DataFrame = None
 if (
-    resultats_de_base is not None
+    nom_table_resultats_base is not None
 ):  # Si la table n'existe pas dans le schéma SQL (par exemple si la variable d'environnement comporte une erreur, ou si on n'a pas mis les données dans la base SQL du serveur), ce sera None et on les calcule nous même
-    print(
-        "table resultats de base used :",
-        nom_table_resultats_base,
-        len(resultats_de_base),
-        "rows",
+    resultats_de_base = from_postgres(nom_table_resultats_base)
+    if resultats_de_base is None:
+        raise ConfigurationException("The table name '{}' defined in 'NAME_TABLE_BASE_RESULT' environment variable was not found in PostgreSQL database.".format(nom_table_resultats_base))
+
+    NB_FOYERS_FISCAUX_PRE_CALCULES = len(resultats_de_base)
+    if NB_FOYERS_FISCAUX_SIMULES != NB_FOYERS_FISCAUX_PRE_CALCULES:
+        raise ConfigurationException("The population defined by 'POPULATION_TABLE_PATH' and the pre-calculated values defined with 'NAME_TABLE_BASE_RESULT' are inconsistent. They should contain the same number of foyers fiscaux.")
+
+    logging.info(
+        "Table resultats de base used : "
+        + nom_table_resultats_base
+        + " "
+        + str(len(resultats_de_base))
+        + " rows"
     )
     resultats_de_base = resultats_de_base.set_index("idfoy").sort_index()
 else:

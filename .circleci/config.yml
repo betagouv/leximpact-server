@@ -8,6 +8,10 @@ jobs:
           JWT_SECRET: asdf1234
           JWT_AUDIENCE: Toi
           JWT_ISSUER: Moi
+          YEAR_COMPUTATION: "2020"
+          RECETTES_ETAT_EURO: "66_900_000_000"
+          POPULATION_TABLE_PATH: "DCT.csv"
+          # PLF_PATH="reformes.reformePLF_2020.reforme_PLF_2020"  # Uncomment and check this line to activate PLF calculation.
 
       - image: postgres:9.6.7
         environment:

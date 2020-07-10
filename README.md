@@ -85,8 +85,11 @@ Pour lancer LexImpact-Server, vous devez tout d'abord créer un fichier de confi
 - `DATABASE_*` : décrit la configuration de la base de données, leximpact-server doit avoit un accès à une base de données postgres lui permettant de se comporter correctement 
 - `JWT_*` : Décrit les caractéristique du [JSON Web Token](https://jwt.io/). `JWT_SECRET` est une clef privée, `JWT_AUDIENCE` et `JWT_ISSUER` sont vérifiés quand le token est vérifié, mais peut être lu par quiconque a un token (car ces derniers ne sont pas chiffrés, mais juste signés par une clef privée) 
 - `MAILJET_*` : données d'authentification pour Mailjet, qui est utilisé pour envoyer les emails contenant les liens de connexion.
-- `DATA_PATH` :  Peut contenir un nom de fichier (.csv ou .h5) ou un nom de table dans la base SQL. Cette source de données sera importée. Un exemple de fichier fonctionnnant comme source de données situé dans le dépôt est `DCT.csv`. Des fonctions pour calibrer une source de données en fonction des données existantes de la population française sont disponibles dans le fichier sous `./scripts` (utilisés notamment dans le script `TransformData.py`) 
+- `POPULATION_TABLE_PATH` :  Les données de population prises en compte dans la simulation du budget de l'État. Peut contenir un nom de fichier (.csv ou .h5) ou un nom de table dans la base SQL. Cette source de données sera importée. Un exemple de fichier fonctionnnant comme source de données situé dans le dépôt est `DCT.csv`. Des fonctions pour calibrer une source de données en fonction des données existantes de la population française sont disponibles dans le fichier sous `./scripts` (utilisés notamment dans le script `TransformData.py`) 
 - `NAME_TABLE_BASE_RESULTS` : Table SQL, générée par le script generate_default_results.csv, qui contient les résultats de la population pour les calculs réutilisés (i.e. code existant et PLF) utilisée pour économiser du temps de calcul.
+- `RECETTES_ETAT_EURO` : Valeur (entière) représentant le montant total de l'impôt attendu avec le code existant. Les résultats sur l'échantillon de population sont ajustés pour matcher cet ordre de grandeur pour le code existant. Si la valeur n'est pas spécifiée, aucun ajustement n'a lieu sur les résultats bruts de la simulation.
+- `YEAR_COMPUTATION` : Année de calcul : les revenus des cas-types et de la population seront supposés survenir l'année spécifiée, et seront donc taxés aux taux applicables cette année là.
+- `PLF_PATH` : Contient le chemin où l'on peut trouver un dictionnaire représentant la réforme.  Un plf_path écrit au format "dossier.sousdossier.fichier.nom_dictionnaire" importera le dictionnaire portant le nom "nom_dictionnaire" dans le fichier "dossier/sousdossier/fichier.py" de l'arborescence. Cette variable fera planter le programme si elle contient des espaces ou le caractère ';', pour éviter toute fausse manipulation de l'utilisateur.
 
 ### Base de données et migrations
 
@@ -533,7 +536,7 @@ Création / remplissage de la table : la table est créée automatiquement au la
 
 Fichier contenant les données agrégées de la population française, construites, par exemple, à partir des données de l'ERFS FPR au format openfisca. C'est l'output de la phase transform_data (insérer lien vers la doc de la transformation des données).  
 
-Le fichier est uploadé dans la base de données, par exemple via preload.py . Le nom de la table dans la base postgresql doit correspondre avec la variable d'environnement nommée DATA_PATH 
+Le fichier est uploadé dans la base de données, par exemple via preload.py. Le nom de la table dans la base postgresql doit correspondre avec la variable d'environnement nommée `POPULATION_TABLE_PATH`. 
 
 ### **base_results**
 

@@ -10,7 +10,7 @@ from openfisca_france.model.base import (  # type: ignore
     TypesStatutMarital,
 )
 
-from Simulation_engine.lexception import LexCeption
+from Simulation_engine.exceptions import LexCeption
 
 
 def exit_on_missing_mandatory_key(calcul_nb_parts):
