@@ -11,7 +11,7 @@ from openfisca_france import FranceTaxBenefitSystem  # type: ignore
 
 from models import from_postgres
 from Simulation_engine.reforms import IncomeTaxReform
-from Simulation_engine.lexception import ConfigurationException
+from Simulation_engine.exceptions import ConfigurationException
 from Simulation_engine.non_cached_variables import non_cached_variables
 
 

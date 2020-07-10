@@ -7,7 +7,7 @@ from server.services import check_user, with_session
 import json
 from flask import Response
 
-from Simulation_engine.lexception import LexCeption
+from Simulation_engine.exceptions import LexCeption
 
 
 def error_as_dict(errormessage):
