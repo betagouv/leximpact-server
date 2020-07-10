@@ -41,7 +41,7 @@ class Dotations(object):
         # calculer
         prefix_dsr_eligible = "dsr_eligible_"
         prefix_dsr_montant = "dsr_montant_"
-        df_results = simulate(request_body, prefix_dsr_eligible)
+        df_results = simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant)
 
         # constuire la réponse
         simulation_result = {
