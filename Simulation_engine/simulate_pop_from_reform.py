@@ -20,8 +20,6 @@ load_dotenv(dotenv_path=".env")
 # Config
 data_path = os.getenv("POPULATION_TABLE_PATH")  # type: Optional[str]
 nom_table_resultats_base = os.getenv("NAME_TABLE_BASE_RESULT")  # type: Optional[str]
-if nom_table_resultats_base is None:
-    nom_table_resultats_base = "base_results"
 
 version_beta_sans_simu_pop = (
     data_path is None
@@ -494,21 +492,30 @@ DUMMY_DATA = (
 )
 
 # Initialisation des données utilisées pour le calcul sur la population
+NB_FOYERS_FISCAUX_SIMULES = len(DUMMY_DATA["idfoy"].unique())
 logging.info(
     "Dummy Data loaded "
     + str(len(DUMMY_DATA))
     + " lines "
-    + str(len(DUMMY_DATA["idfoy"].unique()))
+    + str(NB_FOYERS_FISCAUX_SIMULES)
     + " foyers fiscaux"
 )
 # Resultats sur la population du code existant et, lorsqu'il y en a un de configuré, du PLF.
 # Ne change jamais donc pas besoin de fatiguer l'ordi à calculer : ils sont mémorisés en base de données.
 # Test à implémenter : si les résultats de base sont là, ils correspondent aux résultats qu'on calculerait
 # sur le data_path
-resultats_de_base = from_postgres(nom_table_resultats_base)
+resultats_de_base: pandas.DataFrame = None
 if (
-    resultats_de_base is not None
+    nom_table_resultats_base is not None
 ):  # Si la table n'existe pas dans le schéma SQL (par exemple si la variable d'environnement comporte une erreur, ou si on n'a pas mis les données dans la base SQL du serveur), ce sera None et on les calcule nous même
+    resultats_de_base = from_postgres(nom_table_resultats_base)
+    if resultats_de_base is None:
+        raise ConfigurationException("The table name '{}' defined in 'NAME_TABLE_BASE_RESULT' environment variable was not found in PostgreSQL database.".format(nom_table_resultats_base))
+
+    NB_FOYERS_FISCAUX_PRE_CALCULES = len(resultats_de_base)
+    if NB_FOYERS_FISCAUX_SIMULES != NB_FOYERS_FISCAUX_PRE_CALCULES:
+        raise ConfigurationException("The population defined by 'POPULATION_TABLE_PATH' and the pre-calculated values defined with 'NAME_TABLE_BASE_RESULT' are inconsistent. They should contain the same number of foyers fiscaux.")
+
     logging.info(
         "Table resultats de base used : "
         + nom_table_resultats_base
