@@ -40,6 +40,11 @@ def table_openfisca_to_dgcl_column():
     return variables_openfisca_presentes_fichier
 
 
+def test_variables_bien_presentes(table_openfisca_to_dgcl_column, loaded_data):
+    for nom_dgcl_variable in table_openfisca_to_dgcl_column.values():
+        assert nom_dgcl_variable in loaded_data.columns
+
+
 def test_ajoute_population_plus_grande_commune_agglomeration(table_openfisca_to_dgcl_column):
     dgcl_pop_agglo = "Dotation de solidarité rurale Bourg-centre - Population DGF des communes de l'agglomération"
     dgcl_pop_dgf = "Informations générales - Population DGF Année N'"
