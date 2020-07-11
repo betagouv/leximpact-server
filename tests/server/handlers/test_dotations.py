@@ -220,4 +220,14 @@ def test_dsr_reform_popMax(client, headers):
     flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
     assert flattened_result_keys == flattened_expected_keys
 
+    # Vérification des clefs du dictionnaire contenues dans un array :
+    # cas-types
+    expected_cas_type_keys = set(["code", "eligible"])
+    for cas_type in base_dsr["communes"] + amendement_dsr["communes"]:
+        assert set(cas_type.keys()) == expected_cas_type_keys
+    # strates
+    expected_strates_keys = set(["eligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant"])
+    for strate in base_dsr["strates"] + amendement_dsr["strates"]:
+        assert set(strate.keys()) == expected_strates_keys
+
     assert result == expected_reform_impact
