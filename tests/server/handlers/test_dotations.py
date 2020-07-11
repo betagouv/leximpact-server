@@ -140,7 +140,6 @@ def test_dsr_reform_popMax(client, headers):
     # Les deux cas types ont une éligibilité différente avec la loi actuelle (sinon on s'ennuye)
     assert (len(set([cas_type["eligible"] for cas_type in base_dsr["communes"]])) > 1)
 
-
     # Montants : cohérence : les cas_types ont une dotation non nulle si et seulement si elles sont éligibles
     for scenario_cas_types in [base_dsr["communes"], amendement_dsr["communes"]]:
         for cas_type in scenario_cas_types:
