@@ -1,7 +1,7 @@
 from functools import partial
 import json
 
-from dotations.impact import BORNES_STRATES  # type: ignore
+from dotations.impact import BORNES_STRATES, get_cas_types_codes_insee  # type: ignore
 
 
 def test_dotations_request_body_error(client, headers):
@@ -201,7 +201,12 @@ def test_dsr_reform_popMax(client, headers):
     base_dsr = result["base"]["dotations"]["communes"]["dsr"]
     amendement_dsr = result["amendement"]["dotations"]["communes"]["dsr"]
     # même nombre de cas types en loi actuelle et amendement
-    assert len(base_dsr["communes"]) == len(amendement_dsr["communes"])
+    # Les cas_types sont ceux attendus
+    codes_communes = get_cas_types_codes_insee()
+    assert (codes_communes
+            == [cas_type["code"] for cas_type in base_dsr["communes"]]
+            == [cas_type["code"] for cas_type in amendement_dsr["communes"]]
+            )
 
     assert (len(BORNES_STRATES) - 1) == len(base_dsr["strates"]) == len(amendement_dsr["strates"])
     assert (BORNES_STRATES[:-1]
