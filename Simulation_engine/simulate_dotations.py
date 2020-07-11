@@ -46,9 +46,9 @@ def simulate(request_body, prefix_dsr_eligible, prefix_montant):
         "dsr_eligible_fraction_cible"
     ]
     variables_aggregations = ["potentiel_financier"]
-    variables_montants = ["dsr_montant_hors_garanties_fraction_bourg_centre"]
-    to_compute = variables_nombre_communes + variables_aggregations + variables_montants
-
+    fractions_dsr = ["bourg_centre", "perequation", "cible"]
+    variables_montants_fractions_dsr = ["dsr_montant_hors_garanties_fraction_" + nom_fraction for nom_fraction in fractions_dsr]
+    to_compute = variables_nombre_communes + variables_aggregations + variables_montants_fractions_dsr
     reforme = format_reforme_openfisca(request_body["reforme"])
     df_results: DataFrame = resultfromreforms({"amendement" : reforme}, to_compute)
 
@@ -58,6 +58,6 @@ def simulate(request_body, prefix_dsr_eligible, prefix_montant):
             | df_results["dsr_eligible_fraction_perequation" + "_" + scenario]
             | df_results["dsr_eligible_fraction_cible" + "_" + scenario]
         )
-        df_results[prefix_montant + scenario] = df_results["dsr_montant_hors_garanties_fraction_bourg_centre" + "_" + scenario]
+        df_results[prefix_montant + scenario] = df_results[[nom_variable + "_" + scenario for nom_variable in variables_montants_fractions_dsr]].sum(axis="columns")
 
     return df_results
