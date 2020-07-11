@@ -5,6 +5,10 @@ from dotations.impact import BORNES_STRATES, get_cas_types_codes_insee  # type: 
 from dotations.utils_dict import flattened_dict  # type: ignore
 
 
+def distance_listes(a, b):
+    return max([abs(x - y) for (x, y) in zip(a, b)])
+
+
 def test_dotations_request_body_error(client, headers):
     request = {}
 
@@ -229,5 +233,15 @@ def test_dsr_reform_popMax(client, headers):
     expected_strates_keys = set(["eligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant"])
     for strate in base_dsr["strates"] + amendement_dsr["strates"]:
         assert set(strate.keys()) == expected_strates_keys
+
+    # Vérification des valeurs connues :
+    # part des populations des strates
+
+    expected_strates_part_pop = [0.060324, 0.16357, 0.14816, 0.12193, 0.112542, 0.15472, 0.087568, 0.151159]
+    expected_strates_potentiel_financier = [761.7826724474608, 822.7862081792102, 962.3232471567082, 1061.3215646634023, 1142.2386532655016, 1212.5588966550042, 1322.006448304583, 1450.6968113217495]
+    allowed_error = 0.0001
+    for resultat_strates in [base_dsr["strates"], amendement_dsr["strates"]]:
+        assert(distance_listes(expected_strates_part_pop, [strate["partPopTotale"] for strate in resultat_strates]) < allowed_error)
+        assert(distance_listes(expected_strates_potentiel_financier, [strate["potentielFinancierMoyenParHabitant"] for strate in resultat_strates]) < allowed_error)
 
     assert result == expected_reform_impact
