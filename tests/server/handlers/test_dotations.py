@@ -110,11 +110,11 @@ def test_dsr_reform_popMax(client, headers):
 
     # Vérification des clefs du dictionnaire contenues dans un array :
     # cas-types
-    expected_cas_type_keys = set(["code", "eligible"])
+    expected_cas_type_keys = set(["code", "eligible", "dotationParHab"])
     for cas_type in base_dsr["communes"] + amendement_dsr["communes"]:
         assert set(cas_type.keys()) == expected_cas_type_keys
     # strates
-    expected_strates_keys = set(["eligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant"])
+    expected_strates_keys = set(["eligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
     for strate in base_dsr["strates"] + amendement_dsr["strates"]:
         assert set(strate.keys()) == expected_strates_keys
 
