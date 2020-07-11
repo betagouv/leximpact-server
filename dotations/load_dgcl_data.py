@@ -25,7 +25,12 @@ variables_openfisca_presentes_fichier = {
     'revenu_total': 'Dotation de solidarité urbaine - Revenu imposable des habitants de la commune',
     'strate_demographique': 'Informations générales - Strate démographique Année N',
     'zrr': 'Dotation de solidarité rurale - Bourg-centre - Commune située en ZRR',
-    'effort_fiscal': 'Effort fiscal - Effort fiscal'
+    'effort_fiscal': 'Effort fiscal - Effort fiscal',
+    'longueur_voirie': 'Dotation de solidarité rurale - Péréquation - Longueur de voirie en mètres',
+    'zone_de_montagne': 'Dotation de solidarité rurale - Péréquation - Commune située en zone de montagne',
+    'insulaire': 'Dotation de solidarité rurale - Péréquation - Commune insulaire',
+    'superficie': 'Informations générales - Superficie 2019',
+    'population_enfants': 'Dotation de solidarité rurale - Péréquation - Population 3 à 16 ans',
 }
 
 # A partir de l'adresse du tableau publié par la DGCL, produit un tableau contenant toutes les colonnes nécessaires
