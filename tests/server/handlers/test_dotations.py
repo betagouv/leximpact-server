@@ -248,4 +248,12 @@ def test_dsr_reform_popMax(client, headers):
     expected_strates_eligibilite_base = [17752, 11103, 3165, 1089, 55, 0, 0, 0]
     assert expected_strates_eligibilite_base == [strate["eligibles"] for strate in base_dsr["strates"]]
 
+    # Moins de communes éligibles après que avant.
+    assert (base_dsr["eligibles"] > amendement_dsr["eligibles"])
+    # Les nombres affichés dans l'amendement sont cohérents avec la base
+    assert(base_dsr["eligibles"] == amendement_dsr["eligibles"] - amendement_dsr["nouvellementEligibles"] + amendement_dsr["plusEligibles"])
+
+    # Les deux cas types ont une éligibilité différente avec la loi actuelle (sinon on s'ennuye)
+    assert (len(set([cas_type["eligible"] for cas_type in base_dsr["communes"]])) > 1)
+
     assert result == expected_reform_impact
