@@ -2,6 +2,7 @@ from functools import partial
 import json
 
 from dotations.impact import BORNES_STRATES, get_cas_types_codes_insee  # type: ignore
+from dotations.utils_dict import flattened_dict  # type: ignore
 
 
 def test_dotations_request_body_error(client, headers):
@@ -213,5 +214,10 @@ def test_dsr_reform_popMax(client, headers):
             == [description_strate["habitants"] for description_strate in base_dsr["strates"]]
             == [description_strate["habitants"] for description_strate in amendement_dsr["strates"]]
             )
+
+    # Vérification des clefs du dictionnaire (sauf celles inclues dans un array)
+    flattened_result_keys = set(flattened_dict(result).keys())
+    flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
+    assert flattened_result_keys == flattened_expected_keys
 
     assert result == expected_reform_impact
