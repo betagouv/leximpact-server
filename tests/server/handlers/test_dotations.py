@@ -244,4 +244,8 @@ def test_dsr_reform_popMax(client, headers):
         assert(distance_listes(expected_strates_part_pop, [strate["partPopTotale"] for strate in resultat_strates]) < allowed_error)
         assert(distance_listes(expected_strates_potentiel_financier, [strate["potentielFinancierMoyenParHabitant"] for strate in resultat_strates]) < allowed_error)
 
+    # Les nombres de communes éligibles de base sont ceux attendus
+    expected_strates_eligibilite_base = [17752, 11103, 3165, 1089, 55, 0, 0, 0]
+    assert expected_strates_eligibilite_base == [strate["eligibles"] for strate in base_dsr["strates"]]
+
     assert result == expected_reform_impact
