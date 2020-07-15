@@ -67,7 +67,7 @@ def print_eligible_comparison():
     PERIOD = "2020"
     data_dgcl = load_dgcl_file()
     data_calc_dgcl = get_dgcl_results(data_dgcl)
-    
+
     data_sim = adapt_dgcl_data(data_dgcl)
     TBS = CountryTaxBenefitSystem()
     sim = simulation_from_dgcl_csv(PERIOD, data_sim, TBS)

@@ -202,7 +202,6 @@ def get_dgcl_results(data):
     # les noms du fichier (à part pour leur code commune bien sûr)
     resultats_extraits = data[[code_comm]]
 
-
     # Ajout de variables qui n'existent pas à l'état brut dans le fichier :
 
     # L'éligibilité est déterminée en fonction de la présence ou non d'un versement non nul
