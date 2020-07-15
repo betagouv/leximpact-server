@@ -1,4 +1,9 @@
+#!/bin/bash
+
 .PHONY: server
+
+COLOR_CYAN='\033[0;36m'
+COLOR_STOP='\033[0m'
 
 uninstall:
 	@# Uninstall all installed libraries of your current Python workspace.
@@ -9,6 +14,9 @@ install:
 	@# Install libraries as described in the requirements.txt file.
 	pip install --upgrade pip
 	pip install --editable .[dev] --upgrade
+
+clean:
+	find . -name '*.pyc' -exec rm \{\} \;
 
 check-style:
 	@# Do not analyse .gitignored files.
@@ -34,8 +42,10 @@ migrate:
 run:
 	FLASK_ENV=development PORT=5000 python ./server/app.py
 
-test: check-style check-types
+test: clean check-style check-types
 	pytest
+	@echo -e ${COLOR_CYAN}"Comparaison des calculs DGCL et LexImpact..."${COLOR_STOP}
+	python ./tests/dotations/compare_with_dgcl.py
 
 stress-server:
 	./tests/server/stress/server.sh

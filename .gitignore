@@ -110,3 +110,4 @@ venv.bak/
 # leximpact
 *.h5
 *.cprof
+data_compare.csv
