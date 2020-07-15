@@ -289,12 +289,9 @@ def adapt_dgcl_data(data):
     data[elig_bc_dgcl] = (data["Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible"] > 0)
     data[elig_pq_dgcl] = (data["Dotation de solidarité rurale - Péréquation - Part Pfi (avant garantie CN)"] > 0)
     data[elig_cible_dgcl] = (data[rang_indice_synthetique] > 0) & (data[rang_indice_synthetique] <= 10000)
-
     # Au delà des colonnes traduites, on garde ces colonnes dans le dataframe de sortie.
-    # Pour comparer nos résultats aux résultats calculés, et pour garder des informations
-    # pour identifier la commune
-    actual_indice_synthetique = "Dotation de solidarité rurale - Cible - Indice synthétique"
-    autres_cols_interessantes = [code_comm, nom_comm, rang_indice_synthetique, actual_indice_synthetique, elig_bc_dgcl, elig_pq_dgcl, elig_cible_dgcl]
+    # Pour garder des informations pour identifier la commune
+    autres_cols_interessantes = [code_comm, nom_comm]
     data = data[autres_cols_interessantes + list(translation_cols.values())]
 
     # Renomme colonnes

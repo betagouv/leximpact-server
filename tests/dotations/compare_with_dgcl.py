@@ -1,8 +1,7 @@
 from dotations.simulation import simulation_from_dgcl_csv  # type: ignore
-from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data  # type: ignore
+from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data, get_dgcl_results  # type: ignore
 from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: ignore
 from time import time
-
 #
 # Petit script auxiliaire pour comparer les résultats trouvés avec notre parser + OFDL
 # aux résultats trouvés.
@@ -12,29 +11,14 @@ from time import time
 
 
 # Quelques noms de colonne utiles:
-elig_bc_dgcl = "Eligible fraction bourg-centre selon DGCL"
-elig_pq_dgcl = "Eligible fraction péréquation selon DGCL"
-elig_cible_dgcl = "Eligible fraction cible selon DGCL"
 code_comm = "Informations générales - Code INSEE de la commune"
 nom_comm = "Informations générales - Nom de la commune"
-
-
-tocompare = {"dsr_eligible_fraction_bourg_centre": elig_bc_dgcl,
-             "dsr_eligible_fraction_perequation": elig_pq_dgcl,
-             "dsr_eligible_fraction_cible": elig_cible_dgcl}
 
 
 # Columns to compare that contain a bool type
 # A pivot table will be printed that counts the number of values that have the different combination
 def compare_results_bool(data, nom_actual, nom_expected):
     return data.pivot_table(code_comm, index=nom_actual, columns=nom_expected, aggfunc="count", fill_value=0)
-
-
-def check_variables_bool(data):
-    res = {}
-    for k, v in tocompare.items():
-        res[k] = compare_results_bool(data, k, v)
-    return res
 
 
 # Columns to compare that contain a number
@@ -78,23 +62,32 @@ def compare_results_real(data, nom_actual, nom_expected):
     res["identiques"] = nb_non_nul - res["differents"]
     return res
 
+
 def print_eligible_comparison():
     PERIOD = "2020"
-    DATA = adapt_dgcl_data(load_dgcl_file())
+    data_dgcl = load_dgcl_file()
+    data_calc_dgcl = get_dgcl_results(data_dgcl)
+    
+    data_sim = adapt_dgcl_data(data_dgcl)
     TBS = CountryTaxBenefitSystem()
-    sim = simulation_from_dgcl_csv(PERIOD, DATA, TBS)
-    colonnes_to_compare = ["dsr_eligible_fraction_bourg_centre",
-                           "dsr_eligible_fraction_perequation",
-                           "dsr_eligible_fraction_cible"]
+    sim = simulation_from_dgcl_csv(PERIOD, data_sim, TBS)
 
-    for variable_to_compute in colonnes_to_compare + ["indice_synthetique_dsr_cible", "rang_indice_synthetique_dsr_cible"]:
-        DATA[variable_to_compute] = sim.calculate(variable_to_compute, PERIOD)
+    # on va recalculer nous même toutes les colonnes (sauf le code commune)
+    colonnes_to_compute = list(data_calc_dgcl.columns[1:])
 
-    DATA.to_csv("data_compare.csv")
+    for variable_to_compute in colonnes_to_compute:
+        data_sim[variable_to_compute] = sim.calculate(variable_to_compute, PERIOD)
 
-    for nom_ofdl, resultats_comparaison in check_variables_bool(DATA).items():
+    # Merge DGCL results with data_sim
+    previous_length_data = len(data_sim)
+    data_sim = data_sim.merge(data_calc_dgcl, how="inner", on=code_comm, suffixes=["", "_precalc"])
+    assert(len(data_sim) == previous_length_data)
+    data_sim.to_csv("data_compare.csv")
+
+    for nom_ofdl in colonnes_to_compute:
         print("Comparaison DGCL vs nous pour le calcul de", nom_ofdl)
-        print(resultats_comparaison)
+        if data_sim[nom_ofdl].dtypes.name == 'bool':
+            print(compare_results_bool(data_sim, nom_ofdl, nom_ofdl + "_precalc"))
 
 
 if __name__ == "__main__":
