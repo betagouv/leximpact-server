@@ -88,6 +88,26 @@ def print_eligible_comparison():
         print("Comparaison DGCL vs nous pour le calcul de", nom_ofdl)
         if data_sim[nom_ofdl].dtypes.name == 'bool':
             print(compare_results_bool(data_sim, nom_ofdl, nom_ofdl + "_precalc"))
+        else:
+            # On va printer de manière quelque peu désordonnées diverses métriques nous informant
+            # sur la précision de notre calcul
+            resultats_comparaison = compare_results_real(data_sim, nom_ofdl, nom_ofdl + "_precalc")
+            print("***Statistiques de base (variable à prédire)***")
+            print("Moyenne base", resultats_comparaison["Moyenne base"])
+            print("Ecart-type", resultats_comparaison["variance"] ** 0.5)
+            print("***Différence entre prédit et précalculé***")
+            for cle in ["L1", "L2", "L∞"]:
+                print(cle, ": ", resultats_comparaison[cle])
+            print("***Différence entre prédit et précalculé : répartition des écarts***")
+            for cle in ["min", "max"]:
+                print("ecart", cle, resultats_comparaison[cle])
+            print('***Différence entre prédit et précalculé : "identiques"***')
+            for cle in ["differents", "identiques"]:
+                print(cle, resultats_comparaison[cle])
+            print("***Répartition des écarts ordonnés par quantiles***")
+            for quantile_borne in resultats_comparaison["quantiles"]:
+                rang, valeur = resultats_comparaison["quantiles"][quantile_borne]
+                print("{}% (rang {})\t {:.2f}".format(int(quantile_borne * 100), rang, valeur))
 
 
 if __name__ == "__main__":
