@@ -24,10 +24,16 @@ tocompare = {"dsr_eligible_fraction_bourg_centre": elig_bc_dgcl,
              "dsr_eligible_fraction_cible": elig_cible_dgcl}
 
 
+# Columns to compare that contain a bool type
+# A pivot table will be printed that counts the number of values that have the different combination
+def compare_results_bool(data, nom_actual, nom_expected):
+    return data.pivot_table(code_comm, index=nom_actual, columns=nom_expected, aggfunc="count", fill_value=0)
+
+
 def check_variables_bool(data):
     res = {}
     for k, v in tocompare.items():
-        res[k] = data.pivot_table(code_comm, index=k, columns=v, aggfunc="count", fill_value=0)
+        res[k] = compare_results_bool(data, k, v)
     return res
 
 
