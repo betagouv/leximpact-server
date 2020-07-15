@@ -82,7 +82,6 @@ def print_eligible_comparison():
     previous_length_data = len(data_sim)
     data_sim = data_sim.merge(data_calc_dgcl, how="inner", on=code_comm, suffixes=["", "_precalc"])
     assert(len(data_sim) == previous_length_data)
-    data_sim.to_csv("data_compare.csv")
 
     for nom_ofdl in colonnes_to_compute:
         print("Comparaison DGCL vs nous pour le calcul de", nom_ofdl)
