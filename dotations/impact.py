@@ -1,7 +1,7 @@
 from pandas import DataFrame  # type: ignore
 
 
-BORNES_STRATES = [0, 500, 2000, 5000, 10000, 20000, 50000, 100000, 1000000000000]  # bornes inf des strates en terme de POP INSEE
+BORNES_STRATES = [0, 500, 2000, 5000, 10000, 20000, 50000, 100000, 1000000000000]  # bornes des strates en terme de POP INSEE
 
 
 def get_cas_types_codes_insee():

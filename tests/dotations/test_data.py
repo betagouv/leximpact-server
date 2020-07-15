@@ -54,7 +54,7 @@ def test_ajoute_population_plus_grande_commune_agglomeration(table_openfisca_to_
     result_data = ajoute_population_plus_grande_commune_agglomeration(
         table_openfisca_to_dgcl_column, input_data, plus_grosse_commune)
 
-    assert result_data.count(axis='columns')[0] == input_data.count(axis='columns')[0] + 1
+    assert len(result_data.columns) == len(input_data.columns) + 1
     assert result_data[plus_grosse_commune].dtype == 'int64'
     assert result_data[plus_grosse_commune].tolist() == [3, 2, 3]
 
@@ -81,4 +81,4 @@ def test_ajoute_appartenance_outre_mer(loaded_data):
     data = ajoute_appartenance_outre_mer(loaded_data, outre_mer_dgcl)
 
     assert data[outre_mer_dgcl] is not None
-    assert data[outre_mer_dgcl].loc[data[outre_mer_dgcl]].count() == nombre_communes_outre_mer
+    assert len(data[data[outre_mer_dgcl]]) == nombre_communes_outre_mer
