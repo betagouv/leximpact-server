@@ -84,8 +84,10 @@ def test_dsr_reform_popMax(client, headers):
     response = response_function(data=json.dumps(request))
     result = json.loads(response.data)
 
-    assert "base" in result
-    assert "amendement" in result
+    # Vérification des clefs du dictionnaire (sauf celles inclues dans un array)
+    flattened_result_keys = set(flattened_dict(result).keys())
+    flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
+    assert flattened_result_keys == flattened_expected_keys
 
     base_dsr = result["base"]["dotations"]["communes"]["dsr"]
     amendement_dsr = result["amendement"]["dotations"]["communes"]["dsr"]
@@ -103,10 +105,6 @@ def test_dsr_reform_popMax(client, headers):
             == [description_strate["habitants"] for description_strate in amendement_dsr["strates"]]
             )
 
-    # Vérification des clefs du dictionnaire (sauf celles inclues dans un array)
-    flattened_result_keys = set(flattened_dict(result).keys())
-    flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
-    assert flattened_result_keys == flattened_expected_keys
 
     # Vérification des clefs du dictionnaire contenues dans un array :
     # cas-types
