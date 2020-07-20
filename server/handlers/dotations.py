@@ -51,7 +51,7 @@ class Dotations(object):
                 return request_error_from_error_message("invalid format for cas type : must contain an object that contains a 'code' key. Problematic cas type : {}".format(cas_type))
         communes_cas_types = [cas_type["code"] for cas_type in desc_cas_types]
 
-       # calculer
+        # calculer
         prefix_dsr_eligible = "dsr_eligible_"
         prefix_dsr_montant = "dsr_montant_"
         df_results = simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant)
