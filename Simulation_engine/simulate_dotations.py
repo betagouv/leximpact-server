@@ -8,12 +8,12 @@ from dotations.simulation import resultfromreforms  # type: ignore
 TABLE_LEXIMPACT_TO_OFDL = {
     "dotations.communes.dsr.eligibilite.popMax": "dotation_solidarite_rurale.seuil_nombre_habitants",
     "dotations.communes.dsr.eligibilite.popChefLieuMax": "dotation_solidarite_rurale.bourg_centre.eligibilite.seuil_nombre_habitants_chef_lieu",
-    "dotations.communes.dsr.bourgcentre.eligibilite.partPopCantonMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.seuil_part_population_canton",
-    "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.agglomeration.partPopDepartementMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_part_population_dgf_agglomeration_departement",
-    "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.agglomeration.popMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_population_dgf_agglomeration",
-    "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.agglomeration.popCommuneMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_population_dgf_maximum_commune_agglomeration",
-    "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.canton.popChefLieuMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_population_dgf_chef_lieu_de_canton",
-    "dotations.communes.dsr.bourgcentre.eligibilite.exclusion.potentielFinancierParHab.rapportPotentielFinancierMoyenParHab": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_rapport_pfi_10000",
+    "dotations.communes.dsr.bourgCentre.eligibilite.partPopCantonMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.seuil_part_population_canton",
+    "dotations.communes.dsr.bourgCentre.eligibilite.exclusion.agglomeration.partPopDepartementMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_part_population_dgf_agglomeration_departement",
+    "dotations.communes.dsr.bourgCentre.eligibilite.exclusion.agglomeration.popMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_population_dgf_agglomeration",
+    "dotations.communes.dsr.bourgCentre.eligibilite.exclusion.agglomeration.popCommuneMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_population_dgf_maximum_commune_agglomeration",
+    "dotations.communes.dsr.bourgCentre.eligibilite.exclusion.canton.popChefLieuMin": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_population_dgf_chef_lieu_de_canton",
+    "dotations.communes.dsr.bourgCentre.eligibilite.exclusion.potentielFinancier.rapportPotentielFinancierMoyen": "dotation_solidarite_rurale.bourg_centre.eligibilite.exclusion.seuil_rapport_pfi_10000",
     "dotations.communes.dsr.bourgCentre.attribution.popLimite": "dotation_solidarite_rurale.bourg_centre.attribution.plafond_population",
     "dotations.communes.dsr.bourgCentre.attribution.effortFiscalLimite": "dotation_solidarite_rurale.bourg_centre.attribution.plafond_effort_fiscal",
     "dotations.communes.dsr.bourgCentre.attribution.coefMultiplicateurRevitalisationRurale": "dotation_solidarite_rurale.bourg_centre.attribution.coefficient_zrr",
@@ -25,7 +25,7 @@ TABLE_LEXIMPACT_TO_OFDL = {
     "dotations.communes.dsr.perequation.attribution.effortFiscalLimite": "dotation_solidarite_rurale.attribution.plafond_effort_fiscal",
     "dotations.communes.dsr.cible.eligibilite.premieresCommunes": "dotation_solidarite_rurale.cible.eligibilite.seuil_classement",
     "dotations.communes.dsr.cible.eligibilite.indiceSynthetique.ponderationPotentielFinancier": "dotation_solidarite_rurale.cible.eligibilite.indice_synthetique.poids_potentiel_financier",
-    "dotations.communes.dsr.cible.eligibilite.indiceSynthetique.ponderationRevenuParHab": "dotation_solidarite_rurale.cible.eligibilite.indice_synthetique.poids_revenu"
+    "dotations.communes.dsr.cible.eligibilite.indiceSynthetique.ponderationRevenu": "dotation_solidarite_rurale.cible.eligibilite.indice_synthetique.poids_revenu",
 }
 
 
