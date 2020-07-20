@@ -61,14 +61,14 @@ class Dotations(object):
             "amendement": {
                 "dotations": {
                     "communes": {
-                        "dsr": build_response_dsr("amendement", df_results, prefix_dsr_eligible, prefix_dsr_montant)
+                        "dsr": build_response_dsr("amendement", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types)
                     }
                 }
             },
             "base": {
                 "dotations": {
                     "communes": {
-                        "dsr": build_response_dsr("base", df_results, prefix_dsr_eligible, prefix_dsr_montant)
+                        "dsr": build_response_dsr("base", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types)
                     }
                 }
             }
