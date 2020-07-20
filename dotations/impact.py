@@ -30,13 +30,19 @@ def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, pref
 
 def build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible):
     # [scenario_api]["dotations"]["communes"]["dsr"]
-    # > ["eligibles"]/["nouvellementEligibles"]/["plusEligibles"]
+    # > ["eligibles"]
     response = {}
-
     response["eligibles"] = int(df_results[prefix_dsr_eligible + scenario].sum())
-    if scenario != "base":
-        response["nouvellementEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (~df_results[prefix_dsr_eligible + "base"])])
-        response["plusEligibles"] = len(df_results[(~df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "base"])])
+
+    return response
+
+
+def build_response_dsr_eligibilites_changements(scenario, df_results, prefix_dsr_eligible):
+    # [scenario_api]["baseTo" + scenario]["communes"]["dsr"]
+    # > ["nouvellementEligibles"]/["plusEligibles"]
+    response = {}
+    response["nouvellementEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (~df_results[prefix_dsr_eligible + "base"])])
+    response["plusEligibles"] = len(df_results[(~df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "base"])])
 
     return response
 

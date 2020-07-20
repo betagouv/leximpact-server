@@ -1,6 +1,6 @@
 from http.client import OK, BAD_REQUEST
 
-from dotations.impact import build_response_dsr  # type: ignore
+from dotations.impact import build_response_dsr, build_response_dsr_eligibilites_changements  # type: ignore
 from Simulation_engine.simulate_dotations import simulate
 from typing import List
 
@@ -92,6 +92,11 @@ class Dotations(object):
                     "communes": {
                         "dsr": build_response_dsr("base", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates)
                     }
+                }
+            },
+            "baseToAmendement": {
+                "communes": {
+                    "dsr": build_response_dsr_eligibilites_changements("amendement", df_results, prefix_dsr_eligible)
                 }
             }
         }
