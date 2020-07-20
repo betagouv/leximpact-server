@@ -38,11 +38,12 @@ def build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible):
 
 
 def build_response_dsr_eligibilites_changements(scenario, df_results, prefix_dsr_eligible):
-    # [scenario_api]["baseTo" + scenario]["communes"]["dsr"]
-    # > ["nouvellementEligibles"]/["plusEligibles"]
+    # ["baseTo" + scenario]["communes"]["dsr"]
+    # > ["nouvellementEligibles"]/["plusEligibles"]/["toujoursEligibles"]
     response = {}
     response["nouvellementEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (~df_results[prefix_dsr_eligible + "base"])])
     response["plusEligibles"] = len(df_results[(~df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "base"])])
+    response["toujoursEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "base"])])
 
     return response
 

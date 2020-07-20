@@ -95,6 +95,7 @@ def test_dsr_reform_eligibilite_montants(client, headers):
                 "dsr" : {
                     "nouvellementEligibles": 0,
                     "plusEligibles": 16115,
+                    "toujoursEligibles": 17049,
                 }
             }
         }
