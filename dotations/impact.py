@@ -9,7 +9,7 @@ def get_cas_types_codes_insee():
 
 
 def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=None):
-    # [scenario_api]["dotations"]["communes"]["dsr"]
+    # [scenario_api]["communes"]["dsr"]
     # > ["communes"]
     response = []
     code_comm = "Informations générales - Code INSEE de la commune"
@@ -29,7 +29,7 @@ def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, pref
 
 
 def build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible):
-    # [scenario_api]["dotations"]["communes"]["dsr"]
+    # [scenario_api]["communes"]["dsr"]
     # > ["eligibles"]
     response = {}
     response["eligibles"] = int(df_results[prefix_dsr_eligible + scenario].sum())
