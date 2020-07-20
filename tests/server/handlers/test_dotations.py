@@ -1,8 +1,13 @@
 from functools import partial
 import json
 
-from dotations.impact import BORNES_STRATES, get_cas_types_codes_insee  # type: ignore
+from dotations.impact import BORNES_STRATES_DEFAULT, get_cas_types_codes_insee  # type: ignore
 from dotations.utils_dict import flattened_dict  # type: ignore
+
+
+def request_strates_from_bornes_strates(bornes_strates):
+    bornes_strates[-1] = -1
+    return [{"habitants": borne} for borne in bornes_strates[1:]]
 
 
 def _distance_listes(a, b):
@@ -28,6 +33,7 @@ def test_dotations(client, headers):
             },
         },
         "descriptionCasTypes": [],
+        "strates": request_strates_from_bornes_strates(BORNES_STRATES_DEFAULT),
     }
 
     response_function = partial(client.post, "dotations", headers=headers)
@@ -56,7 +62,8 @@ def test_dsr_reform_eligibilite_montants(client, headers):
         "descriptionCasTypes": [
             {"code": code_insee_cas_type}
             for code_insee_cas_type in codes_communes
-        ]
+        ],
+        "strates": request_strates_from_bornes_strates(BORNES_STRATES_DEFAULT),
 
     }
     # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
@@ -251,12 +258,11 @@ def test_dsr_reform_strates(client, headers):
     base_dsr = result["base"]["dotations"]["communes"]["dsr"]
     amendement_dsr = result["amendement"]["dotations"]["communes"]["dsr"]
 
-    assert (len(BORNES_STRATES) - 1) == len(base_dsr["strates"]) == len(amendement_dsr["strates"])
-    assert (BORNES_STRATES[:-1]
+    assert (len(BORNES_STRATES_DEFAULT) - 1) == len(base_dsr["strates"]) == len(amendement_dsr["strates"])
+    assert (BORNES_STRATES_DEFAULT[:-1]
             == [description_strate["habitants"] for description_strate in base_dsr["strates"]]
             == [description_strate["habitants"] for description_strate in amendement_dsr["strates"]]
             )
-
     # Vérification des clefs du dictionnaire contenues dans un array :
     # strates
     expected_strates_keys = set(["eligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
