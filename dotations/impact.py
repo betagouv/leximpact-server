@@ -17,10 +17,13 @@ def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, pref
         communes_cas_types = get_cas_types_codes_insee()
     for cas_type in communes_cas_types:
         res_cas_type = df_results[df_results[code_comm].astype(str) == cas_type]
-        pop_cas_type = res_cas_type["population_insee"].values[0]
-        cas_type_eligible = bool(res_cas_type[prefix_dsr_eligible + scenario].values[0])
-        montant_dsr_cas_type = res_cas_type[prefix_dsr_montant + scenario].values[0]
-        response += [{"code" : cas_type, "eligible": cas_type_eligible, "dotationParHab": float(montant_dsr_cas_type / pop_cas_type)}]
+        if not len(df_results):  # commune was not found. We need to tell the client!!!
+            response += [{"code": cas_type, "Error": "Commune was not found. Where did you get this code INSEE?"}]
+        else:
+            pop_cas_type = res_cas_type["population_insee"].values[0]
+            cas_type_eligible = bool(res_cas_type[prefix_dsr_eligible + scenario].values[0])
+            montant_dsr_cas_type = res_cas_type[prefix_dsr_montant + scenario].values[0]
+            response += [{"code" : cas_type, "eligible": cas_type_eligible, "dotationParHab": float(montant_dsr_cas_type / pop_cas_type)}]
 
     return response
 
