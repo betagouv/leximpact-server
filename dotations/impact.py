@@ -1,7 +1,7 @@
 from pandas import DataFrame  # type: ignore
-from typing import Optional
+from typing import Optional, List
 
-BORNES_STRATES = [0, 500, 2000, 5000, 10000, 20000, 50000, 100000, 1000000000000]  # bornes des strates en terme de POP INSEE
+BORNES_STRATES_DEFAULT = [0, 500, 2000, 5000, 10000, 20000, 50000, 100000, 1000000000000]  # bornes des strates en terme de POP INSEE
 
 
 def get_cas_types_codes_insee():
@@ -41,12 +41,12 @@ def build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible):
     return response
 
 
-def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant):
+def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, strates: Optional[list] = None):
     # [scenario_api]["dotations"]["communes"]["dsr"]
     # > ["strates"]
-
+    BORNES_STRATES = BORNES_STRATES_DEFAULT if strates is None else strates
     # tableau nombre de communes éligibles par strate
-    resultats_agreges_bornes = [{} for borne in BORNES_STRATES]
+    resultats_agreges_bornes: List[dict] = [{} for borne in BORNES_STRATES]
 
     # pour une borne, aggrège les résultats de toute la population
     # située au niveau supérieur ou égal à la borne
@@ -58,7 +58,7 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix
         resultats_agreges_bornes[id_borne]["eligibles_dsr"] = int(df_strate[prefix_dsr_eligible + scenario].sum())
         resultats_agreges_bornes[id_borne]["montant_dsr"] = int(df_strate[prefix_dsr_montant + scenario].sum())
 
-    res_strates = [{} for borne in BORNES_STRATES[:-1]]
+    res_strates: List[dict] = [{} for borne in BORNES_STRATES[:-1]]
     for id_borne in range(len(BORNES_STRATES) - 1):
         res_strates[id_borne]["habitants"] = BORNES_STRATES[id_borne]
         pop_strate = resultats_agreges_bornes[id_borne]["population_insee"] - resultats_agreges_bornes[id_borne + 1]["population_insee"]
@@ -75,10 +75,10 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix
     return res_strates
 
 
-def build_response_dsr(scenario: str, df_results: DataFrame, prefix_dsr_eligible: str, prefix_dsr_montant: str, communes_cas_types: Optional[list] = None) -> dict:
+def build_response_dsr(scenario: str, df_results: DataFrame, prefix_dsr_eligible: str, prefix_dsr_montant: str, communes_cas_types: Optional[list] = None, strates: Optional[list] = None) -> dict:
     eligibilites = build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible)
     return {
         "communes": build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types),
         **eligibilites,
-        "strates": build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant)
+        "strates": build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, strates=strates)
     }
