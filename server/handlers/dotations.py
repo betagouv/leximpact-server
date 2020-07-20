@@ -26,7 +26,9 @@ def check_keys_dict(dict_to_check, model):
 
 
 def check_request_body(request_body):
-    required_dict = {"reforme": {"dotations": {"montants": {"dgf": None}, "communes": None}}, "descriptionCasTypes": None}
+    required_dict = {"reforme": {"dotations": {"montants": {"dgf": None}, "communes": None}},
+                     "descriptionCasTypes": None,
+                     "strates": None}
     result, errorfield = check_keys_dict(request_body, required_dict)
     if not result:
         return request_error_from_error_message("Missing required '{}' field in request body.".format(errorfield))
