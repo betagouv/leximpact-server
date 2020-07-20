@@ -37,12 +37,21 @@ class Dotations(object):
     def simule_dotations(**params: dict) -> tuple:
         request_body = params["body"]
 
-        # vérifier le format de la requête
+        # vérifier le format de la requête : le json contient les bonnes clefs
         check_result = check_request_body(request_body)
         if check_result is not None:
             return check_result
 
-        # calculer
+        # vérifier que les cas types sont bien une liste de dictionnaires contenant une clef "code".
+        desc_cas_types = request_body["descriptionCasTypes"]
+        if not isinstance(desc_cas_types, list):
+            return request_error_from_error_message("descriptionCasTypes must contain an array")
+        for cas_type in desc_cas_types:
+            if not check_keys_dict(cas_type, {"code": None}):
+                return request_error_from_error_message("invalid format for cas type : must contain an object that contains a 'code' key. Problematic cas type : {}".format(cas_type))
+        communes_cas_types = [cas_type["code"] for cas_type in desc_cas_types]
+
+       # calculer
         prefix_dsr_eligible = "dsr_eligible_"
         prefix_dsr_montant = "dsr_montant_"
         df_results = simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant)
