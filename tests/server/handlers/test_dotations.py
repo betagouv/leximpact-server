@@ -74,8 +74,6 @@ def test_dsr_reform_eligibilite_montants(client, headers):
                     "dsr": {
                         "communes": [],
                         "eligibles": 17049,
-                        "nouvellementEligibles": 0,
-                        "plusEligibles": 16115,
                         "strates": []
                     }
                 }
@@ -89,6 +87,14 @@ def test_dsr_reform_eligibilite_montants(client, headers):
                         "eligibles": 33164,
                         "strates": []
                     }
+                }
+            }
+        },
+        "baseToAmendement": {
+            "communes": {
+                "dsr" : {
+                    "nouvellementEligibles": 0,
+                    "plusEligibles": 16115,
                 }
             }
         }
@@ -115,7 +121,8 @@ def test_dsr_reform_eligibilite_montants(client, headers):
     # Moins de communes éligibles après que avant.
     assert (base_dsr["eligibles"] > amendement_dsr["eligibles"])
     # Les nombres affichés dans l'amendement sont cohérents avec la base
-    assert(base_dsr["eligibles"] == amendement_dsr["eligibles"] - amendement_dsr["nouvellementEligibles"] + amendement_dsr["plusEligibles"])
+    base_to_amendement = result["baseToAmendement"]["communes"]["dsr"]
+    assert(base_dsr["eligibles"] == amendement_dsr["eligibles"] - base_to_amendement["nouvellementEligibles"] + base_to_amendement["plusEligibles"])
 
     # Les deux cas types ont une éligibilité différente avec la loi actuelle (sinon on s'ennuye)
     assert (len(set([cas_type["eligible"] for cas_type in base_dsr["communes"]])) > 1)
