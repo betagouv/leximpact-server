@@ -81,17 +81,13 @@ class Dotations(object):
         # constuire la réponse
         simulation_result = {
             "amendement": {
-                "dotations": {
-                    "communes": {
-                        "dsr": build_response_dsr("amendement", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates)
-                    }
+                "communes": {
+                    "dsr": build_response_dsr("amendement", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates)
                 }
             },
             "base": {
-                "dotations": {
-                    "communes": {
-                        "dsr": build_response_dsr("base", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates)
-                    }
+                "communes": {
+                    "dsr": build_response_dsr("base", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates)
                 }
             },
             "baseToAmendement": {

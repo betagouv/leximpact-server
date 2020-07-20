@@ -43,7 +43,6 @@ def test_dotations(client, headers):
 
 
 def test_dsr_reform_eligibilite_montants(client, headers):
-    codes_communes = get_cas_types_codes_insee()
     request = {
         "reforme": {
             "dotations": {
@@ -59,34 +58,27 @@ def test_dsr_reform_eligibilite_montants(client, headers):
                 }
             }
         },
-        "descriptionCasTypes": [
-            {"code": code_insee_cas_type}
-            for code_insee_cas_type in codes_communes
-        ],
+        "descriptionCasTypes": [],
         "strates": request_strates_from_bornes_strates(BORNES_STRATES_DEFAULT),
 
     }
     # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
     expected_reform_impact = {
         "amendement": {
-            "dotations": {
-                "communes": {
-                    "dsr": {
-                        "communes": [],
-                        "eligibles": 17049,
-                        "strates": []
-                    }
+            "communes": {
+                "dsr": {
+                    "communes": [],
+                    "eligibles": 17049,
+                    "strates": []
                 }
             }
         },
         "base": {
-            "dotations": {
-                "communes": {
-                    "dsr": {
-                        "communes": [],
-                        "eligibles": 33164,
-                        "strates": []
-                    }
+            "communes": {
+                "dsr": {
+                    "communes": [],
+                    "eligibles": 33164,
+                    "strates": []
                 }
             }
         },
@@ -110,8 +102,8 @@ def test_dsr_reform_eligibilite_montants(client, headers):
     flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
     assert flattened_result_keys == flattened_expected_keys
 
-    base_dsr = result["base"]["dotations"]["communes"]["dsr"]
-    amendement_dsr = result["amendement"]["dotations"]["communes"]["dsr"]
+    base_dsr = result["base"]["communes"]["dsr"]
+    amendement_dsr = result["amendement"]["communes"]["dsr"]
 
     # Vérification des valeurs connues :
 
@@ -126,7 +118,9 @@ def test_dsr_reform_eligibilite_montants(client, headers):
     assert(base_dsr["eligibles"] == amendement_dsr["eligibles"] - base_to_amendement["nouvellementEligibles"] + base_to_amendement["plusEligibles"])
 
     # Les deux cas types ont une éligibilité différente avec la loi actuelle (sinon on s'ennuye)
-    assert (len(set([cas_type["eligible"] for cas_type in base_dsr["communes"]])) > 1)
+    # Test supprimé suite au choix éditorial de faire figurer 2 communes aléatoires au lieu de 2 communes
+    # intéressantes
+    # assert (len(set([cas_type["eligible"] for cas_type in base_dsr["communes"]])) > 1)
 
     # Montants : cohérence : les cas_types ont une dotation non nulle si et seulement si elles sont éligibles
     for scenario_cas_types in [base_dsr["communes"], amendement_dsr["communes"]]:
@@ -139,6 +133,7 @@ def test_dsr_reform_eligibilite_montants(client, headers):
 
 
 def test_dsr_reform_cas_types(client, headers):
+    codes_communes = get_cas_types_codes_insee()
     request = {
         "reforme": {
             "dotations": {
@@ -153,31 +148,39 @@ def test_dsr_reform_cas_types(client, headers):
                     }
                 }
             }
-        }
+        },
+        "descriptionCasTypes": [
+            {"code": code_insee_cas_type}
+            for code_insee_cas_type in codes_communes
+        ],
+        "strates": request_strates_from_bornes_strates(BORNES_STRATES_DEFAULT),
     }
     # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
     expected_reform_impact = {
         "amendement": {
-            "dotations": {
-                "communes": {
-                    "dsr": {
-                        "communes": [],
-                        "eligibles": 17049,
-                        "nouvellementEligibles": 0,
-                        "plusEligibles": 16115,
-                        "strates": []
-                    }
+            "communes": {
+                "dsr": {
+                    "communes": [],
+                    "eligibles": 17049,
+                    "strates": []
                 }
             }
         },
         "base": {
-            "dotations": {
-                "communes": {
-                    "dsr": {
-                        "communes": [],
-                        "eligibles": 33164,
-                        "strates": []
-                    }
+            "communes": {
+                "dsr": {
+                    "communes": [],
+                    "eligibles": 33164,
+                    "strates": []
+                }
+            }
+        },
+        "baseToAmendement": {
+            "communes": {
+                "dsr" : {
+                    "nouvellementEligibles": 0,
+                    "plusEligibles": 16115,
+                    "toujoursEligibles": 17049,
                 }
             }
         }
@@ -192,8 +195,8 @@ def test_dsr_reform_cas_types(client, headers):
     flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
     assert flattened_result_keys == flattened_expected_keys
 
-    base_dsr = result["base"]["dotations"]["communes"]["dsr"]
-    amendement_dsr = result["amendement"]["dotations"]["communes"]["dsr"]
+    base_dsr = result["base"]["communes"]["dsr"]
+    amendement_dsr = result["amendement"]["communes"]["dsr"]
 
     # même nombre de cas types en loi actuelle et amendement
     # Les cas_types sont ceux attendus
@@ -224,31 +227,36 @@ def test_dsr_reform_strates(client, headers):
                     }
                 }
             }
-        }
+        },
+        "descriptionCasTypes": [],
+        "strates": request_strates_from_bornes_strates(BORNES_STRATES_DEFAULT),
     }
     # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
     expected_reform_impact = {
         "amendement": {
-            "dotations": {
-                "communes": {
-                    "dsr": {
-                        "communes": [],
-                        "eligibles": 17049,
-                        "nouvellementEligibles": 0,
-                        "plusEligibles": 16115,
-                        "strates": []
-                    }
+            "communes": {
+                "dsr": {
+                    "communes": [],
+                    "eligibles": 17049,
+                    "strates": []
                 }
             }
         },
         "base": {
-            "dotations": {
-                "communes": {
-                    "dsr": {
-                        "communes": [],
-                        "eligibles": 33164,
-                        "strates": []
-                    }
+            "communes": {
+                "dsr": {
+                    "communes": [],
+                    "eligibles": 33164,
+                    "strates": []
+                }
+            }
+        },
+        "baseToAmendement": {
+            "communes": {
+                "dsr" : {
+                    "nouvellementEligibles": 0,
+                    "plusEligibles": 16115,
+                    "toujoursEligibles": 17049,
                 }
             }
         }
@@ -263,8 +271,8 @@ def test_dsr_reform_strates(client, headers):
     flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
     assert flattened_result_keys == flattened_expected_keys
 
-    base_dsr = result["base"]["dotations"]["communes"]["dsr"]
-    amendement_dsr = result["amendement"]["dotations"]["communes"]["dsr"]
+    base_dsr = result["base"]["communes"]["dsr"]
+    amendement_dsr = result["amendement"]["communes"]["dsr"]
 
     assert (len(BORNES_STRATES_DEFAULT) - 1) == len(base_dsr["strates"]) == len(amendement_dsr["strates"])
     assert (BORNES_STRATES_DEFAULT[:-1]
