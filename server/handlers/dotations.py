@@ -50,7 +50,7 @@ class Dotations(object):
             return request_error_from_error_message("descriptionCasTypes must contain an array")
         for cas_type in desc_cas_types:
             if not check_keys_dict(cas_type, {"code": None}):
-                return request_error_from_error_message("invalid format for cas type : must contain an object that contains a 'code' key. Problematic cas type : {}".format(cas_type))
+                return request_error_from_error_message("invalid format for cas type : must contain an object that contains a 'code' key. Problematic cas type: {}".format(cas_type))
         communes_cas_types = [cas_type["code"] for cas_type in desc_cas_types]
 
         # calculer
