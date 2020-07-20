@@ -7,6 +7,10 @@ from Simulation_engine.simulate_dotations import simulate
 # Returns True or False, and the problematic field
 
 
+def request_error_from_error_message(error_message):
+    return {"Error" : error_message}, BAD_REQUEST
+
+
 def check_keys_dict(dict_to_check, model):
     for k, v in model.items():
         if k not in dict_to_check:  # key does not exist
@@ -25,7 +29,7 @@ def check_request_body(request_body):
     required_dict = {"reforme": {"dotations": {"montants": {"dgf": None}, "communes": None}}}
     result, errorfield = check_keys_dict(request_body, required_dict)
     if not result:
-        return {"Error": "Missing required '{}' field in request body.".format(errorfield)}, BAD_REQUEST
+        return request_error_from_error_message("Missing required '{}' field in request body.".format(errorfield))
 
 
 class Dotations(object):
