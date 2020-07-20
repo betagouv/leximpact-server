@@ -1,5 +1,5 @@
 from pandas import DataFrame  # type: ignore
-
+from typing import Optional
 
 BORNES_STRATES = [0, 500, 2000, 5000, 10000, 20000, 50000, 100000, 1000000000000]  # bornes des strates en terme de POP INSEE
 
@@ -8,12 +8,13 @@ def get_cas_types_codes_insee():
     return ["76384", "76214"]  # sera paramétrable par l'usager
 
 
-def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant):
+def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=None):
     # [scenario_api]["dotations"]["communes"]["dsr"]
     # > ["communes"]
     response = []
     code_comm = "Informations générales - Code INSEE de la commune"
-    communes_cas_types = get_cas_types_codes_insee()
+    if communes_cas_types is None:
+        communes_cas_types = get_cas_types_codes_insee()
     for cas_type in communes_cas_types:
         res_cas_type = df_results[df_results[code_comm].astype(str) == cas_type]
         pop_cas_type = res_cas_type["population_insee"].values[0]
@@ -71,10 +72,10 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix
     return res_strates
 
 
-def build_response_dsr(scenario: str, df_results: DataFrame, prefix_dsr_eligible: str, prefix_dsr_montant: str) -> dict:
+def build_response_dsr(scenario: str, df_results: DataFrame, prefix_dsr_eligible: str, prefix_dsr_montant: str, communes_cas_types: Optional[list] = None) -> dict:
     eligibilites = build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible)
     return {
-        "communes": build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant),
+        "communes": build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types),
         **eligibilites,
         "strates": build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant)
     }
