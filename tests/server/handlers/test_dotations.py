@@ -25,8 +25,9 @@ def test_dotations(client, headers):
             "dotations": {
                 "montants": {"dgf": 16},
                 "communes": {}
-            }
-        }
+            },
+        },
+        "descriptionCasTypes": [],
     }
 
     response_function = partial(client.post, "dotations", headers=headers)
@@ -36,6 +37,7 @@ def test_dotations(client, headers):
 
 
 def test_dsr_reform_eligibilite_montants(client, headers):
+    codes_communes = get_cas_types_codes_insee()
     request = {
         "reforme": {
             "dotations": {
@@ -50,7 +52,12 @@ def test_dsr_reform_eligibilite_montants(client, headers):
                     }
                 }
             }
-        }
+        },
+        "descriptionCasTypes": [
+            {"code": code_insee_cas_type}
+            for code_insee_cas_type in codes_communes
+        ]
+
     }
     # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
     expected_reform_impact = {
@@ -175,7 +182,6 @@ def test_dsr_reform_cas_types(client, headers):
 
     # même nombre de cas types en loi actuelle et amendement
     # Les cas_types sont ceux attendus
-    codes_communes = get_cas_types_codes_insee()
     assert (codes_communes
             == [cas_type["code"] for cas_type in base_dsr["communes"]]
             == [cas_type["code"] for cas_type in amendement_dsr["communes"]]
