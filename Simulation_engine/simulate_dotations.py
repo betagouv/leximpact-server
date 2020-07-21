@@ -18,6 +18,7 @@ TABLE_LEXIMPACT_TO_OFDL = {
     "dotations.communes.dsr.bourgCentre.attribution.effortFiscalLimite": "dotation_solidarite_rurale.bourg_centre.attribution.plafond_effort_fiscal",
     "dotations.communes.dsr.bourgCentre.attribution.coefMultiplicateurRevitalisationRurale": "dotation_solidarite_rurale.bourg_centre.attribution.coefficient_zrr",
     "dotations.communes.dsr.bourgCentre.attribution.plafonnementPopulation": "population.plafond_dgf",
+    "dotations.communes.dsr.perequation.eligibilite.rapportPotentielFinancier": "dotation_solidarite_rurale.perequation.seuil_rapport_potentiel_financier",
     "dotations.communes.dsr.perequation.attribution.repartition.ponderationPotentielFinancier": "dotation_solidarite_rurale.attribution.poids_potentiel_financier_par_habitant",
     "dotations.communes.dsr.perequation.attribution.repartition.ponderationLongueurVoirie": "dotation_solidarite_rurale.attribution.poids_longueur_voirie",
     "dotations.communes.dsr.perequation.attribution.repartition.ponderationNbreEnfants": "dotation_solidarite_rurale.attribution.poids_enfants",
