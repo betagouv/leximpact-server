@@ -83,8 +83,10 @@ def print_eligible_comparison():
     data_sim = data_sim.merge(data_calc_dgcl, how="inner", on=code_comm, suffixes=["", "_precalc"])
     assert(len(data_sim) == previous_length_data)
 
+    BLEU_CLAIR = "\x1b[1;36;40m"
+    STOP_COULEUR = "\033[0m"
     for nom_ofdl in colonnes_to_compute:
-        print("Comparaison DGCL vs nous pour le calcul de", nom_ofdl)
+        print(f"{BLEU_CLAIR}Comparaison DGCL vs nous pour le calcul de", nom_ofdl, STOP_COULEUR)
         if data_sim[nom_ofdl].dtypes.name == 'bool':
             print(compare_results_bool(data_sim, nom_ofdl, nom_ofdl + "_precalc"))
         else:
@@ -103,13 +105,14 @@ def print_eligible_comparison():
             print('***Différence entre prédit et précalculé : "identiques"***')
             for cle in ["differents", "identiques"]:
                 print(cle, resultats_comparaison[cle])
-            print("***Répartition des écarts ordonnés par quantiles***")
+            print("***Répartition des écarts ordonnés par quantiles d'erreur***")
             for quantile_borne in resultats_comparaison["quantiles"]:
                 rang, valeur = resultats_comparaison["quantiles"][quantile_borne]
+                # le rang représente la quantité de communes concernées
                 print("{}% (rang {})\t {:.2f}".format(int(quantile_borne * 100), rang, valeur))
 
 
 if __name__ == "__main__":
     st = time()
     print_eligible_comparison()
-    print("Elapsed : {:.2f}".format(time() - st))
+    print("> Elapsed time: {:.2f}".format(time() - st))
