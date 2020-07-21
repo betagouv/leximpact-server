@@ -96,6 +96,8 @@ def print_eligible_comparison():
             print("***Statistiques de base (variable à prédire)***")
             print("Moyenne base", resultats_comparaison["Moyenne base"])
             print("Ecart-type", resultats_comparaison["variance"] ** 0.5)
+            print("***R² : pourcentage de la variance expliqué***")
+            print(f"{BLEU_CLAIR}", "{:.4f}%".format(resultats_comparaison["pourcentage expliqué"] * 100) , STOP_COULEUR, sep="")
             print("***Différence entre prédit et précalculé***")
             for cle in ["L1", "L2", "L∞"]:
                 print(cle, ": ", resultats_comparaison[cle])
