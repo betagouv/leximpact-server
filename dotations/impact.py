@@ -64,7 +64,9 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix
         nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles_dsr"] - resultats_agreges_bornes[id_borne + 1]["eligibles_dsr"]
         res_strates[id_borne]["eligibles"] = nb_elig_strate
         res_strates[id_borne]["dotationMoyenneParHab"] = (resultats_agreges_bornes[id_borne]["montant_dsr"] - resultats_agreges_bornes[id_borne + 1]["montant_dsr"]) / pop_strate
-        res_strates[id_borne]["partDotationTotale"] = ((resultats_agreges_bornes[id_borne]["montant_dsr"] - resultats_agreges_bornes[id_borne + 1]["montant_dsr"]) / resultats_agreges_bornes[0]["montant_dsr"]) if resultats_agreges_bornes[0]["montant_dsr"] else 0
+        res_strates[id_borne]["partDotationTotale"] = (
+            (resultats_agreges_bornes[id_borne]["montant_dsr"] - resultats_agreges_bornes[id_borne + 1]["montant_dsr"]) / resultats_agreges_bornes[0]["montant_dsr"]
+        ) if resultats_agreges_bornes[0]["montant_dsr"] else 0
 
     return res_strates
 

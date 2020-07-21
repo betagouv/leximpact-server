@@ -39,7 +39,7 @@ def format_reforme_openfisca(reforme_a_traduire):
     return {"dgf": translate_dict(ref, TABLE_LEXIMPACT_TO_OFDL)}
 
 
-def simulate(request_body, prefix_dsr_eligible, prefix_montant):
+def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant):
     variables_nombre_communes = [
         "dsr_eligible_fraction_bourg_centre",
         "dsr_eligible_fraction_perequation",
@@ -58,6 +58,6 @@ def simulate(request_body, prefix_dsr_eligible, prefix_montant):
             | df_results["dsr_eligible_fraction_perequation" + "_" + scenario]
             | df_results["dsr_eligible_fraction_cible" + "_" + scenario]
         )
-        df_results[prefix_montant + scenario] = df_results[[nom_variable + "_" + scenario for nom_variable in variables_montants_fractions_dsr]].sum(axis="columns")
+        df_results[prefix_dsr_montant + scenario] = df_results[[nom_variable + "_" + scenario for nom_variable in variables_montants_fractions_dsr]].sum(axis="columns")
 
     return df_results
