@@ -115,6 +115,7 @@ def test_dsr_reform_eligibilite_montants(client, headers):
     assert (base_dsr["eligibles"] > amendement_dsr["eligibles"])
     # Les nombres affichés dans l'amendement sont cohérents avec la base
     base_to_amendement = result["baseToAmendement"]["communes"]["dsr"]
+    assert(amendement_dsr["eligibles"] == base_to_amendement["toujoursEligibles"] + base_to_amendement["nouvellementEligibles"])
     assert(base_dsr["eligibles"] == amendement_dsr["eligibles"] - base_to_amendement["nouvellementEligibles"] + base_to_amendement["plusEligibles"])
 
     # Les deux cas types ont une éligibilité différente avec la loi actuelle (sinon on s'ennuye)
