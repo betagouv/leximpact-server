@@ -7,19 +7,19 @@ from repo.config import database_url  # type: ignore
 from models import User  # type: ignore
 
 
-@fixture
+@fixture(scope="session")
 def client():
     app.config["TESTING"] = True
     client = app.test_client()
     return client
 
 
-@fixture
+@fixture(scope="session")
 def mimetype() -> str:
     return "application/json"
 
 
-@fixture
+@fixture(scope="session")
 def headers(mimetype: str) -> dict:
     return {"Content-Type": mimetype, "Accept": mimetype}
 

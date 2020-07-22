@@ -32,12 +32,12 @@ def test_dotations(client, headers, request_dotations):
     assert response.status_code == 200
 
 
-@fixture
+@fixture(scope="module")
 def codes_communes_examples():
     return get_cas_types_codes_insee()
 
 
-@fixture
+@fixture(scope="module")
 def request_dotations(codes_communes_examples):
     request = {
         "reforme": {
@@ -63,7 +63,7 @@ def request_dotations(codes_communes_examples):
     return request
 
 
-@fixture
+@fixture(scope="module")
 def response_dotations(client, headers, request_dotations):
     response_function = partial(client.post, "dotations", headers=headers)
     response = response_function(data=json.dumps(request_dotations))
