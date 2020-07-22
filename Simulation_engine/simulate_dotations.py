@@ -45,7 +45,7 @@ def format_reforme_openfisca(reforme_a_traduire):
         # on choisit de ne rien soulever si ce champ n'est pas présent dans la réforme.
         # Ca fait qu'une absence de ce paramètre ne fera pas échouer la requête.
         pass
-    return {"dgf": translate_dict(ref, TABLE_LEXIMPACT_TO_OFDL)}
+    return {"dgf": translate_dict(ref, TABLE_LEXIMPACT_TO_OFDL, leave_not_found=False)}
 
 
 def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant):

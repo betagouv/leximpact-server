@@ -24,13 +24,16 @@ def unflattened_dict(dict_to_traverse, delimiter="."):
     return res
 
 
-def translate_dict(dict_to_translate, table_transcription):
+def translate_dict(dict_to_translate, table_transcription, leave_not_found=True):
     flattened_dict_pretranslation = flattened_dict(dict_to_translate)
     flattened_dict_posttranslation = {}
     for k, v in flattened_dict_pretranslation.items():
+        new_key = None
         if k in table_transcription:
             new_key = table_transcription[k]
         else:
-            new_key = k
-        flattened_dict_posttranslation[new_key] = v
+            if leave_not_found:
+                new_key = k
+        if new_key is not None:
+            flattened_dict_posttranslation[new_key] = v
     return unflattened_dict(flattened_dict_posttranslation)
