@@ -70,9 +70,8 @@ def response_dotations(client, headers, request_dotations):
     return json.loads(response.data)
 
 
-def test_dsr_reform_eligibilite_montants(response_dotations):
-    # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
-    expected_reform_impact = {
+def test_fields_response(response_dotations):
+    expected_response_structure = {
         "amendement": {
             "communes": {
                 "dsr": {
@@ -106,14 +105,16 @@ def test_dsr_reform_eligibilite_montants(response_dotations):
 
     # Vérification des clefs du dictionnaire (sauf celles incluses dans un array)
     flattened_result_keys = set(flattened_dict(result).keys())
-    flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
+    flattened_expected_keys = set(flattened_dict(expected_response_structure).keys())
     assert flattened_result_keys == flattened_expected_keys
 
+
+def test_dsr_reform_eligibilite_montants(response_dotations):
+    result = response_dotations
     base_dsr = result["base"]["communes"]["dsr"]
     amendement_dsr = result["amendement"]["communes"]["dsr"]
 
     # Vérification des valeurs connues :
-
     # Les nombres de communes éligibles de base sont ceux attendus
     expected_strates_eligibilite_base = [17752, 11103, 3165, 1089, 55, 0, 0, 0]
     assert expected_strates_eligibilite_base == [strate["eligibles"] for strate in base_dsr["strates"]]
@@ -132,44 +133,7 @@ def test_dsr_reform_eligibilite_montants(response_dotations):
 
 
 def test_dsr_reform_cas_types(response_dotations, codes_communes_examples):
-    # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
-    expected_reform_impact = {
-        "amendement": {
-            "communes": {
-                "dsr": {
-                    "communes": [],
-                    "eligibles": 17049,
-                    "strates": []
-                }
-            }
-        },
-        "base": {
-            "communes": {
-                "dsr": {
-                    "communes": [],
-                    "eligibles": 33164,
-                    "strates": []
-                }
-            }
-        },
-        "baseToAmendement": {
-            "communes": {
-                "dsr" : {
-                    "nouvellementEligibles": 0,
-                    "plusEligibles": 16115,
-                    "toujoursEligibles": 17049,
-                }
-            }
-        }
-    }
-
     result = response_dotations
-
-    # Vérification des clefs du dictionnaire (sauf celles inclues dans un array)
-    flattened_result_keys = set(flattened_dict(result).keys())
-    flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
-    assert flattened_result_keys == flattened_expected_keys
-
     base_dsr = result["base"]["communes"]["dsr"]
     amendement_dsr = result["amendement"]["communes"]["dsr"]
 
@@ -196,43 +160,7 @@ def test_dsr_reform_cas_types(response_dotations, codes_communes_examples):
 
 
 def test_dsr_reform_strates(response_dotations):
-    # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
-    expected_reform_impact = {
-        "amendement": {
-            "communes": {
-                "dsr": {
-                    "communes": [],
-                    "eligibles": 17049,
-                    "strates": []
-                }
-            }
-        },
-        "base": {
-            "communes": {
-                "dsr": {
-                    "communes": [],
-                    "eligibles": 33164,
-                    "strates": []
-                }
-            }
-        },
-        "baseToAmendement": {
-            "communes": {
-                "dsr" : {
-                    "nouvellementEligibles": 0,
-                    "plusEligibles": 16115,
-                    "toujoursEligibles": 17049,
-                }
-            }
-        }
-    }
-
     result = response_dotations
-    # Vérification des clefs du dictionnaire (sauf celles inclues dans un array)
-    flattened_result_keys = set(flattened_dict(result).keys())
-    flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
-    assert flattened_result_keys == flattened_expected_keys
-
     base_dsr = result["base"]["communes"]["dsr"]
     amendement_dsr = result["amendement"]["communes"]["dsr"]
 
