@@ -63,7 +63,14 @@ def request_dotations(codes_communes_examples):
     return request
 
 
-def test_dsr_reform_eligibilite_montants(client, headers, request_dotations):
+@fixture
+def response_dotations(client, headers, request_dotations):
+    response_function = partial(client.post, "dotations", headers=headers)
+    response = response_function(data=json.dumps(request_dotations))
+    return json.loads(response.data)
+
+
+def test_dsr_reform_eligibilite_montants(response_dotations):
     # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
     expected_reform_impact = {
         "amendement": {
@@ -95,9 +102,7 @@ def test_dsr_reform_eligibilite_montants(client, headers, request_dotations):
         }
     }
 
-    response_function = partial(client.post, "dotations", headers=headers)
-    response = response_function(data=json.dumps(request_dotations))
-    result = json.loads(response.data)
+    result = response_dotations
 
     # Vérification des clefs du dictionnaire (sauf celles incluses dans un array)
     flattened_result_keys = set(flattened_dict(result).keys())
@@ -126,7 +131,7 @@ def test_dsr_reform_eligibilite_montants(client, headers, request_dotations):
             assert((strate["dotationMoyenneParHab"] > 0) == (strate["eligibles"] > 0))
 
 
-def test_dsr_reform_cas_types(client, headers, request_dotations, codes_communes_examples):
+def test_dsr_reform_cas_types(response_dotations, codes_communes_examples):
     # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
     expected_reform_impact = {
         "amendement": {
@@ -158,9 +163,7 @@ def test_dsr_reform_cas_types(client, headers, request_dotations, codes_communes
         }
     }
 
-    response_function = partial(client.post, "dotations", headers=headers)
-    response = response_function(data=json.dumps(request_dotations))
-    result = json.loads(response.data)
+    result = response_dotations
 
     # Vérification des clefs du dictionnaire (sauf celles inclues dans un array)
     flattened_result_keys = set(flattened_dict(result).keys())
@@ -192,7 +195,7 @@ def test_dsr_reform_cas_types(client, headers, request_dotations, codes_communes
             assert((cas_type["dotationParHab"] > 0) == cas_type["eligible"])
 
 
-def test_dsr_reform_strates(client, headers, request_dotations):
+def test_dsr_reform_strates(response_dotations):
     # avant réforme : +11 000 communes éligibles à la DSR (toutes fractions comprises)
     expected_reform_impact = {
         "amendement": {
@@ -224,10 +227,7 @@ def test_dsr_reform_strates(client, headers, request_dotations):
         }
     }
 
-    response_function = partial(client.post, "dotations", headers=headers)
-    response = response_function(data=json.dumps(request_dotations))
-    result = json.loads(response.data)
-
+    result = response_dotations
     # Vérification des clefs du dictionnaire (sauf celles inclues dans un array)
     flattened_result_keys = set(flattened_dict(result).keys())
     flattened_expected_keys = set(flattened_dict(expected_reform_impact).keys())
