@@ -83,6 +83,8 @@ def print_eligible_comparison():
     data_sim = data_sim.merge(data_calc_dgcl, how="inner", on=code_comm, suffixes=["", "_precalc"])
     assert(len(data_sim) == previous_length_data)
 
+    summary_variables = {}  # récupère les R²
+
     BLEU_CLAIR = "\x1b[1;36;40m"
     STOP_COULEUR = "\033[0m"
     for nom_ofdl in colonnes_to_compute:
@@ -98,6 +100,7 @@ def print_eligible_comparison():
             print("Ecart-type", resultats_comparaison["variance"] ** 0.5)
             print("***R² : pourcentage de la variance expliqué***")
             print(f"{BLEU_CLAIR}", "{:.4f}%".format(resultats_comparaison["pourcentage expliqué"] * 100) , STOP_COULEUR, sep="")
+            summary_variables[nom_ofdl] = resultats_comparaison["pourcentage expliqué"] * 100
             print("***Différence entre prédit et précalculé***")
             for cle in ["L1", "L2", "L∞"]:
                 print(cle, ": ", resultats_comparaison[cle])
@@ -112,6 +115,15 @@ def print_eligible_comparison():
                 rang, valeur = resultats_comparaison["quantiles"][quantile_borne]
                 # le rang représente la quantité de communes concernées
                 print("{}% (rang {})\t {:.2f}".format(int(quantile_borne * 100), rang, valeur))
+    erreur_totale = 100 * len(summary_variables) - sum(summary_variables.values())
+    print(f"{BLEU_CLAIR}")
+    print("Résumé des pourcentages expliqués :")
+    largeur_justify_name = max([len(nom) for nom in summary_variables]) + 3
+    for variable, pourcentage_explique_variable in summary_variables.items():
+        print("{}{:>8.4f}".format(variable.ljust(largeur_justify_name, ' '), pourcentage_explique_variable))
+    print("Total des erreurs qui a peu de sens mathématique :")
+    print(erreur_totale)
+    print(STOP_COULEUR)
 
 
 if __name__ == "__main__":
