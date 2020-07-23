@@ -23,8 +23,33 @@ variables_openfisca_presentes_fichier = {
     'potentiel_financier': 'Potentiel fiscal et financier des communes - Potentiel financier',
     'potentiel_financier_par_habitant': 'Potentiel fiscal et financier des communes - Potentiel financier par habitant',
     'revenu_total': 'Dotation de solidarité urbaine - Revenu imposable des habitants de la commune',
-    'strate_demographique': 'Informations générales - Strate démographique Année N'
+    'strate_demographique': 'Informations générales - Strate démographique Année N',
+    'zrr': 'Dotation de solidarité rurale - Bourg-centre - Commune située en ZRR',
+    'effort_fiscal': 'Effort fiscal - Effort fiscal',
+    'longueur_voirie': 'Dotation de solidarité rurale - Péréquation - Longueur de voirie en mètres',
+    'zone_de_montagne': 'Dotation de solidarité rurale - Péréquation - Commune située en zone de montagne',
+    'insulaire': 'Dotation de solidarité rurale - Péréquation - Commune insulaire',
+    'superficie': 'Informations générales - Superficie 2019',
+    'population_enfants': 'Dotation de solidarité rurale - Péréquation - Population 3 à 16 ans',
 }
+
+# Présente les colonnes du fichier qui représentent des variables openfisca
+# résultat telles que calculées par la DGCL
+
+variables_calculees_presentes = {
+    'Dotation de solidarité rurale - Péréquation - Part Pfi (avant garantie CN)': 'dsr_fraction_perequation_part_potentiel_financier_par_habitant',
+    'Dotation de solidarité rurale - Péréquation - Part VOIRIE (avant garantie CN)': 'dsr_fraction_perequation_part_longueur_voirie',
+    'Dotation de solidarité rurale - Péréquation - Part ENFANTS (avant garantie CN)': 'dsr_fraction_perequation_part_enfants',
+    'Dotation de solidarité rurale - Péréquation - Part Pfi/hectare (avant garantie CN)': 'dsr_fraction_perequation_part_potentiel_financier_par_hectare',
+    'Dotation de solidarité rurale - Cible - Indice synthétique': 'indice_synthetique_dsr_cible',
+    'Dotation de solidarité rurale - Cible - Rang DSR Cible': 'rang_indice_synthetique_dsr_cible',
+    'Dotation de solidarité rurale - Cible - Part Pfi (avant garantie CN)': 'dsr_fraction_cible_part_potentiel_financier_par_habitant',
+    'Dotation de solidarité rurale - Cible - Part VOIRIE (avant garantie CN)': 'dsr_fraction_cible_part_longueur_voirie',
+    'Dotation de solidarité rurale - Cible - Part ENFANTS (avant garantie CN)': 'dsr_fraction_cible_part_enfants',
+    'Dotation de solidarité rurale - Cible - Part Pfi/hectare (Pfis) (avant garantie CN)': 'dsr_fraction_cible_part_potentiel_financier_par_hectare',
+    'Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible': 'dsr_montant_hors_garanties_fraction_bourg_centre',
+}
+
 
 # A partir de l'adresse du tableau publié par la DGCL, produit un tableau contenant toutes les colonnes nécessaires
 # au calcul des dotations.
@@ -169,6 +194,43 @@ def corrige_revenu_total_commune(data, variables_openfisca_presentes_fichier, re
     return data
 
 
+def get_dgcl_results(data):
+    # renvoie un DataFrame qui contient les colonnes :
+    # code commune : avec le nom original car on n'a toujours pas de variable OFDL
+    # des variables de RESULTATS tels que calculés par la DGCL.
+    # Ces variables portent leur nom openfisca parce que bon on va pas se trimballer partout
+    # les noms du fichier (à part pour leur code commune bien sûr)
+    resultats_extraits = data[[code_comm]]
+
+    # Ajout de variables qui n'existent pas à l'état brut dans le fichier :
+
+    # L'éligibilité est déterminée en fonction de la présence ou non d'un versement non nul
+    resultats_extraits["dsr_eligible_fraction_bourg_centre"] = (data["Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible"] > 0)
+    resultats_extraits["dsr_eligible_fraction_perequation"] = (data["Dotation de solidarité rurale - Péréquation - Part Pfi (avant garantie CN)"] > 0)
+
+    # Pour le rang cible, on dispose du rang, qu'on utilise pour déterminer l'éligibilité au sens de la DGCL
+    rang_indice_synthetique = "Dotation de solidarité rurale - Cible - Rang DSR Cible"
+    resultats_extraits["dsr_eligible_fraction_cible"] = (data[rang_indice_synthetique] > 0) & (data[rang_indice_synthetique] <= 10000)
+
+    # Calcul de la somme des quatre parts des fractions cibles et péréquation, qui
+    # n'apparaissent pas à l'état brut dans le fichier DGCL
+    resultats_extraits["dsr_montant_hors_garanties_fraction_perequation"] = data[
+        [nom_colonne
+         for nom_colonne in variables_calculees_presentes.keys()
+         if 'Dotation de solidarité rurale - Péréquation - Part' in nom_colonne]
+    ].sum(axis='columns')
+    resultats_extraits["dsr_montant_hors_garanties_fraction_cible"] = data[
+        [nom_colonne
+         for nom_colonne in variables_calculees_presentes.keys()
+         if 'Dotation de solidarité rurale - Cible - Part' in nom_colonne]
+    ].sum(axis='columns')
+
+    # Ajout des variables de résultat présentes à l'état brut dans le fichier
+    for nom_dgcl, nom_ofdl in variables_calculees_presentes.items():
+        resultats_extraits[nom_ofdl] = data[nom_dgcl]
+    return resultats_extraits
+
+
 def adapt_dgcl_data(data):
     extracolumns = {}
     #
@@ -226,12 +288,9 @@ def adapt_dgcl_data(data):
     data[elig_bc_dgcl] = (data["Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible"] > 0)
     data[elig_pq_dgcl] = (data["Dotation de solidarité rurale - Péréquation - Part Pfi (avant garantie CN)"] > 0)
     data[elig_cible_dgcl] = (data[rang_indice_synthetique] > 0) & (data[rang_indice_synthetique] <= 10000)
-
     # Au delà des colonnes traduites, on garde ces colonnes dans le dataframe de sortie.
-    # Pour comparer nos résultats aux résultats calculés, et pour garder des informations
-    # pour identifier la commune
-    actual_indice_synthetique = "Dotation de solidarité rurale - Cible - Indice synthétique"
-    autres_cols_interessantes = [code_comm, nom_comm, rang_indice_synthetique, actual_indice_synthetique, elig_bc_dgcl, elig_pq_dgcl, elig_cible_dgcl]
+    # Pour garder des informations pour identifier la commune
+    autres_cols_interessantes = [code_comm, nom_comm]
     data = data[autres_cols_interessantes + list(translation_cols.values())]
 
     # Renomme colonnes
@@ -239,7 +298,7 @@ def adapt_dgcl_data(data):
     data.columns = [column if column not in invert_dict else invert_dict[column] for column in data.columns]
 
     # Passe les "booléens dgf" (oui/non) en booléens normaux
-    liste_columns_to_real_bool = ["bureau_centralisateur", "chef_lieu_arrondissement", "chef_lieu_departement_dans_agglomeration"]
+    liste_columns_to_real_bool = ["bureau_centralisateur", "chef_lieu_arrondissement", "zrr", "chef_lieu_departement_dans_agglomeration"]
     for col in liste_columns_to_real_bool:
         data[col] = (data[col].str.contains(pat="oui", case=False))
 
