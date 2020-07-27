@@ -50,11 +50,18 @@ def test_translate_unchanged():
     dict_trans = {"a": "A", "b": "B"}
     before_translation = {"a": {"b" : 3}}
     after_translation = {"a": {"b" : 3}}
-    assert(translate_dict(before_translation, dict_trans) == after_translation)
+    assert(translate_dict(before_translation, dict_trans, leave_not_found=True) == after_translation)
 
 
 def test_translate_basic():
     dict_trans = {"a": "A", "b": "B", "d.e": "D.E"}
     before_translation = {"a" : 1, "b" : 2, "c": 3, "d": {"e": 4, "f": 5}}
     after_translation = {"A" : 1, "B" : 2, "c": 3, "D": {"E": 4}, "d": {"f": 5}}
-    assert(translate_dict(before_translation, dict_trans) == after_translation)
+    assert(translate_dict(before_translation, dict_trans, leave_not_found=True) == after_translation)
+
+
+def test_translate_removes_not_found():
+    dict_trans = {"a": "A", "b": "B", "d.e": "D.E"}
+    before_translation = {"a" : 1, "b" : 2, "c": 3, "d": {"e": 4, "f": 5}}
+    after_translation = {"A" : 1, "B" : 2, "D": {"E": 4}}
+    assert(translate_dict(before_translation, dict_trans, leave_not_found=False) == after_translation)
