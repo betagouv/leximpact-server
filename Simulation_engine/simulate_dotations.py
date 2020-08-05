@@ -39,8 +39,9 @@ def format_reforme_openfisca(reforme_a_traduire):
     del ref["dotations"]["montants"]  # not implemented in ofdl yet
     try:
         dictionnaire_a_tableautiser = deepcopy(ref["dotations"]["communes"]["dsr"]["bourgCentre"]["attribution"]["plafonnementPopulation"])
-        ref["dotations"]["communes"]["dsr"]["bourgCentre"]["attribution"]["plafonnementPopulation"] = sorted([{"threshold": int(seuil), "amount": plafond} for seuil, plafond in dictionnaire_a_tableautiser.items()],
-                                                                                                key=lambda x: x["threshold"])
+        ref["dotations"]["communes"]["dsr"]["bourgCentre"]["attribution"]["plafonnementPopulation"] = sorted(
+            [{"threshold": int(seuil), "amount": plafond} for seuil, plafond in dictionnaire_a_tableautiser.items()],
+            key=lambda x: x["threshold"])
     except KeyError:
         # on choisit de ne rien soulever si ce champ n'est pas présent dans la réforme.
         # Ca fait qu'une absence de ce paramètre ne fera pas échouer la requête.
