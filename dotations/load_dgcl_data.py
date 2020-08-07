@@ -63,6 +63,15 @@ variables_calculees_presentes = {
 }
 
 
+# Présente les colonnes du fichier qui représentent des variables openfisca
+variables_calculees_an_dernier = {
+    'Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible': 'dsr_montant_hors_garanties_fraction_bourg_centre',
+    'Dotation de solidarité urbaine - Montant attribution spontanée DSU': 'dsu_part_spontanee',
+    'Dotation de solidarité urbaine - Montant progression de la DSU': 'dsu_part_augmentation',
+    'Dotation de solidarité urbaine - Montant total réparti': 'dsu_montant',
+}
+
+
 # A partir de l'adresse du tableau publié par la DGCL, produit un tableau contenant toutes les colonnes nécessaires
 # au calcul des dotations.
 # il a deux sources de données :
@@ -240,6 +249,24 @@ def get_dgcl_results(data):
     # Ajout des variables de résultat présentes à l'état brut dans le fichier
     for nom_dgcl, nom_ofdl in variables_calculees_presentes.items():
         resultats_extraits[nom_ofdl] = data[nom_dgcl]
+    return resultats_extraits
+
+
+def get_last_year_dotations(data):
+    # renvoie un DataFrame qui contient les colonnes :
+    # code commune : avec le nom original car on n'a toujours pas de variable OFDL
+    # des variables de RESULTATS tels que calculés par la DGCL.
+    # Ces variables portent leur nom openfisca parce que bon on va pas se trimballer partout
+    # les noms du fichier (à part pour leur code commune bien sûr)
+    resultats_extraits = data[[code_comm]]
+
+    # Ajout de variables qui n'existent pas à l'état brut dans le fichier :
+
+    # L'éligibilité est déterminée en fonction de la présence ou non d'un versement non nul
+    # Ajout des variables de résultat présentes à l'état brut dans le fichier
+    for nom_dgcl, nom_ofdl in variables_calculees_an_dernier.items():
+        resultats_extraits[nom_ofdl] = data[nom_dgcl]
+    resultats_extraits["dsu_montant_eligible"] = resultats_extraits["dsu_part_spontanee"] + resultats_extraits["dsu_part_augmentation"]
     return resultats_extraits
 
 
