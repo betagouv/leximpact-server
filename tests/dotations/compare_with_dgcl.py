@@ -69,7 +69,7 @@ def compare_results_real(data, nom_actual, nom_expected):
 
 
 def print_eligible_comparison():
-    PERIOD = "2020"
+    PERIOD = "2019"
     data_dgcl = load_dgcl_file()
     data_calc_dgcl = get_dgcl_results(data_dgcl)
 
