@@ -31,6 +31,11 @@ variables_openfisca_presentes_fichier = {
     'insulaire': 'Dotation de solidarité rurale - Péréquation - Commune insulaire',
     'superficie': 'Informations générales - Superficie 2019',
     'population_enfants': 'Dotation de solidarité rurale - Péréquation - Population 3 à 16 ans',
+    'nombre_logements': 'Dotation de solidarité urbaine - Nombre de logements TH de la commune',
+    'nombre_logements_sociaux': 'Dotation de solidarité urbaine - Nombre de logements sociaux de la commune',
+    'nombre_beneficiaires_aides_au_logement': 'Dotation de solidarité urbaine - Nombre de bénéficiaires des aides au logement de la commune',
+    'population_qpv': 'Dotation de solidarité urbaine - Population QPV',
+    'population_zfu': 'Dotation de solidarité urbaine - Population ZFU',
 }
 
 # Présente les colonnes du fichier qui représentent des variables openfisca
