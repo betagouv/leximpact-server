@@ -5,7 +5,10 @@ from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: 
 from dotations.reform import DotationReform  # type: ignore
 
 
-def simulation_from_dgcl_csv(period, data, tbs):
+code_comm = "Informations générales - Code INSEE de la commune"
+
+
+def simulation_from_dgcl_csv(period, data, tbs, data_previous_year=None):
     sb = SimulationBuilder()
     sb.create_entities(tbs)
     sb.declare_person_entity("commune", data.index)
@@ -18,6 +21,17 @@ def simulation_from_dgcl_csv(period, data, tbs):
                 period,
                 data[champ_openfisca],
             )
+    # data_previous_year est un dataframe dont toutes les colonnes partent comme valeurs de l'an dernier.
+    if data_previous_year is not None:
+        data = data.merge(data_previous_year, on=code_comm, how='left', suffixes=["_currentyear", ""])
+        for champ_openfisca in data_previous_year.columns:
+            if " " not in champ_openfisca:  # oui c'est comme ça que je checke
+                # qu'une variable es openfisca ne me jugez pas
+                simulation.set_input(
+                    champ_openfisca,
+                    str(int(period) - 1),
+                    data[champ_openfisca].fillna(0),
+                )
     return simulation
 
 
