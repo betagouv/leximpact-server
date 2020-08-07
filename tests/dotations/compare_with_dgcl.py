@@ -29,7 +29,11 @@ def compare_results_bool(data, nom_actual, nom_expected):
 # Norme L1, L2,
 def compare_results_real(data, nom_actual, nom_expected):
     res = {}
-    data_non_nul = data[(data[nom_actual] != 0) | data[nom_expected] != 0]
+    data_non_nul = data[(data[nom_actual] != 0) & data[nom_expected] != 0]
+    data["calcul non nul"] = data[nom_actual] != 0
+    data["precalc non nul"] = data[nom_expected] != 0
+    res["boolean differences"] = compare_results_bool(data, "calcul non nul", "precalc non nul")
+
     diff = sorted((data_non_nul[nom_actual] - data_non_nul[nom_expected]).tolist())
     nb_non_nul = len(data_non_nul)
     avg_size = sum(data_non_nul[nom_actual]) / nb_non_nul
@@ -44,17 +48,18 @@ def compare_results_real(data, nom_actual, nom_expected):
     # Ah ben qu'est ce que je disais : la norme L2 permet de regarder
     # quelle part de variance de la variable est expliquée par notre
     # modèle
-    res["pourcentage expliqué"] = 1 - res["L2"]**2 / res["variance"]
+    res["pourcentage expliqué"] = (1 - res["L2"]**2 / res["variance"]) if res["variance"] else 0
     # Différence maximale. Sert pas à grand chose.
-    res["L∞"] = max([abs(dif) for dif in diff])
+    res["L∞"] = max([0]+[abs(dif) for dif in diff])
     quantiles = [0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.98, 0.99]
     # Statistiques d'ordre sur les différences (min, max et quantiles)
-    res["min"] = min(diff)
-    res["max"] = max(diff)
+    res["min"] = min(diff) if diff else "NA"
+    res["max"] = max(diff) if diff else "NA"
     res["quantiles"] = {}
     for q in quantiles:
         rang = int(q * (nb_non_nul - 1) + 0.5)
-        res["quantiles"][q] = (rang, diff[rang])
+        if rang<len(diff):
+            res["quantiles"][q] = (rang, diff[rang])
     tolerance_difference = 1
 
     # nombre de résultats considérés comme égaux (en fonction de la tolérance acceptable)
@@ -95,6 +100,8 @@ def print_eligible_comparison():
             # On va printer de manière quelque peu désordonnées diverses métriques nous informant
             # sur la précision de notre calcul
             resultats_comparaison = compare_results_real(data_sim, nom_ofdl, nom_ofdl + "_precalc")
+            print("***Différence de valeur nul/non nul***")
+            print(resultats_comparaison["boolean differences"])
             print("***Statistiques de base (variable à prédire)***")
             print("Moyenne base", resultats_comparaison["Moyenne base"])
             print("Ecart-type", resultats_comparaison["variance"] ** 0.5)
