@@ -50,7 +50,7 @@ def compare_results_real(data, nom_actual, nom_expected):
     # modèle
     res["pourcentage expliqué"] = (1 - res["L2"]**2 / res["variance"]) if res["variance"] else 0
     # Différence maximale. Sert pas à grand chose.
-    res["L∞"] = max([0]+[abs(dif) for dif in diff])
+    res["L∞"] = max([0] + [abs(dif) for dif in diff])
     quantiles = [0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.98, 0.99]
     # Statistiques d'ordre sur les différences (min, max et quantiles)
     res["min"] = min(diff) if diff else "NA"
@@ -58,7 +58,7 @@ def compare_results_real(data, nom_actual, nom_expected):
     res["quantiles"] = {}
     for q in quantiles:
         rang = int(q * (nb_non_nul - 1) + 0.5)
-        if rang<len(diff):
+        if rang < len(diff):
             res["quantiles"][q] = (rang, diff[rang])
     tolerance_difference = 1
 
