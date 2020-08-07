@@ -36,15 +36,15 @@ def compare_results_real(data, nom_actual, nom_expected):
 
     diff = sorted((data_non_nul[nom_actual] - data_non_nul[nom_expected]).tolist())
     nb_non_nul = len(data_non_nul)
-    avg_size = sum(data_non_nul[nom_actual]) / nb_non_nul
+    avg_size = (sum(data_non_nul[nom_actual]) / nb_non_nul) if nb_non_nul else 0
     avg_size2 = sum([i * i for i in data_non_nul[nom_actual]]) / (nb_non_nul - 1)
     res["Moyenne base"] = avg_size
     res["variance"] = avg_size2 - avg_size * avg_size
 
     # Norme L1 : ecart absolu moyen
-    res["L1"] = sum([abs(dif) for dif in diff]) / nb_non_nul
+    res["L1"] = (sum([abs(dif) for dif in diff]) / nb_non_nul) if nb_non_nul else 0
     # Norme L2 (norme euclidienne) : utile pour l'estimation
-    res["L2"] = (sum([dif * dif for dif in diff]) / nb_non_nul)**0.5
+    res["L2"] = ((sum([dif * dif for dif in diff]) / nb_non_nul)**0.5) if nb_non_nul else 0
     # Ah ben qu'est ce que je disais : la norme L2 permet de regarder
     # quelle part de variance de la variable est expliquée par notre
     # modèle
