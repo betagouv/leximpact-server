@@ -7,6 +7,7 @@ elig_pq_dgcl = "Eligible fraction péréquation selon DGCL"
 elig_cible_dgcl = "Eligible fraction cible selon DGCL"
 code_comm = "Informations générales - Code INSEE de la commune"
 nom_comm = "Informations générales - Nom de la commune"
+chef_lieu_de_canton_dgcl = "Dotation de solidarité rurale Bourg-centre - Code commune chef-lieu de canton au 1er janvier 2014"
 
 # Variables openfisca-france-dotations-locales présentes à l'état brut dans le fichier avec le nom de colonne DGCL correspondant.
 
@@ -88,7 +89,7 @@ variables_calculees_an_dernier = {
 # Fichiers disponibles sur https://www.data.gouv.fr/fr/datasets/criteres-de-repartition-des-dotations-versees-par-letat-aux-collectivites-territoriales/
 def load_dgcl_file(path="assets/data/2019-communes-criteres-repartition.csv"):
     try:
-        data = pandas.read_csv(path, decimal=",")
+        data = pandas.read_csv(path, decimal=",", dtype={code_comm: str, chef_lieu_de_canton_dgcl: str})
     except FileNotFoundError:
         print("file", path, "was not found")
         print("ls :", os.listdir("."))
@@ -138,7 +139,7 @@ def ajoute_population_plus_grande_commune_agglomeration(
 
 def ajuste_part_communes_canton(variables_openfisca_presentes_fichier, data, code_comm):
     part_population_canton = variables_openfisca_presentes_fichier["part_population_canton"]
-    data.loc[(data[code_comm] == 57163) | (data[code_comm] == 87116), part_population_canton] -= 0.0001
+    data.loc[(data[code_comm] == "57163") | (data[code_comm] == "87116"), part_population_canton] -= 0.0001
     return data
 
 
@@ -292,6 +293,9 @@ def adapt_dgcl_data(data):
     outre_mer_dgcl = "commune d'outre mer"
     data = ajoute_appartenance_outre_mer(data, outre_mer_dgcl)
     extracolumns["outre_mer"] = outre_mer_dgcl
+
+    # Mise des chefs lieux de canton en une string de 5 caractères.
+    data[chef_lieu_de_canton_dgcl] = data[chef_lieu_de_canton_dgcl].apply(lambda x: str(x).zfill(5))
 
     #
     # Chope les infos du chef-lieu de canton
