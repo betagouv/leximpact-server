@@ -1,5 +1,5 @@
 from openfisca_core.simulation_builder import SimulationBuilder  # type: ignore
-from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data  # type: ignore
+from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data, insert_dsu_garanties  # type: ignore
 # Actually runs the simulations
 from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: ignore
 from dotations.reform import DotationReform  # type: ignore
@@ -46,9 +46,11 @@ def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bour
         # Will work when app is launched with the command in Procfile
         # (for example in Scalingo)
         DATA = adapt_dgcl_data(load_dgcl_file("../assets/data/2019-communes-criteres-repartition.csv"))
+        DATA = insert_dsu_garanties(DATA, PERIOD, "../assets/data/garanties_dsu.csv")
     except FileNotFoundError:
         # Will work when app is launched from home folder (with make run, or in circleCI)
         DATA = adapt_dgcl_data(load_dgcl_file("assets/data/2019-communes-criteres-repartition.csv"))
+        DATA = insert_dsu_garanties(DATA, PERIOD, "assets/data/garanties_dsu.csv")
 
     TBS = CountryTaxBenefitSystem()
     dict_sims = {"base": simulation_from_dgcl_csv(PERIOD, DATA, TBS)}

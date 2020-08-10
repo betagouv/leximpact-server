@@ -271,6 +271,15 @@ def get_last_year_dotations(data):
     return resultats_extraits
 
 
+def insert_dsu_garanties(data, period="2019", filename="assets/data/garanties_dsu.csv"):
+    data_garanties = pandas.read_csv(filename)
+    data_garanties_period = data_garanties[[code_comm, period]]
+    data_garanties_period.columns = [code_comm, "dsu_montant_garantie_pluriannuelle"]
+    data = data.merge(data_garanties_period, how="left", on=code_comm)
+    data["dsu_montant_garantie_pluriannuelle"] = data["dsu_montant_garantie_pluriannuelle"].fillna(0)
+    return data
+
+
 def adapt_dgcl_data(data):
     extracolumns = {}
     #
