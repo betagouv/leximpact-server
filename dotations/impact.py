@@ -8,8 +8,10 @@ def get_cas_types_codes_insee():
     return ["76384", "76214"]  # sera paramétrable par l'usager
 
 
-def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=None):
-    # [scenario_api]["communes"]["dsr"]
+def build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=None):
+    # construit une réponse d'éligibilité/montant : un tableau contenant un dictionnaire qui a pour clefs
+    # "code" (code commune), "eligible" (booleen décrivant si la commune est éligible), "dotationParHab" (dotation moyenne par hab INSEE)
+    # [scenario_api]["communes"]["dsr"] et [scenario_api]["communes"]["dsu"]
     # > ["communes"]
     response = []
     code_comm = "Informations générales - Code INSEE de la commune"
@@ -21,34 +23,33 @@ def build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, pref
             response += [{"code": cas_type, "Error": "Commune was not found. Where did you get this code INSEE?"}]
         else:
             pop_cas_type = res_cas_type["population_insee"].values[0]
-            cas_type_eligible = bool(res_cas_type[prefix_dsr_eligible + scenario].values[0])
-            montant_dsr_cas_type = res_cas_type[prefix_dsr_montant + scenario].values[0]
-            response += [{"code" : cas_type, "eligible": cas_type_eligible, "dotationParHab": float(montant_dsr_cas_type / pop_cas_type)}]
-
+            cas_type_eligible = bool(res_cas_type[prefix_eligible + scenario].values[0])
+            montant_cas_type = res_cas_type[prefix_montant + scenario].values[0]
+            response += [{"code" : cas_type, "eligible": cas_type_eligible, "dotationParHab": float(montant_cas_type / pop_cas_type)}]
     return response
 
 
-def build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible):
+def build_response_dotations_eligibilites(scenario, df_results, prefix_eligible):
     # [scenario_api]["communes"]["dsr"]
     # > ["eligibles"]
     response = {}
-    response["eligibles"] = int(df_results[prefix_dsr_eligible + scenario].sum())
+    response["eligibles"] = int(df_results[prefix_eligible + scenario].sum())
 
     return response
 
 
-def build_response_dsr_eligibilites_changements(scenario, df_results, prefix_dsr_eligible):
-    # ["baseTo" + scenario]["communes"]["dsr"]
+def build_response_dotations_eligibilites_changements(scenario, df_results, prefix_eligible):
+    # ["baseTo" + scenario]["communes"]["dsr"] et dsu
     # > ["nouvellementEligibles"]/["plusEligibles"]/["toujoursEligibles"]
     response = {}
-    response["nouvellementEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (~df_results[prefix_dsr_eligible + "base"])])
-    response["plusEligibles"] = len(df_results[(~df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "base"])])
-    response["toujoursEligibles"] = len(df_results[(df_results[prefix_dsr_eligible + scenario]) & (df_results[prefix_dsr_eligible + "base"])])
+    response["nouvellementEligibles"] = len(df_results[(df_results[prefix_eligible + scenario]) & (~df_results[prefix_eligible + "base"])])
+    response["plusEligibles"] = len(df_results[(~df_results[prefix_eligible + scenario]) & (df_results[prefix_eligible + "base"])])
+    response["toujoursEligibles"] = len(df_results[(df_results[prefix_eligible + scenario]) & (df_results[prefix_eligible + "base"])])
 
     return response
 
 
-def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, strates: Optional[list] = None):
+def build_response_dotations_strates(scenario, df_results, prefix_eligible, prefix_montant, strates: Optional[list] = None):
     # [scenario_api]["dotations"]["communes"]["dsr"]
     # > ["strates"]
     BORNES_STRATES = BORNES_STRATES_DEFAULT if strates is None else strates
@@ -62,8 +63,8 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix
         df_strate = df_results[df_results["population_insee"] >= borne]
         resultats_agreges_bornes[id_borne]["population_insee"] = int(df_strate["population_insee"].sum())
         resultats_agreges_bornes[id_borne]["potentiel_financier"] = float(df_strate["potentiel_financier" + "_" + scenario].sum())
-        resultats_agreges_bornes[id_borne]["eligibles_dsr"] = int(df_strate[prefix_dsr_eligible + scenario].sum())
-        resultats_agreges_bornes[id_borne]["montant_dsr"] = int(df_strate[prefix_dsr_montant + scenario].sum())
+        resultats_agreges_bornes[id_borne]["eligibles"] = int(df_strate[prefix_eligible + scenario].sum())
+        resultats_agreges_bornes[id_borne]["montant"] = int(df_strate[prefix_montant + scenario].sum())
 
     res_strates: List[dict] = [{} for borne in BORNES_STRATES[:-1]]
     for id_borne in range(len(BORNES_STRATES) - 1):
@@ -72,20 +73,20 @@ def build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix
         res_strates[id_borne]["partPopTotale"] = pop_strate / resultats_agreges_bornes[0]["population_insee"]
         pot_strate = resultats_agreges_bornes[id_borne]["potentiel_financier"] - resultats_agreges_bornes[id_borne + 1]["potentiel_financier"]
         res_strates[id_borne]["potentielFinancierMoyenParHabitant"] = pot_strate / pop_strate
-        nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles_dsr"] - resultats_agreges_bornes[id_borne + 1]["eligibles_dsr"]
+        nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles"] - resultats_agreges_bornes[id_borne + 1]["eligibles"]
         res_strates[id_borne]["eligibles"] = nb_elig_strate
-        res_strates[id_borne]["dotationMoyenneParHab"] = (resultats_agreges_bornes[id_borne]["montant_dsr"] - resultats_agreges_bornes[id_borne + 1]["montant_dsr"]) / pop_strate
+        res_strates[id_borne]["dotationMoyenneParHab"] = (resultats_agreges_bornes[id_borne]["montant"] - resultats_agreges_bornes[id_borne + 1]["montant"]) / pop_strate
         res_strates[id_borne]["partDotationTotale"] = (
-            (resultats_agreges_bornes[id_borne]["montant_dsr"] - resultats_agreges_bornes[id_borne + 1]["montant_dsr"]) / resultats_agreges_bornes[0]["montant_dsr"]
-        ) if resultats_agreges_bornes[0]["montant_dsr"] else 0
+            (resultats_agreges_bornes[id_borne]["montant"] - resultats_agreges_bornes[id_borne + 1]["montant"]) / resultats_agreges_bornes[0]["montant"]
+        ) if resultats_agreges_bornes[0]["montant"] else 0
 
     return res_strates
 
 
-def build_response_dsr(scenario: str, df_results: DataFrame, prefix_dsr_eligible: str, prefix_dsr_montant: str, communes_cas_types: Optional[list] = None, strates: Optional[list] = None) -> dict:
-    eligibilites = build_response_dsr_eligibilites(scenario, df_results, prefix_dsr_eligible)
+def build_response_dotations(scenario: str, df_results: DataFrame, prefix_eligible: str, prefix_montant: str, communes_cas_types: Optional[list] = None, strates: Optional[list] = None) -> dict:
+    eligibilites = build_response_dotations_eligibilites(scenario, df_results, prefix_eligible)
     return {
-        "communes": build_response_dsr_cas_types(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types),
+        "communes": build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=communes_cas_types),
         **eligibilites,
-        "strates": build_response_dsr_strates(scenario, df_results, prefix_dsr_eligible, prefix_dsr_montant, strates=strates)
+        "strates": build_response_dotations_strates(scenario, df_results, prefix_eligible, prefix_montant, strates=strates)
     }
