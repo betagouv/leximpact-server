@@ -53,7 +53,9 @@ def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant):
     variables_nombre_communes = [
         "dsr_eligible_fraction_bourg_centre",
         "dsr_eligible_fraction_perequation",
-        "dsr_eligible_fraction_cible"
+        "dsr_eligible_fraction_cible",
+        "dsu_eligible",
+        "dsu_montant"
     ]
     variables_aggregations = ["potentiel_financier"]
     fractions_dsr = ["bourg_centre", "perequation", "cible"]
