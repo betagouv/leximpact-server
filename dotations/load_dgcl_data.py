@@ -234,6 +234,9 @@ def get_dgcl_results(data):
     rang_indice_synthetique = "Dotation de solidarité rurale - Cible - Rang DSR Cible"
     resultats_extraits["dsr_eligible_fraction_cible"] = (data[rang_indice_synthetique] > 0) & (data[rang_indice_synthetique] <= 10000)
 
+    # Eligibilité DSU
+    resultats_extraits["dsu_eligible"] = (data["Dotation de solidarité urbaine - Montant attribution spontanée DSU"] > 0)
+
     # Calcul de la somme des quatre parts des fractions cibles et péréquation, qui
     # n'apparaissent pas à l'état brut dans le fichier DGCL
     resultats_extraits["dsr_montant_hors_garanties_fraction_perequation"] = data[
