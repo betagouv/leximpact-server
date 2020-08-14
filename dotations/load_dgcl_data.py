@@ -283,6 +283,18 @@ def insert_dsu_garanties(data, period="2019", filename="assets/data/garanties_ds
     return data
 
 
+def insert_dsr_garanties_communes_nouvelles(data, period="2020", folder="assets/data/"):
+    if (int(period) > 2020):
+        period = "2020"
+    filename = folder + "garanties_cn_dsr_{}.csv".format(period)
+    data_garanties = pandas.read_csv(filename, dtype={code_comm: str})
+    colonnes_a_ajouter = [code_comm, "dsr_garantie_commune_nouvelle_fraction_bourg_centre", "dsr_garantie_commune_nouvelle_fraction_perequation", "dsr_garantie_commune_nouvelle_fraction_cible"]
+    data = data.merge(data_garanties[colonnes_a_ajouter], how="left", on=code_comm)
+    for k in colonnes_a_ajouter:
+        data[k] = data[k].fillna(0)
+    return data
+
+
 def adapt_dgcl_data(data):
     extracolumns = {}
     #
