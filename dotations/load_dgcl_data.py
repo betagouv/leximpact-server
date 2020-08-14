@@ -275,7 +275,7 @@ def get_last_year_dotations(data):
 
 
 def insert_dsu_garanties(data, period="2019", filename="assets/data/garanties_dsu.csv"):
-    data_garanties = pandas.read_csv(filename)
+    data_garanties = pandas.read_csv(filename, dtype={code_comm: str})
     data_garanties_period = data_garanties[[code_comm, period]]
     data_garanties_period.columns = [code_comm, "dsu_montant_garantie_pluriannuelle"]
     data = data.merge(data_garanties_period, how="left", on=code_comm)
