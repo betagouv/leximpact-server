@@ -61,6 +61,9 @@ variables_calculees_presentes = {
     'Dotation de solidarité urbaine - Montant attribution spontanée DSU': 'dsu_part_spontanee',
     'Dotation de solidarité urbaine - Montant progression de la DSU': 'dsu_part_augmentation',
     'Dotation de solidarité urbaine - Montant total réparti': 'dsu_montant',
+    'Dotation de solidarité rurale Bourg-centre - Montant global réparti': 'dsr_fraction_bourg_centre',
+    'Dotation de solidarité rurale - Péréquation - Montant global réparti (après garantie CN)': 'dsr_fraction_perequation',
+    'Dotation de solidarité rurale - Cible - Montant global réparti': 'dsr_fraction_cible',
 }
 
 
@@ -264,6 +267,12 @@ def get_dgcl_results(data):
     # Ajout des variables de résultat présentes à l'état brut dans le fichier
     for nom_dgcl, nom_ofdl in variables_calculees_presentes.items():
         resultats_extraits[nom_ofdl] = data[nom_dgcl]
+
+    resultats_extraits["dotation_solidarite_rurale"] = (
+        resultats_extraits["dsr_fraction_bourg_centre"]
+        + resultats_extraits["dsr_fraction_perequation"]
+        + resultats_extraits["dsr_fraction_cible"]
+    )
     return resultats_extraits
 
 
