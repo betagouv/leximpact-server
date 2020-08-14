@@ -69,7 +69,7 @@ variables_calculees_presentes = {
 
 # Présente les colonnes du fichier qui représentent des variables openfisca
 variables_calculees_an_dernier = {
-    'Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible': 'dsr_montant_hors_garanties_fraction_bourg_centre',
+    'Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible': 'dsr_montant_eligible_fraction_bourg_centre',
     'Dotation de solidarité urbaine - Montant attribution spontanée DSU': 'dsu_part_spontanee',
     'Dotation de solidarité urbaine - Montant progression de la DSU': 'dsu_part_augmentation',
     'Dotation de solidarité urbaine - Montant total réparti': 'dsu_montant',
