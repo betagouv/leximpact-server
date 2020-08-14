@@ -70,6 +70,17 @@ variables_calculees_an_dernier = {
     'Dotation de solidarité urbaine - Montant attribution spontanée DSU': 'dsu_part_spontanee',
     'Dotation de solidarité urbaine - Montant progression de la DSU': 'dsu_part_augmentation',
     'Dotation de solidarité urbaine - Montant total réparti': 'dsu_montant',
+    'Dotation de solidarité rurale - Cible - Part Pfi (avant garantie CN)': 'dsr_fraction_cible_part_potentiel_financier_par_habitant',
+    'Dotation de solidarité rurale - Cible - Part VOIRIE (avant garantie CN)': 'dsr_fraction_cible_part_longueur_voirie',
+    'Dotation de solidarité rurale - Cible - Part ENFANTS (avant garantie CN)': 'dsr_fraction_cible_part_enfants',
+    'Dotation de solidarité rurale - Cible - Part Pfi/hectare (Pfis) (avant garantie CN)': 'dsr_fraction_cible_part_potentiel_financier_par_hectare',
+    'Dotation de solidarité rurale - Péréquation - Part Pfi (avant garantie CN)': 'dsr_fraction_perequation_part_potentiel_financier_par_habitant',
+    'Dotation de solidarité rurale - Péréquation - Part VOIRIE (avant garantie CN)': 'dsr_fraction_perequation_part_longueur_voirie',
+    'Dotation de solidarité rurale - Péréquation - Part ENFANTS (avant garantie CN)': 'dsr_fraction_perequation_part_enfants',
+    'Dotation de solidarité rurale - Péréquation - Part Pfi/hectare (avant garantie CN)': 'dsr_fraction_perequation_part_potentiel_financier_par_hectare',
+    'Dotation de solidarité rurale Bourg-centre - Montant global réparti': 'dsr_fraction_bourg_centre',
+    'Dotation de solidarité rurale - Péréquation - Montant global réparti (après garantie CN)': 'dsr_fraction_perequation',
+    'Dotation de solidarité rurale - Cible - Montant global réparti': 'dsr_fraction_cible',
 }
 
 
@@ -271,6 +282,20 @@ def get_last_year_dotations(data):
     for nom_dgcl, nom_ofdl in variables_calculees_an_dernier.items():
         resultats_extraits[nom_ofdl] = data[nom_dgcl]
     resultats_extraits["dsu_montant_eligible"] = resultats_extraits["dsu_part_spontanee"] + resultats_extraits["dsu_part_augmentation"]
+
+    resultats_extraits["dsr_montant_hors_garanties_fraction_perequation"] = data[
+        [nom_colonne
+         for nom_colonne in variables_calculees_an_dernier.keys()
+         if 'Dotation de solidarité rurale - Péréquation - Part' in nom_colonne]
+    ].sum(axis='columns')
+    resultats_extraits["dsr_montant_eligible_fraction_perequation"] = (resultats_extraits["dsr_montant_hors_garanties_fraction_perequation"] > 0) * resultats_extraits["dsr_fraction_perequation"]
+
+    resultats_extraits["dsr_montant_hors_garanties_fraction_cible"] = data[
+        [nom_colonne
+         for nom_colonne in variables_calculees_presentes.keys()
+         if 'Dotation de solidarité rurale - Cible - Part' in nom_colonne]
+    ].sum(axis='columns')
+    assert("dsr_montant_eligible_fraction_bourg_centre" in resultats_extraits.columns)
     return resultats_extraits
 
 
