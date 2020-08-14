@@ -7,6 +7,7 @@ from dotations.load_dgcl_data import (  # type: ignore
     ajoute_population_plus_grande_commune_agglomeration,
     # ajuste_part_communes_canton,
     ajoute_appartenance_outre_mer,
+    insert_dsr_garanties_communes_nouvelles,
     insert_dsu_garanties,
     # ajoute_est_chef_lieu_canton,
     # ajoute_population_chef_lieu_canton,
@@ -99,3 +100,15 @@ def test_insert_dsu_garanties(loaded_data):
         assert(ndf["dsu_montant_garantie_pluriannuelle"].sum() > 0)
         # column was not added in loaded_data
         assert("dsu_montant_garantie_pluriannuelle" not in loaded_data.columns)
+
+
+def test_insert_dsr_garanties_communes_nouvelles(loaded_data):
+    for period in ["2019", "2020", "2021"]:
+        ndf = insert_dsr_garanties_communes_nouvelles(loaded_data, period)
+        for nom_colonne in ["dsr_garantie_commune_nouvelle_fraction_cible", "dsr_garantie_commune_nouvelle_fraction_perequation", "dsr_garantie_commune_nouvelle_fraction_bourg_centre"]:
+            # column is in the output
+            assert(nom_colonne in ndf.columns)
+            # column's sum in a positive or zero number
+            assert(ndf[nom_colonne].sum() >= 0)
+            # column was not added in loaded_data
+            assert(nom_colonne not in loaded_data.columns)
