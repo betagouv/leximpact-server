@@ -53,7 +53,7 @@ variables_calculees_presentes = {
     'Dotation de solidarité rurale - Cible - Part VOIRIE (avant garantie CN)': 'dsr_fraction_cible_part_longueur_voirie',
     'Dotation de solidarité rurale - Cible - Part ENFANTS (avant garantie CN)': 'dsr_fraction_cible_part_enfants',
     'Dotation de solidarité rurale - Cible - Part Pfi/hectare (Pfis) (avant garantie CN)': 'dsr_fraction_cible_part_potentiel_financier_par_hectare',
-    'Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible': 'dsr_montant_hors_garanties_fraction_bourg_centre',
+    'Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible': 'dsr_montant_eligible_fraction_bourg_centre',
     "Dotation de solidarité urbaine - Valeur de l'indice synthétique de classement de la commune à la DSU": 'indice_synthetique_dsu',
     'Dotation de solidarité urbaine - Rang de classement à la DSU des communes mét de plus de 10000 habitants': 'rang_indice_synthetique_dsu_seuil_haut',
     'Dotation de solidarité urbaine - Rang de classement à la DSU des communes mét de 5000 à 9999 habitants': 'rang_indice_synthetique_dsu_seuil_bas',
