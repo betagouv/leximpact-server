@@ -42,6 +42,12 @@ TABLE_LEXIMPACT_TO_OFDL = {
     "dotations.communes.dsu.attribution.augmentationMax": "dotation_solidarite_urbaine.attribution.augmentation_max",
     "dotations.communes.dsr.cible.eligibilite.indiceSynthetique.ponderationPotentielFinancier": "dotation_solidarite_rurale.cible.eligibilite.indice_synthetique.poids_potentiel_financier",
     "dotations.communes.dsr.cible.eligibilite.indiceSynthetique.ponderationRevenu": "dotation_solidarite_rurale.cible.eligibilite.indice_synthetique.poids_revenu",
+    "dotations.communes.dsr.perequation.attribution.pourcentageAttributionMin": "dotation_solidarite_rurale.perequation.attribution.plancher_ratio_progression",
+    "dotations.communes.dsr.perequation.attribution.pourcentageAttributionMax": "dotation_solidarite_rurale.perequation.attribution.plancher_ratio_progression",
+    "dotations.communes.dsr.bourgCentre.attribution.pourcentageAttributionMin": "dotation_solidarite_rurale.bourg_centre.attribution.plancher_ratio_progression",
+    "dotations.communes.dsr.bourgCentre.attribution.pourcentageAttributionMax": "dotation_solidarite_rurale.bourg_centre.attribution.plafond_ratio_progression",
+    "dotations.montants.dsu.variation": "dotation_solidarite_urbaine.augmentation_montant",
+    "dotations.montants.dsr.variation": "dotation_solidarite_rurale.augmentation_montant",
 }
 
 
