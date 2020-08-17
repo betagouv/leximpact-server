@@ -70,12 +70,12 @@ def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bour
     data_last_year = results_last_year[[code_comm, "dsu_montant_eligible", "dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible"]]
 
     TBS = CountryTaxBenefitSystem()
-    dict_sims = {"base": simulation_from_dgcl_csv(PERIOD, DATA, TBS)}
+    dict_sims = {"base": simulation_from_dgcl_csv(PERIOD, DATA, TBS, data_last_year)}
     # création d'un dictionnaire contenant une simulation par output
     if dict_ref is not None:
         for nom_scenario, reforme_scenario in dict_ref.items():
             TBS_Modified = DotationReform(TBS, reforme_scenario, PERIOD)
-            dict_sims[nom_scenario] = simulation_from_dgcl_csv(PERIOD, DATA, TBS_Modified)
+            dict_sims[nom_scenario] = simulation_from_dgcl_csv(PERIOD, DATA, TBS_Modified, data_last_year)
     # stockage des résulats dans un dataframe
     for nom_scenario, sim in dict_sims.items():
         for champ in to_compute_res:
