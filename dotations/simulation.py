@@ -63,7 +63,7 @@ def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bour
     # création d'un dictionnaire contenant une simulation par output
     if dict_ref is not None:
         for nom_scenario, reforme_scenario in dict_ref.items():
-            TBS_Modified = DotationReform(TBS, reforme_scenario)
+            TBS_Modified = DotationReform(TBS, reforme_scenario, PERIOD)
             dict_sims[nom_scenario] = simulation_from_dgcl_csv(PERIOD, DATA, TBS_Modified)
     # stockage des résulats dans un dataframe
     for nom_scenario, sim in dict_sims.items():

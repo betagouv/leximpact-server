@@ -16,6 +16,6 @@ def test_correct_reform_applied():
             }
         }
     }
-    tbs_modified = DotationReform(tbs, description_reforme)
+    tbs_modified = DotationReform(tbs, description_reforme, "2020")
 
     print(tbs_modified.get_parameters_at_instant("2020-01-01")["dotation_solidarite_rurale"]["cible"]["eligibilite"]["seuil_classement"] == value_to_set)
