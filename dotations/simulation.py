@@ -18,6 +18,7 @@ def simulation_from_dgcl_csv(period, data, tbs, data_previous_year=None):
     sb.create_entities(tbs)
     sb.declare_person_entity("commune", data.index)
     simulation = sb.build(tbs)
+    simulation.max_spiral_loops = 10
     for champ_openfisca in data.columns:
         if " " not in champ_openfisca:  # oui c'est comme ça que je checke
             # qu'une variable es openfisca ne me jugez pas
