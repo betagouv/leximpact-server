@@ -51,7 +51,9 @@ def format_reforme_openfisca(reforme_a_traduire):
     # à des hiérarchies de variables openfisca)
     # et qui seront consommés par les parsers ad hoc de la réforme
     ref = deepcopy(reforme_a_traduire)
-    del ref["dotations"]["montants"]  # not implemented in ofdl yet
+
+    if "dgf" in ref["dotations"]["montants"]:
+        del ref["dotations"]["montants"]["dgf"]  # not implemented in ofdl yet
     try:
         dictionnaire_a_tableautiser = deepcopy(ref["dotations"]["communes"]["dsr"]["bourgCentre"]["attribution"]["plafonnementPopulation"])
         ref["dotations"]["communes"]["dsr"]["bourgCentre"]["attribution"]["plafonnementPopulation"] = sorted(
