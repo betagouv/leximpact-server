@@ -78,6 +78,11 @@ def test_fields_response(response_dotations):
                     "communes": [],
                     "eligibles": 17049,
                     "strates": []
+                },
+                "dsu": {
+                    "communes": [],
+                    "eligibles": 812,
+                    "strates": []
                 }
             }
         },
@@ -86,6 +91,11 @@ def test_fields_response(response_dotations):
                 "dsr": {
                     "communes": [],
                     "eligibles": 33164,
+                    "strates": []
+                },
+                "dsu": {
+                    "communes": [],
+                    "eligibles": 812,
                     "strates": []
                 }
             }
@@ -96,6 +106,11 @@ def test_fields_response(response_dotations):
                     "nouvellementEligibles": 0,
                     "plusEligibles": 16115,
                     "toujoursEligibles": 17049,
+                },
+                "dsu" : {
+                    "nouvellementEligibles": 0,
+                    "plusEligibles": 0,
+                    "toujoursEligibles": 812,
                 }
             }
         }
@@ -181,5 +196,31 @@ def test_dsr_reform_strates(response_dotations):
     expected_strates_potentiel_financier = [761.7826724474608, 822.7862081792102, 962.3232471567082, 1061.3215646634023, 1142.2386532655016, 1212.5588966550042, 1322.006448304583, 1450.6968113217495]
     allowed_error = 0.0001
     for resultat_strates in [base_dsr["strates"], amendement_dsr["strates"]]:
+        assert(_distance_listes(expected_strates_part_pop, [strate["partPopTotale"] for strate in resultat_strates]) < allowed_error)
+        assert(_distance_listes(expected_strates_potentiel_financier, [strate["potentielFinancierMoyenParHabitant"] for strate in resultat_strates]) < allowed_error)
+
+
+def test_dsu_reform_strates(response_dotations):
+    result = response_dotations
+    base_dsu = result["base"]["communes"]["dsu"]
+    amendement_dsu = result["amendement"]["communes"]["dsu"]
+
+    assert (len(BORNES_STRATES_DEFAULT) - 1) == len(base_dsu["strates"]) == len(amendement_dsu["strates"])
+    assert (BORNES_STRATES_DEFAULT[:-1]
+            == [description_strate["habitants"] for description_strate in base_dsu["strates"]]
+            == [description_strate["habitants"] for description_strate in amendement_dsu["strates"]]
+            )
+    # Vérification des clefs du dictionnaire contenues dans un array :
+    # strates
+    expected_strates_keys = set(["eligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
+    for strate in base_dsu["strates"] + amendement_dsu["strates"]:
+        assert set(strate.keys()) == expected_strates_keys
+
+    # Vérification des valeurs connues :
+    # part des populations des strates
+    expected_strates_part_pop = [0.060324, 0.16357, 0.14816, 0.12193, 0.112542, 0.15472, 0.087568, 0.151159]
+    expected_strates_potentiel_financier = [761.7826724474608, 822.7862081792102, 962.3232471567082, 1061.3215646634023, 1142.2386532655016, 1212.5588966550042, 1322.006448304583, 1450.6968113217495]  # d'après critères de répartition 2019 loadés
+    allowed_error = 0.0001
+    for resultat_strates in [base_dsu["strates"], amendement_dsu["strates"]]:
         assert(_distance_listes(expected_strates_part_pop, [strate["partPopTotale"] for strate in resultat_strates]) < allowed_error)
         assert(_distance_listes(expected_strates_potentiel_financier, [strate["potentielFinancierMoyenParHabitant"] for strate in resultat_strates]) < allowed_error)

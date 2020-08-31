@@ -20,14 +20,14 @@ impot_revenu_requirements = [
 ]
 
 dotations_requirements = [
-    "openfisca-france-dotations-locales >= 0.3.1, < 1.0.0",
+    "openfisca-france-dotations-locales >= 0.4.0, < 1.0.0",
 ]
 
 setup(
     name="LexImpact Server",
     author="LexImpact Team",
     author_email="leximpact@openfisca.org",
-    version="1.3.0",
+    version="1.4.0",
     license="https://www.fsf.org/licensing/licenses/agpl-3.0.html",
     url="https://github.com/betagouv/leximpact",
     classifiers=[

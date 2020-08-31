@@ -7,6 +7,7 @@ from dotations.load_dgcl_data import (  # type: ignore
     ajoute_population_plus_grande_commune_agglomeration,
     # ajuste_part_communes_canton,
     ajoute_appartenance_outre_mer,
+    insert_dsu_garanties,
     # ajoute_est_chef_lieu_canton,
     # ajoute_population_chef_lieu_canton,
     # corrige_revenu_moyen_strate,
@@ -87,3 +88,14 @@ def test_ajoute_appartenance_outre_mer(loaded_data):
 
     assert data[outre_mer_dgcl] is not None
     assert len(data[data[outre_mer_dgcl]]) == nombre_communes_outre_mer
+
+
+def test_insert_dsu_garanties(loaded_data):
+    for period in ["2019", "2020", "2021"]:
+        ndf = insert_dsu_garanties(loaded_data, period)
+        # column is in the output
+        assert("dsu_montant_garantie_pluriannuelle" in ndf.columns)
+        # column's sum in a positive number
+        assert(ndf["dsu_montant_garantie_pluriannuelle"].sum() > 0)
+        # column was not added in loaded_data
+        assert("dsu_montant_garantie_pluriannuelle" not in loaded_data.columns)

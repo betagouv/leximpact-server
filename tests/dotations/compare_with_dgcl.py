@@ -1,5 +1,5 @@
 from dotations.simulation import simulation_from_dgcl_csv  # type: ignore
-from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data, get_dgcl_results  # type: ignore
+from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data, get_dgcl_results, get_last_year_dotations, insert_dsu_garanties  # type: ignore
 from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: ignore
 from time import time
 #
@@ -29,32 +29,37 @@ def compare_results_bool(data, nom_actual, nom_expected):
 # Norme L1, L2,
 def compare_results_real(data, nom_actual, nom_expected):
     res = {}
-    data_non_nul = data[(data[nom_actual] != 0) | data[nom_expected] != 0]
+    data_non_nul = data[(data[nom_actual] != 0) & data[nom_expected] != 0]
+    data["calcul non nul"] = data[nom_actual] != 0
+    data["precalc non nul"] = data[nom_expected] != 0
+    res["boolean differences"] = compare_results_bool(data, "calcul non nul", "precalc non nul")
+
     diff = sorted((data_non_nul[nom_actual] - data_non_nul[nom_expected]).tolist())
     nb_non_nul = len(data_non_nul)
-    avg_size = sum(data_non_nul[nom_actual]) / nb_non_nul
+    avg_size = (sum(data_non_nul[nom_actual]) / nb_non_nul) if nb_non_nul else 0
     avg_size2 = sum([i * i for i in data_non_nul[nom_actual]]) / (nb_non_nul - 1)
     res["Moyenne base"] = avg_size
     res["variance"] = avg_size2 - avg_size * avg_size
 
     # Norme L1 : ecart absolu moyen
-    res["L1"] = sum([abs(dif) for dif in diff]) / nb_non_nul
+    res["L1"] = (sum([abs(dif) for dif in diff]) / nb_non_nul) if nb_non_nul else 0
     # Norme L2 (norme euclidienne) : utile pour l'estimation
-    res["L2"] = (sum([dif * dif for dif in diff]) / nb_non_nul)**0.5
+    res["L2"] = ((sum([dif * dif for dif in diff]) / nb_non_nul)**0.5) if nb_non_nul else 0
     # Ah ben qu'est ce que je disais : la norme L2 permet de regarder
     # quelle part de variance de la variable est expliquée par notre
     # modèle
-    res["pourcentage expliqué"] = 1 - res["L2"]**2 / res["variance"]
+    res["pourcentage expliqué"] = (1 - res["L2"]**2 / res["variance"]) if res["variance"] else 0
     # Différence maximale. Sert pas à grand chose.
-    res["L∞"] = max([abs(dif) for dif in diff])
+    res["L∞"] = max([0] + [abs(dif) for dif in diff])
     quantiles = [0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.98, 0.99]
     # Statistiques d'ordre sur les différences (min, max et quantiles)
-    res["min"] = min(diff)
-    res["max"] = max(diff)
+    res["min"] = min(diff) if diff else "NA"
+    res["max"] = max(diff) if diff else "NA"
     res["quantiles"] = {}
     for q in quantiles:
         rang = int(q * (nb_non_nul - 1) + 0.5)
-        res["quantiles"][q] = (rang, diff[rang])
+        if rang < len(diff):
+            res["quantiles"][q] = (rang, diff[rang])
     tolerance_difference = 1
 
     # nombre de résultats considérés comme égaux (en fonction de la tolérance acceptable)
@@ -64,14 +69,16 @@ def compare_results_real(data, nom_actual, nom_expected):
 
 
 def print_eligible_comparison():
-    PERIOD = "2020"
+    PERIOD = "2019"
     data_dgcl = load_dgcl_file()
     data_calc_dgcl = get_dgcl_results(data_dgcl)
 
     data_sim = adapt_dgcl_data(data_dgcl)
+    data_sim = insert_dsu_garanties(data_sim, PERIOD)
     TBS = CountryTaxBenefitSystem()
-    sim = simulation_from_dgcl_csv(PERIOD, data_sim, TBS)
-
+    results_last_year = get_last_year_dotations(load_dgcl_file("assets/data/2018-communes-criteres-repartition.csv"))
+    data_last_year = results_last_year[[code_comm, "dsu_montant_eligible"]]
+    sim = simulation_from_dgcl_csv(PERIOD, data_sim, TBS, data_last_year)
     # on va recalculer nous même toutes les colonnes (sauf le code commune)
     colonnes_to_compute = list(data_calc_dgcl.columns[1:])
 
@@ -95,6 +102,8 @@ def print_eligible_comparison():
             # On va printer de manière quelque peu désordonnées diverses métriques nous informant
             # sur la précision de notre calcul
             resultats_comparaison = compare_results_real(data_sim, nom_ofdl, nom_ofdl + "_precalc")
+            print("***Différence de valeur nul/non nul***")
+            print(resultats_comparaison["boolean differences"])
             print("***Statistiques de base (variable à prédire)***")
             print("Moyenne base", resultats_comparaison["Moyenne base"])
             print("Ecart-type", resultats_comparaison["variance"] ** 0.5)

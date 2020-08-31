@@ -7,6 +7,7 @@ elig_pq_dgcl = "Eligible fraction péréquation selon DGCL"
 elig_cible_dgcl = "Eligible fraction cible selon DGCL"
 code_comm = "Informations générales - Code INSEE de la commune"
 nom_comm = "Informations générales - Nom de la commune"
+chef_lieu_de_canton_dgcl = "Dotation de solidarité rurale Bourg-centre - Code commune chef-lieu de canton au 1er janvier 2014"
 
 # Variables openfisca-france-dotations-locales présentes à l'état brut dans le fichier avec le nom de colonne DGCL correspondant.
 
@@ -31,6 +32,11 @@ variables_openfisca_presentes_fichier = {
     'insulaire': 'Dotation de solidarité rurale - Péréquation - Commune insulaire',
     'superficie': 'Informations générales - Superficie 2019',
     'population_enfants': 'Dotation de solidarité rurale - Péréquation - Population 3 à 16 ans',
+    'nombre_logements': 'Dotation de solidarité urbaine - Nombre de logements TH de la commune',
+    'nombre_logements_sociaux': 'Dotation de solidarité urbaine - Nombre de logements sociaux de la commune',
+    'nombre_beneficiaires_aides_au_logement': 'Dotation de solidarité urbaine - Nombre de bénéficiaires des aides au logement de la commune',
+    'population_qpv': 'Dotation de solidarité urbaine - Population QPV',
+    'population_zfu': 'Dotation de solidarité urbaine - Population ZFU',
 }
 
 # Présente les colonnes du fichier qui représentent des variables openfisca
@@ -48,6 +54,22 @@ variables_calculees_presentes = {
     'Dotation de solidarité rurale - Cible - Part ENFANTS (avant garantie CN)': 'dsr_fraction_cible_part_enfants',
     'Dotation de solidarité rurale - Cible - Part Pfi/hectare (Pfis) (avant garantie CN)': 'dsr_fraction_cible_part_potentiel_financier_par_hectare',
     'Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible': 'dsr_montant_hors_garanties_fraction_bourg_centre',
+    "Dotation de solidarité urbaine - Valeur de l'indice synthétique de classement de la commune à la DSU": 'indice_synthetique_dsu',
+    'Dotation de solidarité urbaine - Rang de classement à la DSU des communes mét de plus de 10000 habitants': 'rang_indice_synthetique_dsu_seuil_haut',
+    'Dotation de solidarité urbaine - Rang de classement à la DSU des communes mét de 5000 à 9999 habitants': 'rang_indice_synthetique_dsu_seuil_bas',
+    'Dotation de solidarité urbaine - Montant de la garantie effectivement appliquée à la commune': 'dsu_montant_garantie_non_eligible',
+    'Dotation de solidarité urbaine - Montant attribution spontanée DSU': 'dsu_part_spontanee',
+    'Dotation de solidarité urbaine - Montant progression de la DSU': 'dsu_part_augmentation',
+    'Dotation de solidarité urbaine - Montant total réparti': 'dsu_montant',
+}
+
+
+# Présente les colonnes du fichier qui représentent des variables openfisca
+variables_calculees_an_dernier = {
+    'Dotation de solidarité rurale Bourg-centre - Montant de la commune éligible': 'dsr_montant_hors_garanties_fraction_bourg_centre',
+    'Dotation de solidarité urbaine - Montant attribution spontanée DSU': 'dsu_part_spontanee',
+    'Dotation de solidarité urbaine - Montant progression de la DSU': 'dsu_part_augmentation',
+    'Dotation de solidarité urbaine - Montant total réparti': 'dsu_montant',
 }
 
 
@@ -67,7 +89,7 @@ variables_calculees_presentes = {
 # Fichiers disponibles sur https://www.data.gouv.fr/fr/datasets/criteres-de-repartition-des-dotations-versees-par-letat-aux-collectivites-territoriales/
 def load_dgcl_file(path="assets/data/2019-communes-criteres-repartition.csv"):
     try:
-        data = pandas.read_csv(path, decimal=",")
+        data = pandas.read_csv(path, decimal=",", dtype={code_comm: str, chef_lieu_de_canton_dgcl: str})
     except FileNotFoundError:
         print("file", path, "was not found")
         print("ls :", os.listdir("."))
@@ -117,7 +139,7 @@ def ajoute_population_plus_grande_commune_agglomeration(
 
 def ajuste_part_communes_canton(variables_openfisca_presentes_fichier, data, code_comm):
     part_population_canton = variables_openfisca_presentes_fichier["part_population_canton"]
-    data.loc[(data[code_comm] == 57163) | (data[code_comm] == 87116), part_population_canton] -= 0.0001
+    data.loc[(data[code_comm] == "57163") | (data[code_comm] == "87116"), part_population_canton] -= 0.0001
     return data
 
 
@@ -212,6 +234,9 @@ def get_dgcl_results(data):
     rang_indice_synthetique = "Dotation de solidarité rurale - Cible - Rang DSR Cible"
     resultats_extraits["dsr_eligible_fraction_cible"] = (data[rang_indice_synthetique] > 0) & (data[rang_indice_synthetique] <= 10000)
 
+    # Eligibilité DSU
+    resultats_extraits["dsu_eligible"] = (data["Dotation de solidarité urbaine - Montant attribution spontanée DSU"] > 0)
+
     # Calcul de la somme des quatre parts des fractions cibles et péréquation, qui
     # n'apparaissent pas à l'état brut dans le fichier DGCL
     resultats_extraits["dsr_montant_hors_garanties_fraction_perequation"] = data[
@@ -229,6 +254,33 @@ def get_dgcl_results(data):
     for nom_dgcl, nom_ofdl in variables_calculees_presentes.items():
         resultats_extraits[nom_ofdl] = data[nom_dgcl]
     return resultats_extraits
+
+
+def get_last_year_dotations(data):
+    # renvoie un DataFrame qui contient les colonnes :
+    # code commune : avec le nom original car on n'a toujours pas de variable OFDL
+    # des variables de RESULTATS tels que calculés par la DGCL.
+    # Ces variables portent leur nom openfisca parce que bon on va pas se trimballer partout
+    # les noms du fichier (à part pour leur code commune bien sûr)
+    resultats_extraits = data[[code_comm]]
+
+    # Ajout de variables qui n'existent pas à l'état brut dans le fichier :
+
+    # L'éligibilité est déterminée en fonction de la présence ou non d'un versement non nul
+    # Ajout des variables de résultat présentes à l'état brut dans le fichier
+    for nom_dgcl, nom_ofdl in variables_calculees_an_dernier.items():
+        resultats_extraits[nom_ofdl] = data[nom_dgcl]
+    resultats_extraits["dsu_montant_eligible"] = resultats_extraits["dsu_part_spontanee"] + resultats_extraits["dsu_part_augmentation"]
+    return resultats_extraits
+
+
+def insert_dsu_garanties(data, period="2019", filename="assets/data/garanties_dsu.csv"):
+    data_garanties = pandas.read_csv(filename)
+    data_garanties_period = data_garanties[[code_comm, period]]
+    data_garanties_period.columns = [code_comm, "dsu_montant_garantie_pluriannuelle"]
+    data = data.merge(data_garanties_period, how="left", on=code_comm)
+    data["dsu_montant_garantie_pluriannuelle"] = data["dsu_montant_garantie_pluriannuelle"].fillna(0)
+    return data
 
 
 def adapt_dgcl_data(data):
@@ -253,6 +305,9 @@ def adapt_dgcl_data(data):
     outre_mer_dgcl = "commune d'outre mer"
     data = ajoute_appartenance_outre_mer(data, outre_mer_dgcl)
     extracolumns["outre_mer"] = outre_mer_dgcl
+
+    # Mise des chefs lieux de canton en une string de 5 caractères.
+    data[chef_lieu_de_canton_dgcl] = data[chef_lieu_de_canton_dgcl].apply(lambda x: str(x).zfill(5))
 
     #
     # Chope les infos du chef-lieu de canton

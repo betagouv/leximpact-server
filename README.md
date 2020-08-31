@@ -461,13 +461,39 @@ de l'État aux collectivités locales.
     "reforme": {  # décrit la réforme
         "dotations": {  # configure les éléments de la réforme des dotations
             "montants": {"dgf": montant de la DGF},
-            "communes": {}
+            "communes": {
+                "dsr": {},
+                "dsu": {}
+            }
         }
-    }
+    },
+    "strates": [...]
   }
   ```
 - Réponse - contenu du body :
-  > En cours de définition. Valeur par défaut `{"hello": "coucou"}`
+  > En cours de définition. Valeur par défaut :
+  ```
+  {
+    "amendement": {
+        "communes": {
+            "dsr": {},
+            "dsu": {}
+          }
+      },
+      "base": {
+        "communes": {
+            "dsr": {},
+            "dsu": {}
+          }
+      },
+      "baseToAmendement": {
+            "communes": {
+                "dsr": {},
+                "dsu": {}
+          }
+      }
+  }
+  ```
 
 ## Base de données
 
