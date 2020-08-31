@@ -21,8 +21,12 @@ def simulation_from_dgcl_csv(period, data, tbs, data_previous_year=None):
                 period,
                 data[champ_openfisca],
             )
-    # data_previous_year est un dataframe dont toutes les colonnes partent comme valeurs de l'an dernier.
+    # data_previous_year est un dataframe dont toutes les colonnes
+    # portent des noms de variables openfisca
+    # et contiennent des valeurs de l'an dernier.
     if data_previous_year is not None:
+        # on rassemble les informations de l'an dernier pour les communes
+        # qui existent cette année (valeurs nouvelles communes à zéro)
         data = data.merge(data_previous_year, on=code_comm, how='left', suffixes=["_currentyear", ""])
         for champ_openfisca in data_previous_year.columns:
             if " " not in champ_openfisca:  # oui c'est comme ça que je checke
