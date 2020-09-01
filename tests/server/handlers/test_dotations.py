@@ -50,6 +50,11 @@ def request_dotations(codes_communes_examples):
                         "eligibilite": {
                             "popMax": 500  # de 10 000 à 500
                         }
+                    },
+                    "dsu": {
+                        "eligibilite": {
+                            "popMinSeuilBas": 500  # de 5 000 à 500
+                        }
                     }
                 }
             }
@@ -224,3 +229,18 @@ def test_dsu_reform_strates(response_dotations):
     for resultat_strates in [base_dsu["strates"], amendement_dsu["strates"]]:
         assert(_distance_listes(expected_strates_part_pop, [strate["partPopTotale"] for strate in resultat_strates]) < allowed_error)
         assert(_distance_listes(expected_strates_potentiel_financier, [strate["potentielFinancierMoyenParHabitant"] for strate in resultat_strates]) < allowed_error)
+
+
+def test_dsr_reform_eligibles(response_dotations):
+    result = response_dotations
+    base_dsr = result["base"]["communes"]["dsr"]
+    amendement_dsr = result["amendement"]["communes"]["dsr"]
+    # Verifie que le nombre de communes éligibles à la dsr a été réduit
+    # par l'amendement (qui réduit le maximum d'habitants de 10000 à 500)
+    assert base_dsr["eligibles"] > amendement_dsr["eligibles"]
+
+    base_dsu = result["base"]["communes"]["dsu"]
+    amendement_dsu = result["amendement"]["communes"]["dsu"]
+    # Verifie que le nombre de communes éligibles à la dsu a été accru
+    # par l'amendement (qui réduit le minimum d'habitants de 5000 à 500)
+    assert base_dsu["eligibles"] < amendement_dsu["eligibles"]
