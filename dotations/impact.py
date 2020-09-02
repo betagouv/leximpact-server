@@ -8,7 +8,7 @@ def get_cas_types_codes_insee():
     return ["76384", "76214"]  # sera paramétrable par l'usager
 
 
-def build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=None):
+def build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=None, prefix_next_year=None, prefix_annees_convergence=None):
     # construit une réponse d'éligibilité/montant : un tableau contenant un dictionnaire qui a pour clefs
     # "code" (code commune), "eligible" (booleen décrivant si la commune est éligible), "dotationParHab" (dotation moyenne par hab INSEE)
     # [scenario_api]["communes"]["dsr"] et [scenario_api]["communes"]["dsu"]
@@ -30,8 +30,15 @@ def build_response_dotations_cas_types(scenario, df_results, prefix_eligible, pr
                 "eligible": cas_type_eligible,
                 "dotationParHab": float(montant_cas_type / pop_cas_type)
             }
+            if prefix_next_year is not None:
+                montant_cas_type_next_year = res_cas_type[prefix_next_year + scenario].values[0]
+                res_cas_types["dotationParHabAnneeSuivante"] = float(montant_cas_type_next_year / pop_cas_type)
+            if prefix_annees_convergence is not None:
+                montant_cas_type_annee_convergence = res_cas_type[prefix_annees_convergence + scenario].values[0]
+                res_cas_types["dureeAvantTerme"] = int(montant_cas_type_annee_convergence)
             response += [res_cas_types]
-        return response
+
+    return response
 
 
 def build_response_dotations_eligibilites(scenario, df_results, prefix_eligible):
