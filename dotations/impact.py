@@ -25,8 +25,13 @@ def build_response_dotations_cas_types(scenario, df_results, prefix_eligible, pr
             pop_cas_type = res_cas_type["population_insee"].values[0]
             cas_type_eligible = bool(res_cas_type[prefix_eligible + scenario].values[0])
             montant_cas_type = res_cas_type[prefix_montant + scenario].values[0]
-            response += [{"code" : cas_type, "eligible": cas_type_eligible, "dotationParHab": float(montant_cas_type / pop_cas_type)}]
-    return response
+            res_cas_types = {
+                "code" : cas_type,
+                "eligible": cas_type_eligible,
+                "dotationParHab": float(montant_cas_type / pop_cas_type)
+            }
+            response += [res_cas_types]
+        return response
 
 
 def build_response_dotations_eligibilites(scenario, df_results, prefix_eligible):
