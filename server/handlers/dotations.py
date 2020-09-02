@@ -76,19 +76,21 @@ class Dotations(object):
         # calculer
         prefix_dsr_eligible = "dsr_eligible_"
         prefix_dsr_montant = "dsr_montant_"
-        df_results = simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant)
+        prefix_dsr_next_year = "dsr_montant_annee_suivante_"
+        prefix_annees_convergence = "annee_convergence_dsr_"
+        df_results = simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant, prefix_dsr_next_year)
 
         # constuire la réponse
         simulation_result = {
             "amendement": {
                 "communes": {
-                    "dsr": build_response_dotations("amendement", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates),
+                    "dsr": build_response_dotations("amendement", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates, prefix_annees_convergence=prefix_annees_convergence, prefix_next_year=prefix_dsr_next_year),
                     "dsu": build_response_dotations("amendement", df_results, "dsu_eligible_", "dsu_montant_", communes_cas_types=communes_cas_types, strates=strates)
                 }
             },
             "base": {
                 "communes": {
-                    "dsr": build_response_dotations("base", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates),
+                    "dsr": build_response_dotations("base", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates, prefix_annees_convergence=prefix_annees_convergence, prefix_next_year=prefix_dsr_next_year),
                     "dsu": build_response_dotations("base", df_results, "dsu_eligible_", "dsu_montant_", communes_cas_types=communes_cas_types, strates=strates)
                 }
             },
