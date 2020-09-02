@@ -95,10 +95,10 @@ def build_response_dotations_strates(scenario, df_results, prefix_eligible, pref
     return res_strates
 
 
-def build_response_dotations(scenario: str, df_results: DataFrame, prefix_eligible: str, prefix_montant: str, communes_cas_types: Optional[list] = None, strates: Optional[list] = None) -> dict:
+def build_response_dotations(scenario: str, df_results: DataFrame, prefix_eligible: str, prefix_montant: str, communes_cas_types: Optional[list] = None, strates: Optional[list] = None, prefix_annees_convergence=None, prefix_next_year=None) -> dict:
     eligibilites = build_response_dotations_eligibilites(scenario, df_results, prefix_eligible)
     return {
-        "communes": build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=communes_cas_types),
+        "communes": build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=communes_cas_types, prefix_next_year=prefix_next_year, prefix_annees_convergence=prefix_annees_convergence),
         **eligibilites,
         "strates": build_response_dotations_strates(scenario, df_results, prefix_eligible, prefix_montant, strates=strates)
     }
