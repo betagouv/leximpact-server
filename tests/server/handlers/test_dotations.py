@@ -75,6 +75,39 @@ def response_dotations(client, headers, request_dotations):
     return json.loads(response.data)
 
 
+@fixture(scope="module")
+def request_dotations_2(codes_communes_examples):
+    request = {
+        "reforme": {
+            "dotations": {
+                "montants": {
+                    "dgf": 31
+                },
+                "communes": {
+                    "dsu": {
+                        "eligibilite": {
+                            "popMinSeuilHaut": 8000  # de 10 000 à 8 000
+                        }
+                    }
+                }
+            }
+        },
+        "descriptionCasTypes": [
+            {"code": code_insee_cas_type}
+            for code_insee_cas_type in codes_communes_examples
+        ],
+        "strates": request_strates_from_bornes_strates(BORNES_STRATES_DEFAULT),
+    }
+    return request
+
+
+@fixture(scope="module")
+def response_dotations_2(client, headers, request_dotations_2):
+    response_function = partial(client.post, "dotations", headers=headers)
+    response = response_function(data=json.dumps(request_dotations_2))
+    return json.loads(response.data)
+
+
 def test_fields_response(response_dotations):
     expected_response_structure = {
         "amendement": {
@@ -231,7 +264,7 @@ def test_dsu_reform_strates(response_dotations):
         assert(_distance_listes(expected_strates_potentiel_financier, [strate["potentielFinancierMoyenParHabitant"] for strate in resultat_strates]) < allowed_error)
 
 
-def test_dsr_reform_eligibles(response_dotations):
+def test_dsr_dsu_reform_eligibles(response_dotations):
     result = response_dotations
     base_dsr = result["base"]["communes"]["dsr"]
     amendement_dsr = result["amendement"]["communes"]["dsr"]
@@ -244,3 +277,11 @@ def test_dsr_reform_eligibles(response_dotations):
     # Verifie que le nombre de communes éligibles à la dsu a été accru
     # par l'amendement (qui réduit le minimum d'habitants de 5000 à 500)
     assert base_dsu["eligibles"] < amendement_dsu["eligibles"]
+
+
+def test_dsu_dotation_positive(response_dotations_2):
+    result = response_dotations_2
+    amendement_dsu = result["amendement"]["communes"]["dsu"]
+    # Verifie que le montant de DSU par habitant des strates n'est pas négatif
+    for strate in amendement_dsu["strates"]:
+        assert strate["dotationMoyenneParHab"] >= 0
