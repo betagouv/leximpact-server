@@ -72,7 +72,7 @@ def format_reforme_openfisca(reforme_a_traduire):
     return {"dgf": translate_dict(ref, TABLE_LEXIMPACT_TO_OFDL, leave_not_found=False)}
 
 
-def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant):
+def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant, prefix_dsr_montant_annee_suivante):
     variables_nombre_communes = [
         "dsr_eligible_fraction_bourg_centre",
         "dsr_eligible_fraction_perequation",
@@ -83,7 +83,8 @@ def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant):
     variables_aggregations = ["potentiel_financier"]
     fractions_dsr = ["bourg_centre", "perequation", "cible"]
     variables_montants_fractions_dsr = ["dsr_montant_hors_garanties_fraction_" + nom_fraction for nom_fraction in fractions_dsr]
-    to_compute = variables_nombre_communes + variables_aggregations + variables_montants_fractions_dsr
+    variables_montants_next_year_dsr = ["dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation"]
+    to_compute = variables_nombre_communes + variables_aggregations + variables_montants_fractions_dsr + variables_montants_next_year_dsr
     reforme = format_reforme_openfisca(request_body["reforme"])
     df_results: DataFrame = resultfromreforms({"amendement" : reforme}, to_compute)
 
@@ -94,5 +95,6 @@ def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant):
             | df_results["dsr_eligible_fraction_cible" + "_" + scenario]
         )
         df_results[prefix_dsr_montant + scenario] = df_results[[nom_variable + "_" + scenario for nom_variable in variables_montants_fractions_dsr]].sum(axis="columns")
+        df_results[prefix_dsr_montant_annee_suivante + scenario] = df_results[[nom_variable + "_" + scenario for nom_variable in variables_montants_next_year_dsr + ["dsr_montant_hors_garanties_fraction_cible"]]].sum(axis="columns")
 
     return df_results
