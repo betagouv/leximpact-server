@@ -75,7 +75,7 @@ def build_response_dotations_strates(scenario, df_results, prefix_eligible, pref
         res_strates[id_borne]["potentielFinancierMoyenParHabitant"] = pot_strate / pop_strate
         nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles"] - resultats_agreges_bornes[id_borne + 1]["eligibles"]
         res_strates[id_borne]["eligibles"] = nb_elig_strate
-        res_strates[id_borne]["dotationMoyenneParHab"] = (resultats_agreges_bornes[id_borne]["montant"] - resultats_agreges_bornes[id_borne + 1]["montant"]) / pop_strate
+        res_strates[id_borne]["dotationMoyenneParHab"] = max(0, resultats_agreges_bornes[id_borne]["montant"] - resultats_agreges_bornes[id_borne + 1]["montant"]) / pop_strate
         res_strates[id_borne]["partDotationTotale"] = (
             (resultats_agreges_bornes[id_borne]["montant"] - resultats_agreges_bornes[id_borne + 1]["montant"]) / resultats_agreges_bornes[0]["montant"]
         ) if resultats_agreges_bornes[0]["montant"] else 0
