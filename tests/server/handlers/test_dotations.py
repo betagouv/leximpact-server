@@ -198,7 +198,7 @@ def test_dsr_reform_strates(response_dotations):
     # Vérification des valeurs connues :
     # part des populations des strates
     expected_strates_part_pop = [0.060324, 0.16357, 0.14816, 0.12193, 0.112542, 0.15472, 0.087568, 0.151159]
-    expected_strates_potentiel_financier = [761.7826724474608, 822.7862081792102, 962.3232471567082, 1061.3215646634023, 1142.2386532655016, 1212.5588966550042, 1322.006448304583, 1450.6968113217495]
+    expected_strates_potentiel_financier = [761.7836834665056, 822.7860597827515, 962.3235824743155, 1061.3211556705785, 1142.238354342724, 1212.5592073916914, 1322.0061701137156, 1450.696890744485]  # d'après critères de répartition 2019 loadés
     allowed_error = 0.0001
     for resultat_strates in [base_dsr["strates"], amendement_dsr["strates"]]:
         assert(_distance_listes(expected_strates_part_pop, [strate["partPopTotale"] for strate in resultat_strates]) < allowed_error)
@@ -224,7 +224,7 @@ def test_dsu_reform_strates(response_dotations):
     # Vérification des valeurs connues :
     # part des populations des strates
     expected_strates_part_pop = [0.060324, 0.16357, 0.14816, 0.12193, 0.112542, 0.15472, 0.087568, 0.151159]
-    expected_strates_potentiel_financier = [761.7826724474608, 822.7862081792102, 962.3232471567082, 1061.3215646634023, 1142.2386532655016, 1212.5588966550042, 1322.006448304583, 1450.6968113217495]  # d'après critères de répartition 2019 loadés
+    expected_strates_potentiel_financier = [761.7836834665056, 822.7860597827515, 962.3235824743155, 1061.3211556705785, 1142.238354342724, 1212.5592073916914, 1322.0061701137156, 1450.696890744485]  # d'après critères de répartition 2019 loadés
     allowed_error = 0.0001
     for resultat_strates in [base_dsu["strates"], amendement_dsu["strates"]]:
         assert(_distance_listes(expected_strates_part_pop, [strate["partPopTotale"] for strate in resultat_strates]) < allowed_error)
