@@ -3,7 +3,7 @@ from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data, insert_dsu
 # Actually runs the simulations
 from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: ignore
 from dotations.reform import DotationReform  # type: ignore
-
+import numpy as np  # type: ignore
 
 code_comm = "Informations générales - Code INSEE de la commune"
 
@@ -30,7 +30,7 @@ def simulation_from_dgcl_csv(period, data, tbs, data_previous_year=None):
         data = data.merge(data_previous_year, on=code_comm, how='left', suffixes=["_currentyear", ""])
         for champ_openfisca in data_previous_year.columns:
             if " " not in champ_openfisca:  # oui c'est comme ça que je checke
-                # qu'une variable es openfisca ne me jugez pas
+                # qu'une variable est openfisca ne me jugez pas
                 simulation.set_input(
                     champ_openfisca,
                     str(int(period) - 1),
@@ -67,6 +67,9 @@ def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bour
     for nom_scenario, sim in dict_sims.items():
         for champ in to_compute_res:
             DATA[champ + "_" + nom_scenario] = sim.calculate(champ, PERIOD)
+            if DATA[champ + "_" + nom_scenario].dtype == np.float32:
+                DATA[champ + "_" + nom_scenario] = DATA[champ + "_" + nom_scenario].astype(np.float64)
+
     return DATA
 
 
