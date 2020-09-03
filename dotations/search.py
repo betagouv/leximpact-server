@@ -1,5 +1,5 @@
-from dotations.load_dgcl_data import load_dgcl_file
-import pandas as pd
+from dotations.load_dgcl_data import load_dgcl_file  # type: ignore
+import pandas as pd  # type: ignore
 
 
 cached_data = None

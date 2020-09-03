@@ -1,4 +1,4 @@
-from dotations.search import search
+from dotations.search import search  # type: ignore
 
 
 def test_paris():
