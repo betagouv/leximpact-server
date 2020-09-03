@@ -17,6 +17,12 @@ def simulation_from_dgcl_csv(period, data, tbs, data_previous_year=None):
     sb = SimulationBuilder()
     sb.create_entities(tbs)
     sb.declare_person_entity("commune", data.index)
+
+    nombre_communes = len(data.index)
+    etat_instance = sb.declare_entity('etat', ['france'])
+    etat_communes = ['france'] * nombre_communes
+    sb.join_with_persons(etat_instance, etat_communes, [None] * nombre_communes)
+
     simulation = sb.build(tbs)
     simulation.max_spiral_loops = 10
     for champ_openfisca in data.columns:
