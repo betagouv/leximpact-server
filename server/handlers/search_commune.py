@@ -1,6 +1,7 @@
 from http.client import OK, BAD_REQUEST
 from dotations.search import search  # type: ignore
 
+
 class SearchCommune(object):
     def recherche_commune(**params: dict) -> tuple:
         request_body = params["body"]
