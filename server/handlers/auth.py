@@ -1,14 +1,10 @@
 from typing import Dict, Tuple
 from server.services import login_user, with_session, send_mail
 
+from utils.folder_finder import path_folder_assets  # type: ignore
 
-# Ces lignes horribles sont nécessaires car l'appli et les tests ne s'exécutent pas du même folder
-try:
-    with open("../assets/MailEmailLinkToken.html", "r", encoding="utf-8") as file:
-        mail_content_initial = file.read()
-except FileNotFoundError:
-    with open("assets/MailEmailLinkToken.html", "r", encoding="utf-8") as file:
-        mail_content_initial = file.read()
+with open(path_folder_assets() + "/MailEmailLinkToken.html", "r", encoding="utf-8") as file:
+    mail_content_initial = file.read()
 
 
 @with_session

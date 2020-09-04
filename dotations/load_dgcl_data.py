@@ -1,6 +1,9 @@
 import pandas  # type: ignore
 import os
+from utils.folder_finder import path_folder_assets  # type: ignore
 
+
+path_assets = path_folder_assets()
 # Quelques noms de colonne utiles:
 elig_bc_dgcl = "Eligible fraction bourg-centre selon DGCL"
 elig_pq_dgcl = "Eligible fraction péréquation selon DGCL"
@@ -101,7 +104,7 @@ variables_calculees_an_dernier = {
 
 
 # Fichiers disponibles sur https://www.data.gouv.fr/fr/datasets/criteres-de-repartition-des-dotations-versees-par-letat-aux-collectivites-territoriales/
-def load_dgcl_file(path="assets/data/2019-communes-criteres-repartition.csv"):
+def load_dgcl_file(path=path_assets + "/data/2019-communes-criteres-repartition.csv"):
     try:
         data = pandas.read_csv(path, decimal=",", dtype={code_comm: str, chef_lieu_de_canton_dgcl: str})
     except FileNotFoundError:
@@ -308,7 +311,7 @@ def get_last_year_dotations(data):
     return resultats_extraits
 
 
-def insert_dsu_garanties(data, period="2019", filename="assets/data/garanties_dsu.csv"):
+def insert_dsu_garanties(data, period="2019", filename=path_assets + "/data/garanties_dsu.csv"):
     data_garanties = pandas.read_csv(filename, dtype={code_comm: str})
     data_garanties_period = data_garanties[[code_comm, period]]
     data_garanties_period.columns = [code_comm, "dsu_montant_garantie_pluriannuelle"]
@@ -317,7 +320,7 @@ def insert_dsu_garanties(data, period="2019", filename="assets/data/garanties_ds
     return data
 
 
-def insert_dsr_garanties_communes_nouvelles(data, period="2020", folder="assets/data/"):
+def insert_dsr_garanties_communes_nouvelles(data, period="2020", folder=path_assets + "/data/"):
     if (int(period) > 2020):
         period = "2020"
     filename = folder + "garanties_cn_dsr_{}.csv".format(period)

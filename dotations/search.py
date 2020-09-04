@@ -1,5 +1,6 @@
 from dotations.load_dgcl_data import load_dgcl_file  # type: ignore
 import pandas as pd  # type: ignore
+from utils.folder_finder import path_folder_assets  # type: ignore
 
 
 cached_data = None
@@ -27,7 +28,8 @@ def load_cached_data():
         df_base["code_departement"] = df_base["code_departement"].astype(str).apply(lambda x: str(x).zfill(2))
         # Le fichier de liste des départements est présent en ligne sur :
         # https://www.data.gouv.fr/fr/datasets/r/70cef74f-70b1-495a-8500-c089229c0254
-        liste_departements = pd.read_csv("assets/data/departements-france.csv", dtype=str)
+        path_assets = path_folder_assets()
+        liste_departements = pd.read_csv(path_assets + "/data/departements-france.csv", dtype=str)
 
         communes_avec_departement = df_base.merge(liste_departements, how="left", on="code_departement")
         communes_avec_departement.loc[communes_avec_departement["nom_departement"].isnull(), "nom_departement"] = communes_avec_departement["code_departement"]
