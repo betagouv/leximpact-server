@@ -1,7 +1,7 @@
 from copy import deepcopy
 from pandas import DataFrame  # type: ignore
 
-from dotations.utils_dict import translate_dict  # type: ignore
+from utils.utils_dict import translate_dict  # type: ignore
 from dotations.simulation import resultfromreforms  # type: ignore
 
 
