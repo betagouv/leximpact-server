@@ -199,7 +199,7 @@ def test_dsr_reform_cas_types(response_dotations, codes_communes_examples):
 
     # Vérification des clefs du dictionnaire contenues dans un array :
     # cas-types
-    expected_cas_type_keys = set(["code", "eligible", "dotationParHab"])
+    expected_cas_type_keys = set(["code", "eligible", "dotationParHab", "dureeAvantTerme", "dotationParHabAnneeSuivante"])
     for cas_type in base_dsr["communes"] + amendement_dsr["communes"]:
         assert set(cas_type.keys()) == expected_cas_type_keys
 

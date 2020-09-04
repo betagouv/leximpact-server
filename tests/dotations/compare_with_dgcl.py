@@ -1,5 +1,5 @@
 from dotations.simulation import simulation_from_dgcl_csv  # type: ignore
-from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data, get_dgcl_results, get_last_year_dotations, insert_dsu_garanties  # type: ignore
+from dotations.load_dgcl_data import load_dgcl_file, adapt_dgcl_data, get_dgcl_results, get_last_year_dotations, insert_dsu_garanties, insert_dsr_garanties_communes_nouvelles  # type: ignore
 from openfisca_france_dotations_locales import CountryTaxBenefitSystem  # type: ignore
 from time import time
 #
@@ -74,10 +74,13 @@ def print_eligible_comparison():
     data_calc_dgcl = get_dgcl_results(data_dgcl)
 
     data_sim = adapt_dgcl_data(data_dgcl)
+    # Insertion des garanties au titre de la DSU (non calculées explicitement dans OFDL)
     data_sim = insert_dsu_garanties(data_sim, PERIOD)
+    # Insertion des garanties communes nouvelles au titre de la DSR (non calculées explicitement dans OFDL)
+    data_sim = insert_dsr_garanties_communes_nouvelles(data_sim, PERIOD)
     TBS = CountryTaxBenefitSystem()
     results_last_year = get_last_year_dotations(load_dgcl_file("assets/data/2018-communes-criteres-repartition.csv"))
-    data_last_year = results_last_year[[code_comm, "dsu_montant_eligible"]]
+    data_last_year = results_last_year[[code_comm, "dsu_montant_eligible", "dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible"]]
     sim = simulation_from_dgcl_csv(PERIOD, data_sim, TBS, data_last_year)
     # on va recalculer nous même toutes les colonnes (sauf le code commune)
     colonnes_to_compute = list(data_calc_dgcl.columns[1:])

@@ -8,7 +8,7 @@ def get_cas_types_codes_insee():
     return ["76384", "76214"]  # sera paramétrable par l'usager
 
 
-def build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=None):
+def build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=None, prefix_next_year=None, prefix_annees_convergence=None):
     # construit une réponse d'éligibilité/montant : un tableau contenant un dictionnaire qui a pour clefs
     # "code" (code commune), "eligible" (booleen décrivant si la commune est éligible), "dotationParHab" (dotation moyenne par hab INSEE)
     # [scenario_api]["communes"]["dsr"] et [scenario_api]["communes"]["dsu"]
@@ -25,7 +25,19 @@ def build_response_dotations_cas_types(scenario, df_results, prefix_eligible, pr
             pop_cas_type = res_cas_type["population_insee"].values[0]
             cas_type_eligible = bool(res_cas_type[prefix_eligible + scenario].values[0])
             montant_cas_type = res_cas_type[prefix_montant + scenario].values[0]
-            response += [{"code" : cas_type, "eligible": cas_type_eligible, "dotationParHab": float(montant_cas_type / pop_cas_type)}]
+            res_cas_types = {
+                "code" : cas_type,
+                "eligible": cas_type_eligible,
+                "dotationParHab": float(montant_cas_type / pop_cas_type)
+            }
+            if prefix_next_year is not None:
+                montant_cas_type_next_year = res_cas_type[prefix_next_year + scenario].values[0]
+                res_cas_types["dotationParHabAnneeSuivante"] = float(montant_cas_type_next_year / pop_cas_type)
+            if prefix_annees_convergence is not None:
+                montant_cas_type_annee_convergence = res_cas_type[prefix_annees_convergence + scenario].values[0]
+                res_cas_types["dureeAvantTerme"] = int(montant_cas_type_annee_convergence)
+            response += [res_cas_types]
+
     return response
 
 
@@ -83,10 +95,10 @@ def build_response_dotations_strates(scenario, df_results, prefix_eligible, pref
     return res_strates
 
 
-def build_response_dotations(scenario: str, df_results: DataFrame, prefix_eligible: str, prefix_montant: str, communes_cas_types: Optional[list] = None, strates: Optional[list] = None) -> dict:
+def build_response_dotations(scenario: str, df_results: DataFrame, prefix_eligible: str, prefix_montant: str, communes_cas_types: Optional[list] = None, strates: Optional[list] = None, prefix_annees_convergence=None, prefix_next_year=None) -> dict:
     eligibilites = build_response_dotations_eligibilites(scenario, df_results, prefix_eligible)
     return {
-        "communes": build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=communes_cas_types),
+        "communes": build_response_dotations_cas_types(scenario, df_results, prefix_eligible, prefix_montant, communes_cas_types=communes_cas_types, prefix_next_year=prefix_next_year, prefix_annees_convergence=prefix_annees_convergence),
         **eligibilites,
         "strates": build_response_dotations_strates(scenario, df_results, prefix_eligible, prefix_montant, strates=strates)
     }

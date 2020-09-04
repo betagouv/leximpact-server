@@ -21,9 +21,10 @@ def set_brackets(brackets, target):
 
 class DotationReform(Reform):
 
-    def __init__(self, tbs, payload: dict) -> None:
+    def __init__(self, tbs, payload: dict, period: str) -> None:
         self.payload = payload.get("dgf", {})
-        self.period = periods.period("year:1900:200")
+        self.period = periods.period("year:{}:200".format(period))  # les réformes sont toujours sur 200 ans, mais
+        # commencent à la période choisie
         super().__init__(tbs)
 
     def modifier(self, parameters: ParameterNode) -> ParameterNode:
