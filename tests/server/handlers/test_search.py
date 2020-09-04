@@ -7,7 +7,7 @@ def test_missing_param(client, headers):
         "oupsjemetrompe": "dijon"
     }
 
-    response_function = partial(client.post, "recherche_commune", headers=headers)
+    response_function = partial(client.post, "search", headers=headers)
     response = response_function(data=json.dumps(request))
 
     assert response.status_code == 400
@@ -19,7 +19,7 @@ def test_empty(client, headers):
         "extraitNomCommune": ""
     }
 
-    response_function = partial(client.post, "recherche_commune", headers=headers)
+    response_function = partial(client.post, "search", headers=headers)
     response = response_function(data=json.dumps(request))
 
     assert response.status_code == 400
