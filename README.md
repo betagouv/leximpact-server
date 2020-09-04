@@ -91,6 +91,10 @@ Pour lancer LexImpact-Server, vous devez tout d'abord créer un fichier de confi
 - `YEAR_COMPUTATION` : Année de calcul : les revenus des cas-types et de la population seront supposés survenir l'année spécifiée, et seront donc taxés aux taux applicables cette année là.
 - `PLF_PATH` : Contient le chemin où l'on peut trouver un dictionnaire représentant la réforme.  Un plf_path écrit au format "dossier.sousdossier.fichier.nom_dictionnaire" importera le dictionnaire portant le nom "nom_dictionnaire" dans le fichier "dossier/sousdossier/fichier.py" de l'arborescence. Cette variable fera planter le programme si elle contient des espaces ou le caractère ';', pour éviter toute fausse manipulation de l'utilisateur.
 
+
+Variable optionnelle :
+- `ASSETS_PATH` : Par défaut, le folder /assets/ contient toutes les données publiques utiles au calcul des simulations. Il est toutefois possible pour l'usager de déclarer sa propre adresse de fichier dans cette variable d'environnement, qui doit être un chemin de répertoire valide.
+
 ### Base de données et migrations
 
 Pour créer la base de données, et exécuter toutes les migrations, dans votre fenêtre de terminal :
