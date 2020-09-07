@@ -57,7 +57,7 @@ def simulation_from_dgcl_csv(period, data, tbs, data_previous_year=None):
 # prend un dictionnaire de reformes (apres, eventuellement PLF)
 
 def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bourg_centre", "dsr_eligible_fraction_perequation", "dsr_eligible_fraction_cible")):
-    PERIOD = "2020"
+    PERIOD = "2021"
     path_assets = path_folder_assets()
     # some of these can be preloaded in memory to improve performance.
     DATA = adapt_dgcl_data(load_dgcl_file(path_assets + "/data/2019-communes-criteres-repartition.csv"))
