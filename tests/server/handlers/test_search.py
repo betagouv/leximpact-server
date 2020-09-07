@@ -3,24 +3,16 @@ import json
 
 
 def test_missing_param(client, headers):
-    request = {
-        "oupsjemetrompe": "dijon"
-    }
-
-    response_function = partial(client.post, "search", headers=headers)
-    response = response_function(data=json.dumps(request))
+    response_function = partial(client.get, "search?oupsjemetrompe=dijon", headers=headers)
+    response = response_function()
 
     assert response.status_code == 400
-    assert "Error" in json.loads(response.data)
+    assert "Missing query parameter 'commune'" in json.loads(response.data)['detail']
 
 
 def test_ok(client, headers):
-    request = {
-        "extraitNomCommune": "paris"
-    }
-
-    response_function = partial(client.post, "search", headers=headers)
-    response = response_function(data=json.dumps(request))
+    response_function = partial(client.get, "search?commune=paris", headers=headers)
+    response = response_function()
 
     assert response.status_code == 200
     response_list = json.loads(response.data)
@@ -28,12 +20,8 @@ def test_ok(client, headers):
 
 
 def test_empty(client, headers):
-    request = {
-        "extraitNomCommune": ""
-    }
-
-    response_function = partial(client.post, "search", headers=headers)
-    response = response_function(data=json.dumps(request))
+    response_function = partial(client.get, "search?commune=", headers=headers)
+    response = response_function()
 
     assert response.status_code == 400
     assert "Error" in json.loads(response.data)
