@@ -40,7 +40,7 @@ def load_cached_data():
     return cached_data
 
 
-def search(nom_commune):
+def search_commune_by_name(nom_commune):
     res = []
     resultats_maximum = 20
     for commune in load_cached_data():
