@@ -1,12 +1,13 @@
-
-from dotenv import load_dotenv
-load_dotenv(dotenv_path=".env")
 from os.path import isdir, dirname
 from os import getenv
 import logging
 from typing import Optional
+from dotenv import load_dotenv
 
+load_dotenv(dotenv_path=".env")
 cached_folder_assets : Optional[str] = None
+
+
 
 def path_folder_assets() -> str:
     # finds the path of the folder that contans the assets
