@@ -17,7 +17,7 @@ def load_cached_data():
             "Informations générales - Nom de la commune": "name",
             "Informations générales - Code département de la commune": "code_departement",
             "Informations générales - Population INSEE Année N ": "habitants",
-            "Potentiel fiscal et financier des communes - Potentiel financier": "potentielFinancier"
+            "Potentiel fiscal et financier des communes - Potentiel financier par habitant": "potentielFinancierParHab"
         }
 
         df_base = communes[list(colonnes_a_garder.keys())]
@@ -35,7 +35,7 @@ def load_cached_data():
         communes_avec_departement.loc[communes_avec_departement["nom_departement"].isnull(), "nom_departement"] = communes_avec_departement["code_departement"]
         communes_avec_departement.columns = [col if col != "nom_departement" else "departement" for col in communes_avec_departement.columns]
 
-        dict_result = communes_avec_departement[["code", "name", "habitants", "potentielFinancier", "departement"]].to_dict(orient="records")
+        dict_result = communes_avec_departement[["code", "name", "habitants", "potentielFinancierParHab", "departement"]].to_dict(orient="records")
         cached_data = dict_result
     return cached_data
 

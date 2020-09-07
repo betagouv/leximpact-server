@@ -8,7 +8,7 @@ def test_paris():
     assert len(recherche_resultats) >= 1
     # Chaque élément du résultat contient les bons champs
     for resultat in recherche_resultats:
-        for champ in ["code", "name", "departement", "potentielFinancier", "habitants"]:
+        for champ in ["code", "name", "departement", "potentielFinancierParHab", "habitants"]:
             assert champ in resultat
 
 
@@ -18,5 +18,5 @@ def test_nombre_max_resultats():
     assert len(recherche_resultats) == 20
     # Chaque élément du résultat contient les bons champs
     for resultat in recherche_resultats:
-        for champ in ["code", "name", "departement", "potentielFinancier", "habitants"]:
+        for champ in ["code", "name", "departement", "potentielFinancierParHab", "habitants"]:
             assert champ in resultat
