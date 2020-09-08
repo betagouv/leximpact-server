@@ -35,6 +35,9 @@ def load_cached_data():
         communes_avec_departement.loc[communes_avec_departement["nom_departement"].isnull(), "nom_departement"] = communes_avec_departement["code_departement"]
         communes_avec_departement.columns = [col if col != "nom_departement" else "departement" for col in communes_avec_departement.columns]
 
+        # On trie les communes par longueur de nom croissante afin d'être sûrs de pouvoir obtenir toutes les communes (comme les résultats sont limités)
+        communes_avec_departement = communes_avec_departement.reindex(communes_avec_departement.name.str.len().sort_values().index)
+
         dict_result = communes_avec_departement[["code", "name", "habitants", "potentielFinancierParHab", "departement"]].to_dict(orient="records")
         cached_data = dict_result
     return cached_data
