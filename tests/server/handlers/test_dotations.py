@@ -3,7 +3,7 @@ import json
 from pytest import fixture
 
 from dotations.impact import BORNES_STRATES_DEFAULT, get_cas_types_codes_insee  # type: ignore
-from dotations.utils_dict import flattened_dict  # type: ignore
+from utils.utils_dict import flattened_dict  # type: ignore
 
 
 def request_strates_from_bornes_strates(bornes_strates):
