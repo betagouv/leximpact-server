@@ -167,11 +167,6 @@ def test_dsr_reform_eligibilite_montants(response_dotations):
     base_dsr = result["base"]["communes"]["dsr"]
     amendement_dsr = result["amendement"]["communes"]["dsr"]
 
-    # Vérification des valeurs connues :
-    # Les nombres de communes éligibles de base sont ceux attendus
-    expected_strates_eligibilite_base = [17752, 11103, 3165, 1089, 55, 0, 0, 0]
-    assert expected_strates_eligibilite_base == [strate["eligibles"] for strate in base_dsr["strates"]]
-
     # Moins de communes éligibles après que avant.
     assert (base_dsr["eligibles"] > amendement_dsr["eligibles"])
     # Les nombres affichés dans l'amendement sont cohérents avec la base
