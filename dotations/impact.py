@@ -77,6 +77,7 @@ def build_response_dotations_strates(scenario, df_results, prefix_eligible, pref
         resultats_agreges_bornes[id_borne]["potentiel_financier"] = float(df_strate["potentiel_financier" + "_" + scenario].sum())
         resultats_agreges_bornes[id_borne]["eligibles"] = int(df_strate[prefix_eligible + scenario].sum())
         resultats_agreges_bornes[id_borne]["montant"] = int(df_strate[prefix_montant + scenario].sum())
+        resultats_agreges_bornes[id_borne]["nombre_communes"] = len(df_strate)
 
     res_strates: List[dict] = [{} for borne in BORNES_STRATES[:-1]]
     for id_borne in range(len(BORNES_STRATES) - 1):
@@ -86,7 +87,8 @@ def build_response_dotations_strates(scenario, df_results, prefix_eligible, pref
         pot_strate = resultats_agreges_bornes[id_borne]["potentiel_financier"] - resultats_agreges_bornes[id_borne + 1]["potentiel_financier"]
         res_strates[id_borne]["potentielFinancierMoyenParHabitant"] = pot_strate / pop_strate
         nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles"] - resultats_agreges_bornes[id_borne + 1]["eligibles"]
-        res_strates[id_borne]["eligibles"] = nb_elig_strate
+        nombre_communes_strate = resultats_agreges_bornes[id_borne]["nombre_communes"] - resultats_agreges_bornes[id_borne + 1]["nombre_communes"]
+        res_strates[id_borne]["proportionEligibles"] = (nb_elig_strate / nombre_communes_strate) if nombre_communes_strate else 0
         res_strates[id_borne]["dotationMoyenneParHab"] = max(0, resultats_agreges_bornes[id_borne]["montant"] - resultats_agreges_bornes[id_borne + 1]["montant"]) / pop_strate
         res_strates[id_borne]["partDotationTotale"] = (
             (resultats_agreges_bornes[id_borne]["montant"] - resultats_agreges_bornes[id_borne + 1]["montant"]) / resultats_agreges_bornes[0]["montant"]
