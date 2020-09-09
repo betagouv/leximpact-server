@@ -20,7 +20,7 @@ impot_revenu_requirements = [
 ]
 
 dotations_requirements = [
-    "openfisca-france-dotations-locales >= 0.5.0, < 1.0.0",
+    "openfisca-france-dotations-locales >= 0.6.0, < 1.0.0",
 ]
 
 setup(
