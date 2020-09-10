@@ -167,6 +167,11 @@ def test_dsr_reform_eligibilite_montants(response_dotations):
     base_dsr = result["base"]["communes"]["dsr"]
     amendement_dsr = result["amendement"]["communes"]["dsr"]
 
+    # Vérification des valeurs connues :
+    # Les nombres de communes éligibles de base sont ceux attendus
+    expected_strates_eligibilite_base = [17752, 11103, 3165, 1089, 55, 0, 0, 0]
+    assert expected_strates_eligibilite_base == [strate["eligibles"] for strate in base_dsr["strates"]]
+
     # Moins de communes éligibles après que avant.
     assert (base_dsr["eligibles"] > amendement_dsr["eligibles"])
     # Les nombres affichés dans l'amendement sont cohérents avec la base
@@ -177,6 +182,7 @@ def test_dsr_reform_eligibilite_montants(response_dotations):
     # Montants : cohérence : les strates ont une dotation non nulle si et seulement si elles sont éligibles
     for scenario_strates in [base_dsr["strates"], amendement_dsr["strates"]]:
         for strate in scenario_strates:
+            assert((strate["dotationMoyenneParHab"] > 0) == (strate["eligibles"] > 0))
             assert((strate["dotationMoyenneParHab"] > 0) == (strate["proportionEligibles"] > 0))
 
 
@@ -219,7 +225,7 @@ def test_dsr_reform_strates(response_dotations):
             )
     # Vérification des clefs du dictionnaire contenues dans un array :
     # strates
-    expected_strates_keys = set(["proportionEligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
+    expected_strates_keys = set(["eligibles", "proportionEligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
     for strate in base_dsr["strates"] + amendement_dsr["strates"]:
         assert set(strate.keys()) == expected_strates_keys
 
@@ -245,7 +251,7 @@ def test_dsu_reform_strates(response_dotations):
             )
     # Vérification des clefs du dictionnaire contenues dans un array :
     # strates
-    expected_strates_keys = set(["proportionEligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
+    expected_strates_keys = set(["eligibles", "proportionEligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
     for strate in base_dsu["strates"] + amendement_dsu["strates"]:
         assert set(strate.keys()) == expected_strates_keys
 
