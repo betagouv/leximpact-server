@@ -183,6 +183,7 @@ def test_dsr_reform_eligibilite_montants(response_dotations):
     for scenario_strates in [base_dsr["strates"], amendement_dsr["strates"]]:
         for strate in scenario_strates:
             assert((strate["dotationMoyenneParHab"] > 0) == (strate["eligibles"] > 0))
+            assert((strate["dotationMoyenneParHab"] > 0) == (strate["partEligibles"] > 0))
 
 
 def test_dsr_reform_cas_types(response_dotations, codes_communes_examples):
@@ -224,7 +225,7 @@ def test_dsr_reform_strates(response_dotations):
             )
     # Vérification des clefs du dictionnaire contenues dans un array :
     # strates
-    expected_strates_keys = set(["eligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
+    expected_strates_keys = set(["eligibles", "partEligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
     for strate in base_dsr["strates"] + amendement_dsr["strates"]:
         assert set(strate.keys()) == expected_strates_keys
 
@@ -250,7 +251,7 @@ def test_dsu_reform_strates(response_dotations):
             )
     # Vérification des clefs du dictionnaire contenues dans un array :
     # strates
-    expected_strates_keys = set(["eligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
+    expected_strates_keys = set(["eligibles", "partEligibles", "habitants", "partPopTotale", "potentielFinancierMoyenParHabitant", "dotationMoyenneParHab", "partDotationTotale"])
     for strate in base_dsu["strates"] + amendement_dsu["strates"]:
         assert set(strate.keys()) == expected_strates_keys
 
