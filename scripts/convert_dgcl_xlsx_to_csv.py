@@ -1,8 +1,12 @@
 import pandas as pd  # type: ignore
 
 
+# See DGCL data (.xlsx even when the filename looks like a .csv) for 2020 at:
+# http://www.dotations-dgcl.interieur.gouv.fr/consultation/criteres_repartition.php
+
+
 def convert_col_names_2020_to_2019(data):
-    # Modifies column names that cchanged between 2019 and 2020
+    # Modifies column names that changed between 2019 and 2020
     # We give them the name they had in 2019, cause our loader uses these.
     dict_convert = {
         "Dotation de solidarité rurale - Cible - IS DSR Cible": "Dotation de solidarité rurale - Cible - Indice synthétique",
@@ -27,3 +31,8 @@ def xlsxtocsv(filename):
     df = df.replace(r'\.', ",", regex=True)
     df = convert_col_names_2020_to_2019(df)
     df.to_csv(nom_fichier + ".csv", index=False, decimal=",")
+
+
+if __name__ == "__main__":
+    with open(input("DGCL .xlsx file for 2020 (utf-8): "), 'r') as input_file:
+        xlsxtocsv(input_file)

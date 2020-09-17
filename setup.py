@@ -59,6 +59,7 @@ setup(
             "pytest-mock >= 1.10.4, < 1.11.2",
             "snakeviz >= 2.0.0, < 3.0.0",
             "tables >= 3.4.0, < 3.5.0",
+            "xlrd >= 1.0.0, < 2.0.0",  # scripts/convert_dgcl_xlsx_to_csv.py
         ]
     },
     packages=find_packages(exclude=["tests*"]),
