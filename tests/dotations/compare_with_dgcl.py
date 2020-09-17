@@ -11,9 +11,15 @@ from utils.folder_finder import path_folder_assets  # type: ignore
 # aux résultats DGCL et obtenir des résultats cohérents plus tard.
 
 
-# Quelques noms de colonne utiles:
+# Quelques noms de colonne utiles :
 code_comm = "Informations générales - Code INSEE de la commune"
 nom_comm = "Informations générales - Nom de la commune"
+
+
+# Quelques couleurs d'impression :
+MOUTARDE = "\x1b[1;33;40m"
+BLEU_CLAIR = "\x1b[1;36;40m"
+STOP_COULEUR = "\033[0m"
 
 
 # Columns to compare that contain a bool type
@@ -71,6 +77,8 @@ def compare_results_real(data, nom_actual, nom_expected):
 
 def print_eligible_comparison():
     PERIOD = "2019"
+    print(f"{MOUTARDE}DGCL", PERIOD, STOP_COULEUR)
+
     data_dgcl = load_dgcl_file()
     data_calc_dgcl = get_dgcl_results(data_dgcl)
 
@@ -96,8 +104,6 @@ def print_eligible_comparison():
 
     summary_variables = {}  # récupère les R²
 
-    BLEU_CLAIR = "\x1b[1;36;40m"
-    STOP_COULEUR = "\033[0m"
     for nom_ofdl in colonnes_to_compute:
         print(f"{BLEU_CLAIR}Comparaison DGCL vs nous pour le calcul de", nom_ofdl, STOP_COULEUR)
         if data_sim[nom_ofdl].dtypes.name == 'bool':
@@ -141,6 +147,8 @@ def print_eligible_comparison():
 
 def print_eligible_comparison_2020():
     PERIOD = "2020"
+    print(f"{MOUTARDE}DGCL", PERIOD, STOP_COULEUR)
+
     data_dgcl = load_dgcl_file(path_folder_assets() + "/data/2020-communes-criteres-repartition.csv")
     data_calc_dgcl = get_dgcl_results(data_dgcl)
 
@@ -166,8 +174,6 @@ def print_eligible_comparison_2020():
 
     summary_variables = {}  # récupère les R²
 
-    BLEU_CLAIR = "\x1b[1;36;40m"
-    STOP_COULEUR = "\033[0m"
     for nom_ofdl in colonnes_to_compute:
         print(f"{BLEU_CLAIR}Comparaison DGCL vs nous pour le calcul de", nom_ofdl, STOP_COULEUR)
         if data_sim[nom_ofdl].dtypes.name == 'bool':
@@ -214,5 +220,6 @@ if __name__ == "__main__":
     print_eligible_comparison()
     print("> Elapsed time: {:.2f}".format(time() - st))
 
+    st = time()
     print_eligible_comparison_2020()
     print("> Elapsed time: {:.2f}".format(time() - st))
