@@ -11,9 +11,15 @@ from utils.folder_finder import path_folder_assets  # type: ignore
 # aux résultats DGCL et obtenir des résultats cohérents plus tard.
 
 
-# Quelques noms de colonne utiles:
+# Quelques noms de colonne utiles :
 code_comm = "Informations générales - Code INSEE de la commune"
 nom_comm = "Informations générales - Nom de la commune"
+
+
+# Quelques couleurs d'impression :
+MOUTARDE = "\x1b[1;33;40m"
+BLEU_CLAIR = "\x1b[1;36;40m"
+STOP_COULEUR = "\033[0m"
 
 
 # Columns to compare that contain a bool type
@@ -71,7 +77,9 @@ def compare_results_real(data, nom_actual, nom_expected):
 
 def print_eligible_comparison():
     PERIOD = "2019"
-    data_dgcl = load_dgcl_file()
+    print(f"{MOUTARDE}DGCL", PERIOD, STOP_COULEUR)
+
+    data_dgcl = load_dgcl_file(path_folder_assets() + "/data/2019-communes-criteres-repartition.csv")
     data_calc_dgcl = get_dgcl_results(data_dgcl)
 
     data_sim = adapt_dgcl_data(data_dgcl)
@@ -96,8 +104,76 @@ def print_eligible_comparison():
 
     summary_variables = {}  # récupère les R²
 
-    BLEU_CLAIR = "\x1b[1;36;40m"
-    STOP_COULEUR = "\033[0m"
+    for nom_ofdl in colonnes_to_compute:
+        print(f"{BLEU_CLAIR}Comparaison DGCL vs nous pour le calcul de", nom_ofdl, STOP_COULEUR)
+        if data_sim[nom_ofdl].dtypes.name == 'bool':
+            print(compare_results_bool(data_sim, nom_ofdl, nom_ofdl + "_precalc"))
+        else:
+            # On va printer de manière quelque peu désordonnées diverses métriques nous informant
+            # sur la précision de notre calcul
+            resultats_comparaison = compare_results_real(data_sim, nom_ofdl, nom_ofdl + "_precalc")
+            print("***Différence de valeur nul/non nul***")
+            print(resultats_comparaison["boolean differences"])
+            print("***Statistiques de base (variable à prédire)***")
+            print("Moyenne base", resultats_comparaison["Moyenne base"])
+            print("Ecart-type", resultats_comparaison["variance"] ** 0.5)
+            print("***R² : pourcentage de la variance expliqué***")
+            print(f"{BLEU_CLAIR}", "{:.4f}%".format(resultats_comparaison["pourcentage expliqué"] * 100) , STOP_COULEUR, sep="")
+            summary_variables[nom_ofdl] = resultats_comparaison["pourcentage expliqué"] * 100
+            print("***Différence entre prédit et précalculé***")
+            for cle in ["L1", "L2", "L∞"]:
+                print(cle, ": ", resultats_comparaison[cle])
+            print("***Différence entre prédit et précalculé : répartition des écarts***")
+            for cle in ["min", "max"]:
+                print("ecart", cle, resultats_comparaison[cle])
+            print('***Différence entre prédit et précalculé : "identiques"***')
+            for cle in ["differents", "identiques"]:
+                print(cle, resultats_comparaison[cle])
+            print("***Répartition des écarts ordonnés par quantiles d'erreur***")
+            for quantile_borne in resultats_comparaison["quantiles"]:
+                rang, valeur = resultats_comparaison["quantiles"][quantile_borne]
+                # le rang représente la quantité de communes concernées
+                print("{}% (rang {})\t {:.2f}".format(int(quantile_borne * 100), rang, valeur))
+    erreur_totale = 100 * len(summary_variables) - sum(summary_variables.values())
+    print(f"{BLEU_CLAIR}")
+    print("Résumé des pourcentages expliqués :")
+    largeur_justify_name = max([len(nom) for nom in summary_variables]) + 3
+    for variable, pourcentage_explique_variable in summary_variables.items():
+        print("{}{:>8.4f}".format(variable.ljust(largeur_justify_name, ' '), pourcentage_explique_variable))
+    print("Total des erreurs qui a peu de sens mathématique :")
+    print(erreur_totale)
+    print(STOP_COULEUR)
+
+
+def print_eligible_comparison_2020():
+    PERIOD = "2020"
+    print(f"{MOUTARDE}DGCL", PERIOD, STOP_COULEUR)
+
+    data_dgcl = load_dgcl_file(path_folder_assets() + "/data/2020-communes-criteres-repartition.csv")
+    data_calc_dgcl = get_dgcl_results(data_dgcl)
+
+    data_sim = adapt_dgcl_data(data_dgcl)
+    # Insertion des garanties au titre de la DSU (non calculées explicitement dans OFDL)
+    data_sim = insert_dsu_garanties(data_sim, PERIOD)
+    # Insertion des garanties communes nouvelles au titre de la DSR (non calculées explicitement dans OFDL)
+    data_sim = insert_dsr_garanties_communes_nouvelles(data_sim, PERIOD)
+    TBS = CountryTaxBenefitSystem()
+    results_last_year = get_last_year_dotations(load_dgcl_file(path_folder_assets() + "/data/2019-communes-criteres-repartition.csv"))
+    data_last_year = results_last_year[[code_comm, "dsu_montant_eligible", "dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible"]]
+    sim = simulation_from_dgcl_csv(PERIOD, data_sim, TBS, data_last_year)
+    # on va recalculer nous même toutes les colonnes (sauf le code commune)
+    colonnes_to_compute = list(data_calc_dgcl.columns[1:])
+
+    for variable_to_compute in colonnes_to_compute:
+        data_sim[variable_to_compute] = sim.calculate(variable_to_compute, PERIOD)
+
+    # Merge DGCL results with data_sim
+    previous_length_data = len(data_sim)
+    data_sim = data_sim.merge(data_calc_dgcl, how="inner", on=code_comm, suffixes=["", "_precalc"])
+    assert(len(data_sim) == previous_length_data)
+
+    summary_variables = {}  # récupère les R²
+
     for nom_ofdl in colonnes_to_compute:
         print(f"{BLEU_CLAIR}Comparaison DGCL vs nous pour le calcul de", nom_ofdl, STOP_COULEUR)
         if data_sim[nom_ofdl].dtypes.name == 'bool':
@@ -142,4 +218,8 @@ def print_eligible_comparison():
 if __name__ == "__main__":
     st = time()
     print_eligible_comparison()
+    print("> Elapsed time: {:.2f}".format(time() - st))
+
+    st = time()
+    print_eligible_comparison_2020()
     print("> Elapsed time: {:.2f}".format(time() - st))

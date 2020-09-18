@@ -104,7 +104,7 @@ variables_calculees_an_dernier = {
 
 
 # Fichiers disponibles sur https://www.data.gouv.fr/fr/datasets/criteres-de-repartition-des-dotations-versees-par-letat-aux-collectivites-territoriales/
-def load_dgcl_file(path=path_assets + "/data/2019-communes-criteres-repartition.csv"):
+def load_dgcl_file(path=path_assets + "/data/2020-communes-criteres-repartition.csv"):
     try:
         data = pandas.read_csv(path, decimal=",", dtype={code_comm: str, chef_lieu_de_canton_dgcl: str})
     except FileNotFoundError:
