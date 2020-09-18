@@ -79,7 +79,7 @@ def print_eligible_comparison():
     PERIOD = "2019"
     print(f"{MOUTARDE}DGCL", PERIOD, STOP_COULEUR)
 
-    data_dgcl = load_dgcl_file()
+    data_dgcl = load_dgcl_file(path_folder_assets() + "/data/2019-communes-criteres-repartition.csv")
     data_calc_dgcl = get_dgcl_results(data_dgcl)
 
     data_sim = adapt_dgcl_data(data_dgcl)
