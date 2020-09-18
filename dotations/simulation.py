@@ -60,11 +60,10 @@ def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bour
     PERIOD = "2021"
     path_assets = path_folder_assets()
     # some of these can be preloaded in memory to improve performance.
-    DATA = adapt_dgcl_data(load_dgcl_file(path_assets + "/data/2020-communes-criteres-repartition.csv"))
+    DATA = adapt_dgcl_data(load_dgcl_file(path_assets + "/data/{}-communes-criteres-repartition.csv".format(int(PERIOD) - 1)))
     DATA = insert_dsu_garanties(DATA, PERIOD, path_assets + "/data/garanties_dsu.csv")
     DATA = insert_dsr_garanties_communes_nouvelles(DATA, PERIOD, folder=path_assets + "/data/")
-    results_last_year = get_last_year_dotations(load_dgcl_file(path_assets + "/data/2020-communes-criteres-repartition.csv"))
-
+    results_last_year = get_last_year_dotations(load_dgcl_file(path_assets + "/data/{}-communes-criteres-repartition.csv".format(int(PERIOD) - 1)))
     data_last_year = results_last_year[[code_comm, "dsu_montant_eligible", "dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible"]]
 
     TBS = CountryTaxBenefitSystem()
