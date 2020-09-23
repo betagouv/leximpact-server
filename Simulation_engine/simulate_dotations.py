@@ -50,6 +50,10 @@ TABLE_LEXIMPACT_TO_OFDL = {
     "dotations.communes.dsr.bourgCentre.attribution.pourcentageAttributionMax": "dotation_solidarite_rurale.bourg_centre.attribution.plafond_ratio_progression",
     "dotations.montants.dsu.variation": "dotation_solidarite_urbaine.augmentation_montant",
     "dotations.montants.dsr.variation": "dotation_solidarite_rurale.augmentation_montant",
+    "dotations.communes.df.montantMinParHab": "dotation_forfaitaire.montant_minimum_par_habitant",
+    "dotations.communes.df.montantMaxParHab": "dotation_forfaitaire.montant_maximum_par_habitant",
+    "dotations.communes.df.ecretement.potentielFiscalLimite": "dotation_forfaitaire.ecretement.seuil_rapport_potentiel_fiscal",
+    "dotations.communes.df.ecretement.pourcentageRecettesMax": "dotation_forfaitaire.ecretement.ecretement.plafond_pourcentage_recettes_max",
 }
 
 
