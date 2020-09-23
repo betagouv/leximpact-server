@@ -16,23 +16,6 @@ def _distance_listes(a, b):
     return max([abs(x - y) for (x, y) in zip(a, b)])
 
 
-def test_dotations_request_body_error(client, headers):
-    request = {}
-
-    response_function = partial(client.post, "dotations", headers=headers)
-    response = response_function(data=json.dumps(request))
-
-    assert response.status_code == 400
-    assert "Error" in json.loads(response.data)
-
-
-def test_dotations(client, headers, request_dotations):
-    response_function = partial(client.post, "dotations", headers=headers)
-    response = response_function(data=json.dumps(request_dotations))
-
-    assert response.status_code == 200
-
-
 @fixture(scope="module")
 def codes_communes_examples():
     return get_cas_types_codes_insee()
@@ -107,6 +90,23 @@ def response_dotations_2(client, headers, request_dotations_2):
     response_function = partial(client.post, "dotations", headers=headers)
     response = response_function(data=json.dumps(request_dotations_2))
     return json.loads(response.data)
+
+
+def test_dotations_request_body_error(client, headers):
+    request = {}
+
+    response_function = partial(client.post, "dotations", headers=headers)
+    response = response_function(data=json.dumps(request))
+
+    assert response.status_code == 400
+    assert "Error" in json.loads(response.data)
+
+
+def test_dotations(client, headers, request_dotations):
+    response_function = partial(client.post, "dotations", headers=headers)
+    response = response_function(data=json.dumps(request_dotations))
+
+    assert response.status_code == 200
 
 
 def test_fields_response(response_dotations):
