@@ -70,6 +70,9 @@ variables_calculees_presentes = {
     'Dotation de solidarité rurale Bourg-centre - Montant global réparti': 'dsr_fraction_bourg_centre',
     'Dotation de solidarité rurale - Péréquation - Montant global réparti (après garantie CN)': 'dsr_fraction_perequation',
     'Dotation de solidarité rurale - Cible - Montant global réparti': 'dsr_fraction_cible',
+    'Dotation forfaitaire - Dotation forfaitaire notifiée N': 'dotation_forfaitaire',
+    'Dotation forfaitaire - Part dynamique de la population des communes': 'df_evolution_part_dynamique',
+    "Dotation forfaitaire - Montant de l'écrêtement": 'df_montant_ecretement',
 }
 
 
