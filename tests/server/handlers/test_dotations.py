@@ -113,40 +113,26 @@ def test_fields_response(response_dotations):
     expected_response_structure = {
         "amendement": {
             "communes": {
-                "dsr": {
-                    "communes": [],
-                    "eligibles": 17049,
-                    "strates": []
-                },
-                "dsu": {
-                    "communes": [],
-                    "eligibles": 812,
-                    "strates": []
-                }
+                "dsr": {"communes": [], "eligibles": 17049, "strates": []},
+                "dsu": {"communes": [], "eligibles": 812, "strates": []},
+                "df": {"communes": [], "strates": []},
             }
         },
         "base": {
             "communes": {
-                "dsr": {
-                    "communes": [],
-                    "eligibles": 33164,
-                    "strates": []
-                },
-                "dsu": {
-                    "communes": [],
-                    "eligibles": 812,
-                    "strates": []
-                }
+                "dsr": {"communes": [], "eligibles": 33164, "strates": []},
+                "dsu": {"communes": [], "eligibles": 812, "strates": []},
+                "df": {"communes": [], "strates": []},
             }
         },
         "baseToAmendement": {
             "communes": {
-                "dsr" : {
+                "dsr": {
                     "nouvellementEligibles": 0,
                     "plusEligibles": 16115,
                     "toujoursEligibles": 17049,
                 },
-                "dsu" : {
+                "dsu": {
                     "nouvellementEligibles": 0,
                     "plusEligibles": 0,
                     "toujoursEligibles": 812,
