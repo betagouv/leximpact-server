@@ -40,7 +40,7 @@ def build_response_dotations_cas_types(scenario, df_results, prefix_eligible, pr
             if prefix_annees_convergence is not None:
                 montant_cas_type_annee_convergence = res_cas_type[prefix_annees_convergence + scenario].values[0]
                 res_cas_types_dict["dureeAvantTerme"] = int(montant_cas_type_annee_convergence)
-            response += [res_cas_types]
+            response += [res_cas_types_dict]
 
     return response
 
@@ -92,7 +92,7 @@ def build_response_dotations_strates(scenario, df_results, prefix_eligible=None,
         res_strates[id_borne]["partPopTotale"] = pop_strate / resultats_agreges_bornes[0]["population_insee"]
         pot_strate = resultats_agreges_bornes[id_borne]["potentiel_financier"] - resultats_agreges_bornes[id_borne + 1]["potentiel_financier"]
         res_strates[id_borne]["potentielFinancierMoyenParHabitant"] = pot_strate / pop_strate
-        
+
         if prefix_eligible is not None:
             nb_elig_strate = resultats_agreges_bornes[id_borne]["eligibles"] - resultats_agreges_bornes[id_borne + 1]["eligibles"]
             nombre_communes_strate = resultats_agreges_bornes[id_borne]["nombre_communes"] - resultats_agreges_bornes[id_borne + 1]["nombre_communes"]
@@ -113,5 +113,5 @@ def build_response_dotations(scenario: str, df_results: DataFrame, prefix_eligib
     }
     if prefix_eligible is not None:
         eligibilites = build_response_dotations_eligibilites(scenario, df_results, prefix_eligible)
-    	resultat = {**resultat, **eligibilites}
+        resultat = {**resultat, **eligibilites}
     return resultat
