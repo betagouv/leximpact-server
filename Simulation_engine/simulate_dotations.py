@@ -84,14 +84,20 @@ def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant, prefix_dsr_m
         "dsr_eligible_fraction_perequation",
         "dsr_eligible_fraction_cible",
         "dsu_eligible",
-        "dsu_montant"
     ]
+    variables_montants = ["dsu_montant", "dotation_forfaitaire"]
     variables_aggregations = ["potentiel_financier"]
     fractions_dsr = ["bourg_centre", "perequation", "cible"]
     variables_montants_fractions_dsr = ["dsr_montant_hors_garanties_fraction_" + nom_fraction for nom_fraction in fractions_dsr]
     variables_montants_next_year_dsr = ["dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation"]
-    to_compute = variables_nombre_communes + variables_aggregations + variables_montants_fractions_dsr + variables_montants_next_year_dsr
 
+    to_compute = (
+        variables_nombre_communes
+        + variables_montants
+        + variables_aggregations
+        + variables_montants_fractions_dsr
+        + variables_montants_next_year_dsr
+    )
     reforme = format_reforme_openfisca(request_body["reforme"])
     dict_ref = {"amendement" : reforme}
 
