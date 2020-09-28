@@ -5,6 +5,8 @@ from utils.utils_dict import translate_dict  # type: ignore
 from dotations.simulation import resultfromreforms  # type: ignore
 
 
+ACTIVATE_PLF = True
+
 TABLE_LEXIMPACT_TO_OFDL = {
     "dotations.communes.dsr.eligibilite.popMax": "dotation_solidarite_rurale.seuil_nombre_habitants",
     "dotations.communes.dsr.eligibilite.popChefLieuMax": "dotation_solidarite_rurale.bourg_centre.eligibilite.seuil_nombre_habitants_chef_lieu",
@@ -85,10 +87,26 @@ def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant, prefix_dsr_m
     variables_montants_fractions_dsr = ["dsr_montant_hors_garanties_fraction_" + nom_fraction for nom_fraction in fractions_dsr]
     variables_montants_next_year_dsr = ["dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation"]
     to_compute = variables_nombre_communes + variables_aggregations + variables_montants_fractions_dsr + variables_montants_next_year_dsr
-    reforme = format_reforme_openfisca(request_body["reforme"])
-    df_results: DataFrame = resultfromreforms({"amendement" : reforme}, to_compute)
 
-    for scenario in ["base", "amendement"]:
+    reforme = format_reforme_openfisca(request_body["reforme"])
+    dict_ref = {"amendement" : reforme}
+
+    if ACTIVATE_PLF:
+        plf_body_2021 = {
+            "dotations": {
+                "montants" : {
+                    "dsu": {"variation": 90_000_000},
+                    "dsr": {"variation": 90_000_000}
+                }
+                # nothing to update on "communes" key
+            }
+        }
+        # dict_ref = {"amendement" : reforme, "plf": plf}
+        plf = format_reforme_openfisca(plf_body_2021)
+        dict_ref["plf"] = plf
+
+    df_results: DataFrame = resultfromreforms(dict_ref, to_compute)
+    for scenario in ["base", "amendement", "plf"]:
         df_results[prefix_dsr_eligible + scenario] = (
             df_results["dsr_eligible_fraction_bourg_centre" + "_" + scenario]
             | df_results["dsr_eligible_fraction_perequation" + "_" + scenario]

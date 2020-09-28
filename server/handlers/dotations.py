@@ -1,7 +1,7 @@
 from http.client import OK, BAD_REQUEST
 
 from dotations.impact import build_response_dotations, build_response_dotations_eligibilites_changements  # type: ignore
-from Simulation_engine.simulate_dotations import simulate
+from Simulation_engine.simulate_dotations import simulate, ACTIVATE_PLF
 from typing import List
 
 # Checks whether all dictionnaries in the model exist in the target dict.
@@ -101,5 +101,20 @@ class Dotations(object):
                 }
             }
         }
+
+        if ACTIVATE_PLF:
+            simulation_result["plf"] = {
+                "communes": {
+                    "dsr": build_response_dotations("plf", df_results, prefix_dsr_eligible, prefix_dsr_montant, communes_cas_types=communes_cas_types, strates=strates, prefix_annees_convergence=prefix_annees_convergence, prefix_next_year=prefix_dsr_next_year),
+                    "dsu": build_response_dotations("plf", df_results, "dsu_eligible_", "dsu_montant_", communes_cas_types=communes_cas_types, strates=strates),
+                }
+            }
+
+            simulation_result["baseToPlf"] = {
+                "communes": {
+                    "dsr": build_response_dotations_eligibilites_changements("plf", df_results, prefix_dsr_eligible),
+                    "dsu": build_response_dotations_eligibilites_changements("plf", df_results, "dsu_eligible_")
+                }
+            }
 
         return simulation_result, OK
