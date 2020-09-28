@@ -53,7 +53,7 @@ TABLE_LEXIMPACT_TO_OFDL = {
     "dotations.communes.df.montantMinParHab": "dotation_forfaitaire.montant_minimum_par_habitant",
     "dotations.communes.df.montantMaxParHab": "dotation_forfaitaire.montant_maximum_par_habitant",
     "dotations.communes.df.ecretement.potentielFiscalLimite": "dotation_forfaitaire.ecretement.seuil_rapport_potentiel_fiscal",
-    "dotations.communes.df.ecretement.pourcentageRecettesMax": "dotation_forfaitaire.ecretement.ecretement.plafond_pourcentage_recettes_max",
+    "dotations.communes.df.ecretement.pourcentageRecettesMax": "dotation_forfaitaire.ecretement.plafond_pourcentage_recettes_max",
 }
 
 
