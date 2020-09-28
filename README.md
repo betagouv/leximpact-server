@@ -522,7 +522,9 @@ La liste des emails est déposée et régulièrement updatée par le SSI de l'AN
 - Etape 2 : uploader ce fichier et run le script preload.py dessus :
 
 ```
-    .\scalingo -a leximpact-server run --file users.csv bash    pip install tables    python ./repo/preload.py
+    .\scalingo -a leximpact-server --region osc-fr1 run --file users.csv bash
+    pip install tables
+    python ./repo/preload.py
 ```
 
 - Etape 3 : Si l'étape 1.5 n'a pas été exécutée, ou si des adresses sont rajoutées à la liste, il est possible de les inclure dans la liste en exécutant une ligne à base de 
