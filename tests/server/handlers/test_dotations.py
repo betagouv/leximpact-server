@@ -153,7 +153,8 @@ def test_fields_response(response_dotations):
                     "communes": [],
                     "eligibles": 818,
                     "strates": []
-                }
+                },
+                "df": {"communes": [], "strates": []},
             }
         }
         expected_response_structure["baseToPlf"] = {
