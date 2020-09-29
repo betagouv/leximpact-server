@@ -3,6 +3,7 @@ import json
 from pytest import fixture
 
 from dotations.impact import BORNES_STRATES_DEFAULT, get_cas_types_codes_insee  # type: ignore
+from Simulation_engine.simulate_dotations import ACTIVATE_PLF  # type: ignore
 from utils.utils_dict import flattened_dict  # type: ignore
 
 
@@ -153,6 +154,36 @@ def test_fields_response(response_dotations):
             }
         }
     }
+
+    if ACTIVATE_PLF:
+        expected_response_structure["plf"] = {
+            "communes": {
+                "dsr": {
+                    "communes": [],
+                    "eligibles": 33159,
+                    "strates": []
+                },
+                "dsu": {
+                    "communes": [],
+                    "eligibles": 818,
+                    "strates": []
+                }
+            }
+        }
+        expected_response_structure["baseToPlf"] = {
+            "communes": {
+                "dsr" : {
+                    "nouvellementEligibles": 0,
+                    "plusEligibles": 0,
+                    "toujoursEligibles": 33159,
+                },
+                "dsu" : {
+                    "nouvellementEligibles": 0,
+                    "plusEligibles": 0,
+                    "toujoursEligibles": 818,
+                }
+            }
+        }
 
     result = response_dotations
 
