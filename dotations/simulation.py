@@ -104,12 +104,9 @@ def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bour
             data_convergence = DATA[[k + "_" + nom_scenario for k in ["dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible", "dsr_montant_hors_garanties_fraction_perequation", "dsr_montant_hors_garanties_fraction_bourg_centre"]]]
             data_convergence["rapport_bc"] = np.where(DATA["dsr_montant_eligible_fraction_bourg_centre" + "_" + nom_scenario] != DATA["dsr_montant_hors_garanties_fraction_bourg_centre" + "_" + nom_scenario], DATA["dsr_montant_hors_garanties_fraction_bourg_centre" + "_" + nom_scenario] / DATA["dsr_montant_eligible_fraction_bourg_centre" + "_" + nom_scenario], 1)
             data_convergence["rapport_pq"] = np.where(DATA["dsr_montant_eligible_fraction_perequation" + "_" + nom_scenario] != DATA["dsr_montant_hors_garanties_fraction_perequation" + "_" + nom_scenario], DATA["dsr_montant_hors_garanties_fraction_perequation" + "_" + nom_scenario] / DATA["dsr_montant_eligible_fraction_perequation" + "_" + nom_scenario], 1)
-            data_convergence["annee_bc"] = np.where(data_convergence["rapport_bc"] != 1, np.ceil(np.maximum(np.log(data_convergence["rapport_bc"]) / np.log(0.9), np.log(data_convergence["rapport_bc"]) / np.log(1.2))), 0) + 1
-            data_convergence["annee_pq"] = np.where(data_convergence["rapport_pq"] != 1, np.ceil(np.maximum(np.log(data_convergence["rapport_pq"]) / np.log(0.9), np.log(data_convergence["rapport_pq"]) / np.log(1.2))), 0) + 1
-            data_convergence["annee_bc"] = data_convergence["annee_bc"].fillna(0)
-            data_convergence["annee_pq"] = data_convergence["annee_pq"].fillna(0)          
-            # print(data_convergence)
-            # data_convergence.to_csv("blondie.csv")
+            data_convergence["annee_bc"] = np.where((data_convergence["rapport_bc"] != 1) & (data_convergence["rapport_bc"] > 0), np.ceil(np.maximum(np.log(data_convergence["rapport_bc"]) / np.log(0.9), np.log(data_convergence["rapport_bc"]) / np.log(1.2))), 0) + 1
+            data_convergence["annee_pq"] = np.where((data_convergence["rapport_pq"] != 1) & (data_convergence["rapport_pq"] > 0), np.ceil(np.maximum(np.log(data_convergence["rapport_pq"]) / np.log(0.9), np.log(data_convergence["rapport_pq"]) / np.log(1.2))), 0) + 1
+
             DATA["annee_convergence_dsr_" + nom_scenario] = np.maximum(data_convergence["annee_bc"], data_convergence["annee_pq"])
 
     return DATA
