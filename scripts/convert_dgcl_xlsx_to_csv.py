@@ -18,7 +18,7 @@ def convert_col_names_2020_to_2019(data):
         "Informations générales - Strate démographique de l'année N": "Informations générales - Strate démographique Année N",
         "Informations générales - Population INSEE de l'année N": "Informations générales - Population INSEE Année N ",
         "Informations générales - Superficie année N": "Informations générales - Superficie 2019",
-        "Dotation forfaitaire - Recettes réelles de fonctionnement des communes N-2 pour Année N": "Dotation forfaitaire - Recettes réelles de fonctionnement des communes N-2 pour Année N",
+        "Dotation forfaitaire - Recettes réelles de fonctionnement des communes N-2 pour l'année N": "Dotation forfaitaire - Recettes réelles de fonctionnement des communes N-2 pour Année N",
     }
     data.columns = [dict_convert[k] if k in dict_convert else k for k in data.columns]
     return data
