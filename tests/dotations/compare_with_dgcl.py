@@ -88,8 +88,12 @@ def print_eligible_comparison():
     # Insertion des garanties communes nouvelles au titre de la DSR (non calculées explicitement dans OFDL)
     data_sim = insert_dsr_garanties_communes_nouvelles(data_sim, PERIOD)
     TBS = CountryTaxBenefitSystem()
-    results_last_year = get_last_year_dotations(load_dgcl_file(path_folder_assets() + "/data/2018-communes-criteres-repartition.csv"))
-    data_last_year = results_last_year[[code_comm, "dsu_montant_eligible", "dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible"]]
+
+    results_last_year = load_dgcl_file(path_folder_assets() + "/data/2018-communes-criteres-repartition.csv")
+    # On rajoute à la main la population majorée
+    results_last_year["Dotation forfaitaire - Population DGF major�e"] = results_last_year["Informations générales - Population DGF 2018"]
+    results_last_year = get_last_year_dotations(results_last_year)
+    data_last_year = results_last_year[[code_comm, "dsu_montant_eligible", "dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible", "population_dgf_majoree", "dotation_forfaitaire"]]
     sim = simulation_from_dgcl_csv(PERIOD, data_sim, TBS, data_last_year)
     # on va recalculer nous même toutes les colonnes (sauf le code commune)
     colonnes_to_compute = list(data_calc_dgcl.columns[1:])
@@ -159,7 +163,7 @@ def print_eligible_comparison_2020():
     data_sim = insert_dsr_garanties_communes_nouvelles(data_sim, PERIOD)
     TBS = CountryTaxBenefitSystem()
     results_last_year = get_last_year_dotations(load_dgcl_file(path_folder_assets() + "/data/2019-communes-criteres-repartition.csv"))
-    data_last_year = results_last_year[[code_comm, "dsu_montant_eligible", "dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible"]]
+    data_last_year = results_last_year[[code_comm, "dsu_montant_eligible", "dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible", "population_dgf_majoree", "dotation_forfaitaire"]]
     sim = simulation_from_dgcl_csv(PERIOD, data_sim, TBS, data_last_year)
     # on va recalculer nous même toutes les colonnes (sauf le code commune)
     colonnes_to_compute = list(data_calc_dgcl.columns[1:])

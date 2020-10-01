@@ -40,6 +40,9 @@ variables_openfisca_presentes_fichier = {
     'nombre_beneficiaires_aides_au_logement': 'Dotation de solidarité urbaine - Nombre de bénéficiaires des aides au logement de la commune',
     'population_qpv': 'Dotation de solidarité urbaine - Population QPV',
     'population_zfu': 'Dotation de solidarité urbaine - Population ZFU',
+    "population_dgf_majoree": "Dotation forfaitaire - Population DGF major�e",
+    "recettes_reelles_fonctionnement": "Dotation forfaitaire - Recettes réelles de fonctionnement des communes N-2 pour Année N",
+    "potentiel_fiscal": "Potentiel fiscal et financier des communes - Potentiel fiscal 4 taxes",
 }
 
 # Présente les colonnes du fichier qui représentent des variables openfisca
@@ -67,6 +70,9 @@ variables_calculees_presentes = {
     'Dotation de solidarité rurale Bourg-centre - Montant global réparti': 'dsr_fraction_bourg_centre',
     'Dotation de solidarité rurale - Péréquation - Montant global réparti (après garantie CN)': 'dsr_fraction_perequation',
     'Dotation de solidarité rurale - Cible - Montant global réparti': 'dsr_fraction_cible',
+    'Dotation forfaitaire - Dotation forfaitaire notifiée N': 'dotation_forfaitaire',
+    'Dotation forfaitaire - Part dynamique de la population des communes': 'df_evolution_part_dynamique',
+    "Dotation forfaitaire - Montant de l'écrêtement": 'df_montant_ecretement',
 }
 
 
@@ -86,7 +92,9 @@ variables_calculees_an_dernier = {
     'Dotation de solidarité rurale - Péréquation - Part Pfi/hectare (avant garantie CN)': 'dsr_fraction_perequation_part_potentiel_financier_par_hectare',
     'Dotation de solidarité rurale Bourg-centre - Montant global réparti': 'dsr_fraction_bourg_centre',
     'Dotation de solidarité rurale - Péréquation - Montant global réparti (après garantie CN)': 'dsr_fraction_perequation',
-    'Dotation de solidarité rurale - Cible - Montant global réparti': 'dsr_fraction_cible',
+    "Dotation de solidarité rurale - Cible - Montant global réparti": "dsr_fraction_cible",
+    "Dotation forfaitaire - Dotation forfaitaire notifiée N": "dotation_forfaitaire",
+    "Dotation forfaitaire - Population DGF major�e": "population_dgf_majoree",
 }
 
 

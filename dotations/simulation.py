@@ -64,8 +64,17 @@ def resultfromreforms(dict_ref=None, to_compute_res=("dsr_eligible_fraction_bour
     DATA = insert_dsu_garanties(DATA, PERIOD, path_assets + "/data/garanties_dsu.csv")
     DATA = insert_dsr_garanties_communes_nouvelles(DATA, PERIOD, folder=path_assets + "/data/")
     results_last_year = get_last_year_dotations(load_dgcl_file(path_assets + "/data/{}-communes-criteres-repartition.csv".format(int(PERIOD) - 1)))
-    data_last_year = results_last_year[[code_comm, "dsu_montant_eligible", "dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation", "dsr_montant_hors_garanties_fraction_cible"]]
-
+    data_last_year = results_last_year[
+        [
+            code_comm,
+            "dsu_montant_eligible",
+            "dsr_montant_eligible_fraction_bourg_centre",
+            "dsr_montant_eligible_fraction_perequation",
+            "dsr_montant_hors_garanties_fraction_cible",
+            "dotation_forfaitaire",
+            "population_dgf_majoree",
+        ]
+    ]
     TBS = CountryTaxBenefitSystem()
     dict_sims = {"base": simulation_from_dgcl_csv(PERIOD, DATA, TBS, data_last_year)}
     # création d'un dictionnaire contenant une simulation par output

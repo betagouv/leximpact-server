@@ -50,6 +50,10 @@ TABLE_LEXIMPACT_TO_OFDL = {
     "dotations.communes.dsr.bourgCentre.attribution.pourcentageAttributionMax": "dotation_solidarite_rurale.bourg_centre.attribution.plafond_ratio_progression",
     "dotations.montants.dsu.variation": "dotation_solidarite_urbaine.augmentation_montant",
     "dotations.montants.dsr.variation": "dotation_solidarite_rurale.augmentation_montant",
+    "dotations.communes.df.montantMinParHab": "dotation_forfaitaire.montant_minimum_par_habitant",
+    "dotations.communes.df.montantMaxParHab": "dotation_forfaitaire.montant_maximum_par_habitant",
+    "dotations.communes.df.ecretement.potentielFiscalLimite": "dotation_forfaitaire.ecretement.seuil_rapport_potentiel_fiscal",
+    "dotations.communes.df.ecretement.pourcentageRecettesMax": "dotation_forfaitaire.ecretement.plafond_pourcentage_recettes_max",
 }
 
 
@@ -80,14 +84,20 @@ def simulate(request_body, prefix_dsr_eligible, prefix_dsr_montant, prefix_dsr_m
         "dsr_eligible_fraction_perequation",
         "dsr_eligible_fraction_cible",
         "dsu_eligible",
-        "dsu_montant"
     ]
+    variables_montants = ["dsu_montant", "dotation_forfaitaire"]
     variables_aggregations = ["potentiel_financier"]
     fractions_dsr = ["bourg_centre", "perequation", "cible"]
     variables_montants_fractions_dsr = ["dsr_montant_hors_garanties_fraction_" + nom_fraction for nom_fraction in fractions_dsr]
     variables_montants_next_year_dsr = ["dsr_montant_eligible_fraction_bourg_centre", "dsr_montant_eligible_fraction_perequation"]
-    to_compute = variables_nombre_communes + variables_aggregations + variables_montants_fractions_dsr + variables_montants_next_year_dsr
 
+    to_compute = (
+        variables_nombre_communes
+        + variables_montants
+        + variables_aggregations
+        + variables_montants_fractions_dsr
+        + variables_montants_next_year_dsr
+    )
     reforme = format_reforme_openfisca(request_body["reforme"])
     dict_ref = {"amendement" : reforme}
 
