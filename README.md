@@ -125,14 +125,25 @@ Par défaut, seul de résultats à partir de cas-types sont présents dans l'API
 
 Dans le cas où une base de données représentant la population française (non incluse dans la bibliothèque) est présente sur l'ordinateur d'exécution, des agrégats d'impact (budgétaire, redistributif...) seront inclus dans les réponses de l'API.
 
-Pour ce faire, modifiez le fichier suivant :
+Cette documentation a vocation à expliquer la marche à suivre à partir du moment où l'usager dispose d'un fichier .h5 ou csv représentatif de la population contenant pour chaque personne physique :
+- des variables openfisca suffisantes au calcul de l'impôt sur le revenu
+- des identifiants permettant d'identifier les entités (ménage, famille, foyer fiscal) auxquelles appartient chaque personne, et son rôle en leurs seins.
+- une variable wprm, indiquant le poids du foyer fiscal dans la simulation
 
-```python
-# Simulation_engine/simulate_pop_from_reform.py
-version_beta_sans_graph_pop = False  # Au lieu de True par défaut
-```
+Un exemple de fichier ayant ce format est le fichier DCT.csv du repo. A ce stade, il n'existe pas de fichier public contenant ces données pour un échantillon représentatif de la population.
 
-_**Note :** les instructions supra vous sont fournies à caractère indicatif, l'équipe de développement LexImpact ne disposant pas à ce stade de véritable jeu de données._
+Le fichier source peut être transformé par le script Transformdata.py qui fournit un jeu d'utilitaires pour anonymiser et calibrer les données sources.
+
+#### le script Transformdata.py
+
+4 fonctions sont composées quand ce script est lancé. Chacune des fonctions prend en argument un fichier source, et un fichier destination. Avant de lancer ce script, il convient de modifier les noms initiaux et finaux de fichiers sources pour correspondre à ceux dont l'usager dispose.
+
+* test_useless_variables : retire les colonnes inutiles du fichier source, c'est à dire les colonnes qui n'ont aucun impact sur le résultat des trois variables openfisca "rfr", "irpp" et "nbptr" dans le cadre d'un calcul sur le fichier source. Il est à noter que cet algorithme ne garantit pas que les colonnes ignorées n'auront aucun impact dans aucune situation simulable via LexImpact
+* inflate : ajuste les données pour prendre en compte le temps écoulé entre le moment où les données ont été générées et le moment où la simulation est lancée : les poids des foyers fiscaux sont ajustés pour prendre en compte l'évolution du nombre de foyers fiscaux sur la période , et les variables exprimées en euros sont ajustées de l'inflation. Ces deux variables sont paramétrables dans le code.
+* noise : un bruit gaussien de 2% (paramétrable dans le code) est ajouté sur les variables continues pouvant potentiellement servir à une réidentification.
+* ajustement_h5 : ajuste les revenus des foyers fiscaux par une fonction croissante qui permet à la distribution des revenus finale d'épouser le plus précisément possible une distribution spécifiée par l'utilisateur. Un exemple d'une telle distribution figure dans le repo, estimée en s'appuyant sur des données publiques agrégées publiées par [la DGFiP](https://www.impots.gouv.fr/portail/statistiques) et un rapport du Sénat. 
+
+Le fichier obtenu peut désormais figurer dans la variable d'environnement POPULATION_TABLE_PATH
 
 🎉 Félicitations, vous-êtes en train de réformer le système socio-fiscal français !
 
@@ -566,7 +577,7 @@ Création / remplissage de la table : la table est créée automatiquement au la
 
 ### **data_erfs**
 
-Fichier contenant les données agrégées de la population française, construites, par exemple, à partir des données de l'ERFS FPR au format openfisca. C'est l'output de la phase transform_data (insérer lien vers la doc de la transformation des données).  
+Fichier contenant les données agrégées de la population française, construites, par exemple, à partir des données de l'ERFS FPR au format openfisca. C'est le fichier décrit plus haut dans la partie Mode agrégats de population.
 
 Le fichier est uploadé dans la base de données, par exemple via preload.py. Le nom de la table dans la base postgresql doit correspondre avec la variable d'environnement nommée `POPULATION_TABLE_PATH`. 
 
