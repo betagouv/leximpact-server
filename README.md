@@ -806,6 +806,19 @@ de l'État aux collectivités locales.
 }
   ```
 
+### /search?commune=chaine
+
+renvoie une liste (limitée à 20) des communes contenant la chaîne de caractères demandée en argument comme une sous-chaîne de caractères de leur nom. Chaque élément du tableau des communes contient:
+
+    {
+        "code": Code INSEE de la commune,
+        "departement": Département de la commune,
+        "habitants": population INSEE de la commune,
+        "name": nom de la commune en majuscule,
+        "potentielFinancierParHab": potentiel financier de la commune divisée par sa population DGF
+    }
+
+
 ## Base de données
 
 Uniquement nécessaire dans le cas où les données sur la population sont utilisées (fonctionnalité simpop).  En l'absence d'utilisation de ces données (i.e. les endpoints auth et simpop), il devrait être possible de faire tourner Leximpact-server sans base de données ni fichier .env .
