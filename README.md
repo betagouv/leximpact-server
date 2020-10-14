@@ -366,12 +366,12 @@ Où `PAC` désigne `personne à charge`.
 - Réponse - contenu du body : 
   - res_brut : Impôts payés par les cas-types : 
     - res_brut.avant : Impôt payé avec le code existant 
-    - res_brut.plf : Impôt payé avec le PLF 
+    - res_brut.plf : Impôt payé avec le PLF (seulement si le PLF est activé, cf partie afférente au PLF)
     - res_brut.apres : Impot payé avec la réforme spécifiée par la requête.
   - nbreParts : Nombre de parts fiscales des cas-types :
     > Le champ `nbreParts` est ajouté à la réponse en version `1.2.0`.
     - nbreParts.avant : Nombre de parts avec le code existant 
-    - nbreParts.plf : Nombre de parts avec le PLF 
+    - nbreParts.plf : Nombre de parts avec le PLF (seulement si le PLF est activé, cf partie afférente au PLF)
     - nbreParts.apres : Nombre de parts avec la réforme spécifiée par la requête.
   - timestamp : Chaîne de caractères reçue dans la requête 
   - total : somme des impôts payés par les cas-types dans les trois scénarios. Inutile pour cette requête. 
@@ -895,3 +895,86 @@ Le fichier est uploadé dans la base de données, par exemple via preload.py. Le
 Table contenant les résultats sur la population du code existant et du code 
 
 Remplie et créée en lançant le script ./scripts/generate_base_results.py via l'interface Scalingo. Le nom de la table doit correspondre avec la variable d'environnement nommée NAME_TABLE_BASE_RESULT
+
+
+## Insertion/Suppression  du Projet de loi de finances
+
+Le projet de loi de finances est chaque année l'occasion pour le gouvernement et les députés d'amender la loi afférente aux prélèvements obligatoires. LexImpact dispose de la possibilité de faire figurer dans les résultats de l'API (et de l'interface) les impacts des changements prévus par le PLF. 
+
+### **Rajouter le PLF dans leximpact-server**
+
+### Impôt sur le revenu : 
+
+- Obtenir les éléments de la réforme dans le PLF. En l'absence de réforme majeure de l'impôt sur le revenu, les paramètres étant modifiés seront principalement un accroissement des seuils et plafonds par un facteur fixe correspondant à l'inflation estimée par le législateur.
+
+- Transcrire la réforme en paramètres openfisca (si c'est une réforme paramétrique, sinon il faut déclarer une réforme non paramétrique qui n'est pas expliqué ici parce qu'on ne l'a jamais fait).
+
+Exemple : pour le PLF 2021,  un fichier intitulé reformes/reformes_2021.py a été créé dans le repo qui contient
+
+```
+reforme_PLF_2021 = {
+    "impot_revenu": {
+        "bareme": {
+            "seuils": [10084, 25710, 73516, 158122],
+            "taux": [0.11, 0.3, 0.41, 0.45],
+        },
+        "decote": {"seuil_celib": 779, "seuil_couple": 1289, "taux": 0.4525},
+        "plafond_qf": {
+            "abat_dom": {
+                "plaf_GuadMarReu": 2450,
+                "plaf_GuyMay": 4050,
+                "taux_GuadMarReu": 0.3,
+                "taux_GuyMay": 0.4,
+            },
+            "celib": 938,
+            "celib_enf": 3704,
+            "maries_ou_pacses": 1570,
+            "reduc_postplafond": 1565,
+            "reduc_postplafond_veuf": 1748
+        },
+    }
+}
+```
+
+ - Décrire dans les variables d'environnement l'endroit où se trouve la réforme du PLF :
+
+```
+PLF_PATH="reformes.reformePLF_2021.reforme_PLF_2021"
+```
+
+### dotations
+
+- Obtenir les éléments de la réforme dans le PLF. En l'absence de changement majeur, la réforme devrait être limitée au montant d'accroissement minimal des DSU et DSR. Dans ce cas, le PLF apparaît dans le code, également dans le fichier simulate_dotations.py
+
+- Mettre la variable ACTIVATE_PLF  à True  dans le fichier Simulation_engine/simulate_dotations.py  Dans le même fichier, un PLF doit être déclaré en utilisant la syntaxe suivante.
+
+```
+if ACTIVATE_PLF:
+        plf_body_2021 = {
+            "dotations": {
+                "montants" : {
+                    "dsu": {"variation": 90_000_000},
+                    "dsr": {"variation": 90_000_000}
+                }
+                # nothing to update on "communes" key
+            }
+        }
+        # dict_ref = {"amendement" : reforme, "plf": plf}
+        plf = format_reforme_openfisca(plf_body_2021)
+        dict_ref["plf"] = plf
+```
+
+
+
+### **Retirer le PLF de leximpact-server**
+
+Après les discussions du PLF, en règle générale, une version potentiellement amendée du PLF sera rentrée dans la loi. A ce moment là, il convient de retirer le PLF de l'interface une fois que la loi a été modifiée pour prendre en compte les novueaux textes. 
+
+### Impôt sur le revenu : 
+
+supprimer la variable d'environnement "PLF_PATH"
+
+### dotations :
+
+mettre la variable ACTIVATE_PLF  à False  dans le fichier Simulation_engine/simulate_dotations.py
+
