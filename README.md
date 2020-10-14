@@ -261,6 +261,8 @@ Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'
 
 - Réponse - contenu du body :  La réponse renvoyée sera toujours la même, afin d'éviter de donnner des informations sur la validité des adresses mail : juste une chaîne de caractères qui contient `Bien reçu! Si l'email est valide, nous avons envoyé un mail de confirmation`.
 
+Dans le cas où le mail demandé correspond aux critères de validité (être présent dans la table de données users ou avoir un nom de domaine en clb-an.fr), un email est envoyé via Mailjet (en utilisant les informations d'authentification présentes dans les variables d'environnement) à l'adresse email spécifiée contenant un lien vers le client incluant un token.
+
 ###  /calculate/compare
 
 - Type : POST
