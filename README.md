@@ -474,17 +474,155 @@ de l'État aux collectivités locales.
 - Requête - contenu du body :
   > En cours de définition. Valeur par défaut :
   ```
-  {
-    "reforme": {  # décrit la réforme
-        "dotations": {  # configure les éléments de la réforme des dotations
-            "montants": {"dgf": montant de la DGF},
-            "communes": {
-                "dsr": {},
-                "dsu": {}
+  > Valeur par défaut :
+  ```
+  {   
+    "descriptionCasTypes":[     
+      {
+         "code":"76384"
+      },
+      {
+         "code":"76214"
+      },
+      {
+         "code":"77186"
+      }
+    ],  
+    "reforme":{
+        "dotations":{
+            "montants":{
+            "dgf":26846874416,
+            "dsu": {"variation": 0},
+            "dsr": {"variation": 0}
+            },
+            "communes":{
+                "dsr":{
+                    "eligibilite":{
+                        "popChefLieuMax":20000,
+                        "popMax":10000
+                    },
+                    "bourgCentre":{
+                        "eligibilite":{
+                            "partPopCantonMin":0.15,
+                            "exclusion":{
+                            "agglomeration":{
+                                "partPopDepartementMin":0.1,
+                                "popMin":250000,
+                                "popCommuneMin":100000
+                            },
+                            "canton":{
+                                "popChefLieuMin":10000
+                            },
+                            "potentielFinancier":{
+                                "rapportPotentielFinancierMoyen":2
+                            }
+                            }
+                        },
+                        "attribution":{
+                            "popLimite":10000,
+                            "effortFiscalLimite":1.2,
+                            "coefMultiplicateurRevitalisationRurale":1.3,
+                            "plafonnementPopulation":{
+                            "0":500,
+                            "100":1000,
+                            "500":2250,
+                            "1500":999999999
+                            }
+                        }
+                    },
+                    "perequation":{
+                        "eligibilite":{
+                            "rapportPotentielFinancier":2
+                        },
+                        "attribution":{
+                            "repartition":{
+                            "ponderationPotentielFinancier":0.3,
+                            "ponderationLongueurVoirie":0.3,
+                            "ponderationNbreEnfants":0.3,
+                            "ponderationPotentielFinancierParHectare":0.1
+                            }
+                        }
+                    },
+                    "cible":{
+                        "eligibilite":{
+                            "premieresCommunes":10000,
+                            "indiceSynthetique":{
+                            "ponderationPotentielFinancier":0.7,
+                            "ponderationRevenu":0.3
+                            }
+                        }
+                    }
+                },
+                "dsu":{
+                    "eligibilite":{
+                        "popMinSeuilBas":5000,
+                        "popMinSeuilHaut":8000,
+                        "rapportPotentielFinancier":2.5,
+                        "pourcentageRangSeuilBas":0.1,
+                        "pourcentageRangSeuilHaut":0.666667,
+                        "indiceSynthetique":{
+                            "ponderationPotentielFinancier":0.3,
+                            "ponderationLogementsSociaux":0.15,
+                            "ponderationAideAuLogement":0.3,
+                            "ponderationRevenu":0.25
+                        }
+                    },
+                    "attribution":{
+                        "effortFiscalLimite":1.3,
+                        "facteurClassementMax":4,
+                        "facteurClassementMin":0.5,
+                        "poidsSupplementaireZoneUrbaineSensible":2,
+                        "poidsSupplementaireZoneFrancheUrbaine":1,
+                        "augmentationMax":4000000
+                    }
+                }
             }
         }
-    },
-    "strates": [...]
+   },
+   "strates":[
+      {
+         "habitants":500
+      },
+      {
+         "habitants":2000
+      },
+      {
+         "habitants":3500
+      },
+      {
+         "habitants":5000
+      },
+      {
+         "habitants":7500
+      },
+      {
+         "habitants":10000
+      },
+      {
+         "habitants":15000
+      },
+      {
+         "habitants":20000
+      },
+      {
+         "habitants":35000
+      },
+      {
+         "habitants":50000
+      },
+      {
+         "habitants":75000
+      },
+      {
+         "habitants":100000
+      },
+      {
+         "habitants":200000
+      },
+      {
+         "habitants":-1
+      }
+   ]
   }
   ```
 - Réponse - contenu du body :
