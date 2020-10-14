@@ -834,7 +834,7 @@ Une base de données [PostgreSQL](https://www.postgresql.org/) doit être instal
 
 Cette table contient les emails des usagers valides.  Elle contient une colonne, "email", qui représente l'email de l'usager.
 
-La liste des emails est déposée et régulièrement updatée par le SSI de l'AN dans le serveur ssian@eig.etalab.gouv.fr
+La liste des emails est régulièrement mise à jour par une demande auprès du SSI ou de parties prenantes de l'institution concernée (Assemblée nationale ou Sénat)
 
 - Etape 1 : concaténer les fichiers  export_deputes.csv et export_employes.csv dans un fichier nommé users.csv  contenant une colonne "email" avec le titre de la colonne en en-tête en haut.
 - Etape 1.5 (optionnelle): Une liste d'adresses supplémentaires est présente dans [ce gdoc](https://docs.google.com/spreadsheets/d/1QSRJJQWn13hYqcPzGsorFOifFGgodLHYnn-nWFDons0/edit#gid=448820835). Cette liste peut être concaténée au fichier créé à l'Etape 1
@@ -847,7 +847,7 @@ La liste des emails est déposée et régulièrement updatée par le SSI de l'AN
     python ./repo/preload.py
 ```
 
-- Etape 3 : Si l'étape 1.5 n'a pas été exécutée, ou si des adresses sont rajoutées à la liste, il est possible de les inclure dans la liste en exécutant une ligne à base de 
+- Etape 3 : Si l'étape 1.5 n'a pas été exécutée, ou si des adresses sont rajoutées à la liste, il est possible de les inclure dans la liste en exécutant dans le CLI Scalingo une ligne à base de 
 
 ```sql
    INSERT INTO users values ('paul.poule@example.org'),('jean-marie.myriam@example.org');
