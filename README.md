@@ -472,7 +472,97 @@ de l'État aux collectivités locales.
 - Type : POST
 - Description :
 - Requête - contenu du body :
-  > En cours de définition. Valeur par défaut :
+  > Description des contenus :
+  ```
+  {   
+    "descriptionCasTypes": tableau d'objets contenant le code commune des variables apparaissant dans l'output comme communes-types,  
+    "reforme":{
+        "dotations":{
+            "montants":{
+                "dgf": montant total de la DGF 
+                "dsu": {"variation": Augmentation minimale du montant de l'enveloppe de la DSU},
+                "dsr": {"variation": Augmentation minimale du montant de l'enveloppe de la DSR}
+            },
+            "communes":{
+                                "eligibilite":{
+                    "popChefLieuMax":Taille maximum DSR bourg-centre si chef lieu de canton,
+                    "popMax":Population maximum d'une commune pour être éligible à la DSR (hors cas spécial bourg-centre)
+                },
+                "bourgCentre":{
+                    "eligibilite":{
+                        "partPopCantonMin": Part minimum dans la population du canton pour être éligible,
+                        "exclusion":{
+                            "agglomeration":{
+                                "partPopDepartementMin": Part maximum de l'agglomération dans la population du département pour être éligible à la fraction bourg centre de la DSR,
+                                "popMin": Population maximum de l'agglomération pour être éligible à la fraction bourg centre de la DSR,
+                                "popCommuneMin": Population maximum de la plus grosse commune de l'agglomération pour être éligible à la fraction bourg centre de la DSR
+                            },
+                            "canton":{
+                                "popChefLieuMin": Population maximum du chef-lieu de canton pour être éligible à la fraction bourg-centre sauf bien sûr s'il est bureau centralisateur
+                            },
+                            "potentielFinancier":{
+                                "rapportPotentielFinancierMoyen": Limite de ratio entre le potentiel financier moyen de la commune et le potentiel financier moyen des communes de moins de 10000 habitants
+                            }
+                        }
+                    },
+                    "attribution":{
+                        "popLimite": Limite prise en compte de la population DGF dans le calcul de la fraction bourg-centre,
+                        "effortFiscalLimite": Limite de prise en compte de l'effort fiscal,
+                        "coefMultiplicateurRevitalisationRurale": Facteur appliqué au score d'attribution quand la commune appartient à une ZRR,
+                        "plafonnementPopulation": Objet décrivant le plafonnement de la population DGF en fonction de la population INSEE
+                    }
+                },
+                "perequation":{
+                    "eligibilite":{
+                        "rapportPotentielFinancier": Limite de ratio entre le potentiel financier moyen de la commune et le potentiel financier moyen des communes de la strate démographique pour l'éligibilité à la fraction péréquation
+                    },
+                    "attribution":{
+                        "repartition":{
+                            "ponderationPotentielFinancier": Part de la DSR (péréquation et cible) répartie en fonction du potentiel financier par habitant,
+                            "ponderationLongueurVoirie": Part de la DSR (péréquation et cible) répartie en fonction de la longueur de voirie,
+                            "ponderationNbreEnfants": Part de la DSR (péréquation et cible) répartie en fonction du nombre d'enfants,
+                            "ponderationPotentielFinancierParHectare": Part de la DSR (péréquation et cible) répartie en fonction du potentiel financier par hectare
+                        }
+                    }
+                },
+                "cible":{
+                    "eligibilite":{
+                        "premieresCommunes": Limite de classement d'indice synthétique pour éligibilité à la fraction cible de la DSR,
+                        "indiceSynthetique":{
+                            "ponderationPotentielFinancier": Part du potentiel financier par habitant dans l'indice synthétique d'éligibilité à la fraction cible de la DSR,
+                            "ponderationRevenu": Part du revenu par habitant dans l'indice synthétique d'éligibilité à la fraction cible de la DSR
+                        }
+                    }
+                }
+            },
+            "dsu":{
+                "eligibilite":{
+                    "popMinSeuilBas": Seuil bas de population minimale pour être éligible à la DSU,
+                    "popMinSeuilHaut": Seuil haut de population minimale pour être éligible à la DSU,
+                    "rapportPotentielFinancier": Limite de ratio entre le potentiel financier moyen de la commune et le potentiel financier moyen des communes de la strate démographique pour l'éligibilité à la DSU,
+                    "pourcentageRangSeuilBas": Part des premières communes situées entre le seuil bas et le seuil haut et classées par indice synthétique décroissant touchant la DSU,
+                    "pourcentageRangSeuilHaut": Part des communes au dessus du seuil haut de population et classées par indice synthétique décroissant touchant la DSU,
+                    "indiceSynthetique":{
+                        "ponderationPotentielFinancier": Part de l'indice synthétique d'éligibilité de la DSU déterminée par le ratio entre les potentiels financiers par habitant de la commune et des communes de la même strate, où les strates sont définies par les seuils de population d'éligibilité à la DSU,
+                        "ponderationLogementsSociaux": Part de l'indice synthétique d'éligibilité de la DSU déterminée par le ratio entre les parts de logements sociaux de la commune et des communes de la même strate, où les strates sont définies par les seuils de population d'éligibilité à la DSU,
+                        "ponderationAideAuLogement": Part de l'indice synthétique d'éligibilité de la DSU déterminée par le ratio entre les aides aux logements par habitant de la commune et des communes de la même strate, où les strates sont définies par les seuils de population d'éligibilité à la DSU,
+                        "ponderationRevenu": Part de l'indice synthétique d'éligibilité de la DSU déterminée par le ratio entre les revenus par habitant de la commune et des communes de la même strate, où les strates sont définies par les seuils de population d'éligibilité à la DSU
+                    }
+                },
+                "attribution":{
+                    "effortFiscalLimite": Limite de prise en compte de l'effort fiscal dans l'attribution de DSU,
+                    "facteurClassementMax": Facteur maximal appliqué au score d'attribution de la DSU en fonction du classement,
+                    "facteurClassementMin": Facteur minimal appliqué au score d'attribution de la DSU en fonction du classement,
+                    "poidsSupplementaireZoneUrbaineSensible": Coefficient multiplicateur affecté au ratio de population en Zone urbaine sensible dans le calcul du score d'attribution de la DSU,
+                    "poidsSupplementaireZoneFrancheUrbaine": Coefficient multiplicateur affecté au ratio de population en Zone franche urbaine dans le calcul du score d'attribution de la DSU,
+                    "augmentationMax": Augmentation maximale annuelle de la DSU pour une commune
+                }
+            }
+            }
+        }
+   },
+   "strates": tableau d'objets décrivant les séparations entre strates de la population qui seront utilisées pour renvoyer les résultats agrégés par strate.
+  }
   ```
   > Valeur par défaut :
   ```
@@ -626,28 +716,94 @@ de l'État aux collectivités locales.
   }
   ```
 - Réponse - contenu du body :
-  > En cours de définition. Valeur par défaut :
+  > Format par défaut :
   ```
-  {
-    "amendement": {
+{
+    "amendement": {  Décrit les résultats obtenus pour la réforme décrite dans la requête
         "communes": {
-            "dsr": {},
-            "dsu": {}
-          }
-      },
-      "base": {
+            "df": {
+                "communes": pour chaque commune des cas type apparaît :
+                    {
+                        "code": code INSEE de la commune,
+                        "dotationParHab": dotation forfaitaire reçue par habitant INSEE
+                    }
+                ],
+                "strates": [
+                    pour chaque strate (spécifiées dans la requête)
+                    {
+                        "dotationMoyenneParHab": dotation forfaitaire reçue par habitant INSEE de la strate démographique,
+                        "habitants": nombre minimal d'habitants INSEE pour qu'une commune appartienne à la strate,
+                        "partDotationTotale": part de la dotation forfaitaire totale attribuée à la strate,
+                        "partPopTotale": part de la population INSEE totale représentée par les communes de la strate,
+                        "potentielFinancierMoyenParHabitant": potentiel financier moyen par habitant au sein de la strate démographique
+                    }
+                ]
+            },
+            "dsr": {
+                "communes": [
+                    {
+                        "code": code INSEE de la commune,
+                        "dotationParHab": dotation de solidarité rurale reçue à terme par habitant INSEE
+                        "dotationParHabAnneeSuivante": dotation de solidarité rurale reçue l'an prochain par la commune,
+                        "dureeAvantTerme": Nombre d'années nécessaire pour que la dotation converge en supposant que la dotation de solidarité rurale reçue à terme ne change pas sur la période,
+                        "eligible": statut d'éligibilité de la commune à au moins une fraction de la dotation de solidarité rurale
+                    }
+                ],
+                "eligibles": nombre de communes éligibles à au moins une fraction de la Dotation de solidarité rurale,
+                "strates": [
+                    pour chaque strate (spécifiées dans la requête)
+                    {
+                        "dotationMoyenneParHab": dotation de solidarité rurale reçue par habitant INSEE de la strate démographique,
+                        "habitants": nombre minimal d'habitants INSEE pour qu'une commune appartienne à la strate,
+                        "partDotationTotale": part de la dotation de solidarité rurale totale attribuée à la strate,
+                        "partPopTotale": part de la population INSEE totale représentée par les communes de la strate,
+                        "potentielFinancierMoyenParHabitant": potentiel financier moyen par habitant au sein de la strate démographique
+                    }
+                ]
+            },
+            "dsu": {
+                "communes": [
+                    {
+                        "code": code INSEE de la commune,
+                        "dotationParHab": dotation de solidarité rurale reçue à terme par habitant INSEE
+                        "eligible": statut d'éligibilité de la commune à au moins une fraction de la dotation de solidarité rurale
+                    }
+                ],
+                "eligibles": nombre de communes éligibles à au moins la Dotation de solidarité urbaine,
+                "strates": [
+                    pour chaque strate (spécifiées dans la requête)
+                    {
+                        "dotationMoyenneParHab": dotation de solidarité urbaine reçue par habitant INSEE de la strate démographique,
+                        "habitants": nombre minimal d'habitants INSEE pour qu'une commune appartienne à la strate,
+                        "partDotationTotale": part de la dotation de solidarité urbaine totale attribuée à la strate,
+                        "partPopTotale": part de la population INSEE totale représentée par les communes de la strate,
+                        "potentielFinancierMoyenParHabitant": potentiel financier moyen par habitant au sein de la strate démographique
+                    }
+                ]
+            }
+        }
+    },
+    "base": { Même contenu que "amendement", mais avec le code existant au lieu de la réforme spécifiée dans la requête
+    },
+    "baseToAmendement": { décrit les changements entre le scénario "base" et le scénario "amendement"
         "communes": {
-            "dsr": {},
-            "dsu": {}
-          }
-      },
-      "baseToAmendement": {
-            "communes": {
-                "dsr": {},
-                "dsu": {}
-          }
-      }
-  }
+            "dsr": {
+                "nouvellementEligibles": nombre de communes nouvellement éligibles à au moins une fraction de la dotation de solidarité rurale,
+                "plusEligibles": nombre de commune perdant leur éligibilité à au moins une fraction de la dotation de solidarité rurale,
+                "toujoursEligibles": nombre de communes restant éligible à au moins une fraction de la dotation de solidarité rurale
+            },
+            "dsu": {
+                "nouvellementEligibles": nombre de communes nouvellement éligibles à la dotation de solidarité urbaine,
+                "plusEligibles": nombre de commune perdant leur éligibilité à la dotation de solidarité urbaine,
+                "toujoursEligibles": nombre de communes restant éligible à la dotation de solidarité urbaine
+            }
+        }
+    },
+    "baseToPlf": { décrit les changements entre le scénario "base" et le scénario "plf" de la même manière que baseToAmendement. Seulement présent quand un PLF a été spécifié
+    },
+    "plf": {Même contenu que "amendement", mais avec le PLF au lieu de la réforme spécifiée dans la requête.  Seulement présent quand un PLF a été spécifié
+    }
+}
   ```
 
 ## Base de données
