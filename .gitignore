@@ -111,3 +111,11 @@ venv.bak/
 *.h5
 *.cprof
 data_compare.csv
+
+# latex
+
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
