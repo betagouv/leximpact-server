@@ -730,7 +730,7 @@ def simulation_from_cas_types(descriptions):
 
 def dataframe_from_cas_types_description(descriptions):
     """
-    Transforme une description de cas types (au format de l'API web)
+    Transforme une description de cas types (au nouveau format)
     en un dataframe parsable. Good luck!
     """
 
@@ -819,25 +819,11 @@ def dataframe_from_cas_types_description(descriptions):
     )  # vecteur nous informant si le ff est "retraité", i.e. plus de 65 ans. On mettra aussi le revenu
     # en "retraite brute"
 
-    # Si le dico est à l'ancien format, on l'accepte quand même, tout le monde est bienvenu chez nous
-
-    valeurs_zero_si_absentes = [
-        "nb_decl_parent_isole",
-        "nb_decl_veuf",
-        "nb_decl_invalides",
-        "nb_pac_invalides",
-        "nb_anciens_combattants",
-        "nb_pac_charge_partagee",
-    ]
-
     indexfoyer = 0
     indexpac = 2
     for ct in descriptions:
-        for to_zero in valeurs_zero_si_absentes:
-            if to_zero not in ct:
-                ct[to_zero] = 0
-        nbd = ct["nombre_declarants"]
-        nbc = ct["nombre_personnes_a_charge"]
+        nbd = len(ct["declarants"])
+        nbc = len(ct["personnesACharge"])
         for colid in ["idfoy", "idmen", "idfam"]:
             dres[colid] += [indexfoyer] * (nbd + nbc)
         for colqui in ["quifoy", "quimen", "quifam"]:
@@ -858,54 +844,55 @@ def dataframe_from_cas_types_description(descriptions):
             + ["enfant"] * nbc
         )
         indexpac += nbc
-        dres["residence_fiscale_guadeloupe"] += [ct["outre_mer"] == 1] * (nbd + nbc)
-        dres["residence_fiscale_guyane"] += [ct["outre_mer"] == 2] * (nbd + nbc)
+        dres["residence_fiscale_guadeloupe"] += [ct["residence"] == "GuadMarReu"] * (nbd + nbc)
+        dres["residence_fiscale_guyane"] += [ct["residence"] == "GuyMay"] * (nbd + nbc)
 
         # Ces variables s'appliquent au foyer fiscal. On applique donc la valeur à tout le cas type
-        dres["caseT"] += [1 if ct["nb_decl_parent_isole"] and nbc else 0] * (nbd + nbc)
-        dres["caseL"] += [1 if ct["nb_decl_parent_isole"] and not nbc else 0] * (
+        au_moins_un_parent_isole = any(declarant["parentIsole"] for declarant in ct["declarants"])
+        dres["caseT"] += [1 if au_moins_un_parent_isole and nbc else 0] * (nbd + nbc)
+        dres["caseL"] += [1 if au_moins_un_parent_isole and not nbc else 0] * (
             nbd + nbc
         )
-        dres["caseW"] += [1 if ct["nb_anciens_combattants"] else 0] * (nbd + nbc)
+        au_moins_un_ancien_combattant = any(declarant["ancienCombattant"] for declarant in ct["declarants"])
+        dres["caseW"] += [1 if au_moins_un_ancien_combattant else 0] * (nbd + nbc)
 
         # separe le revenu en 2 si il y a 2 déclarants:
-        if ct["nombre_declarants_retraites"] == nbd:
+        declarants_retraites = [1 if declarant["retraite"] else 0 for declarant in ct["declarants"]]
+        isretraite += declarants_retraites + [0] * (nbc)
+        if all(declarants_retraites):
             dres["retraite_brute"] += [
                 from_net_to_brut(
-                    ct["revenu"] / nbd,
+                    ct["revenuImposable"] / nbd,
                     conversion_variables["retraite_brute_to_retraite_imposable"],
                 )
             ] * nbd + [0] * nbc
             dres["salaire_de_base"] += [0] * (nbd + nbc)
-            isretraite += [1] * (nbd) + [0] * (nbc)
-        elif ct["nombre_declarants_retraites"] == 1 and nbd == 2:
-            # On décrète que le retraité, c'est le 2ème !
+        elif any(declarants_retraites):
+            id_retraite = [k for k in range(nbd) if declarants_retraites[k]][0]
             dres["retraite_brute"] += (
-                [0]
-                + [
+                [
                     from_net_to_brut(
-                        ct["revenu"] / nbd,
+                        ct["revenuImposable"] / nbd,
                         conversion_variables["retraite_brute_to_retraite_imposable"],
-                    )
+                    ) if id_declarant == id_retraite else 0
+                    for id_declarant in range(nbd)
                 ]
                 + [0] * nbc
             )
             dres["salaire_de_base"] += (
                 [
                     from_net_to_brut(
-                        ct["revenu"] / nbd,
+                        ct["revenuImposable"] / nbd,
                         conversion_variables["salaire_de_base_to_salaire_imposable"],
-                    )
+                    ) if id_declarant != id_retraite else 0
+                    for id_declarant in range(nbd)
                 ]
-                + [0]
                 + [0] * (nbc)
             )
-            isretraite += [0] + [1] + [0] * (nbc)
         else:
-            isretraite += [0] * (nbd + nbc)
             dres["salaire_de_base"] += [
                 from_net_to_brut(
-                    ct["revenu"] / nbd,
+                    ct["revenuImposable"] / nbd,
                     conversion_variables["salaire_de_base_to_salaire_imposable"],
                 )
             ] * nbd + [0] * nbc
@@ -917,24 +904,24 @@ def dataframe_from_cas_types_description(descriptions):
         # En plus de ça, on renseigne par individu la colonne "invalidite"
         # parce qu'OF calcule bien à partir de cette colonne pour les PAC
         # pas pour les déclarants
-        dres["invalidite"] += [
-            1 if id_declarant < ct["nb_decl_invalides"] else 0
-            for id_declarant in range(nbd)
-        ] + [1 if id_pac < ct["nb_pac_invalides"] else 0 for id_pac in range(nbc)]
-        dres["caseP"] += [1 if ct["nb_decl_invalides"] else 0] * (nbd + nbc)
-        dres["caseF"] += [1 if ct["nb_decl_invalides"] > 1 else 0] * (nbd + nbc)
-        # TODO : be able to choose if garde_alternee personnes_a_charges are also the ones with invalidite or not
-        dres["garde_alternee"] += [0] * nbd + [
-            1 if id_pac < ct["nb_pac_charge_partagee"] else 0 for id_pac in range(nbc)
+        declarants_invalides = [
+            1 if declarant["invalide"] else 0
+            for declarant in ct["declarants"]
         ]
+        foyers_invalides = declarants_invalides + [1 if personne_a_charge["invalide"] else 0 for personne_a_charge in ct["personnesACharge"]]
+        dres["invalidite"] += foyers_invalides
+        dres["caseP"] += [1 if sum(declarants_invalides) else 0] * (nbd + nbc)
+        dres["caseF"] += [1 if sum(declarants_invalides) > 1 else 0] * (nbd + nbc)
 
-        for _ in range(nbd):
-            dres["activite"] += [0] if not ct["nombre_declarants_retraites"] else [3]
+        dres["garde_alternee"] += [0] * nbd + [1 if personne_a_charge["chargePartagee"] else 0 for personne_a_charge in ct["personnesACharge"]]
+
+        for id_declarant in range(nbd):
+            dres["activite"] += [0] if not declarants_retraites[id_declarant] else [3]
             dres["contrat_de_travail"] += (
-                [0] if not ct["nombre_declarants_retraites"] else [6]
+                [0] if not ct["declarants"][id_declarant]["retraite"] else [6]
             )
             dres["statut_marital"] += (
-                [5] if nbd > 1 else [4 if ct["nb_decl_veuf"] else 2]
+                [5] if nbd > 1 else [4 if ct["declarants"][id_declarant]["veuf"] else 2]
             )
         for _ in range(nbc):
             dres["activite"] += [2]
