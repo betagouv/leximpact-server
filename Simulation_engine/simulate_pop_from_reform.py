@@ -592,11 +592,11 @@ def foyertorevenu(idfoy, data=None):
 
 
 def foyertodictcastype(idfoy, data=None):
-    #Transforme les lignes d'un dataframe (aux champs format openfisca)
+    # Transforme les lignes d'un dataframe (aux champs format openfisca)
     # associés à un foyer donné en un dictionnaire de cas type au format lisible par le client (spécifié dans la doc de l'API)
     if data is None:
         data = CAS_TYPE
-    revenu = sum( # Revenu du foyer : salaire de base et retraite brutes convertis en imposables
+    revenu = sum(  # Revenu du foyer : salaire de base et retraite brutes convertis en imposables
         [
             from_brut_to_net(
                 sb, conversion_variables["salaire_de_base_to_salaire_imposable"]
@@ -611,21 +611,21 @@ def foyertodictcastype(idfoy, data=None):
         ]
     )
 
-    declarants : List[Dict[str,bool]] = [] # Tableau des déclarants : un dictionnaire par déclarant
+    declarants : List[Dict[str, bool]] = []  # Tableau des déclarants : un dictionnaire par déclarant
     for declarant in data[(data["idfoy"] == idfoy) & (data["quifoy"] <= 1)].to_dict(orient="records"):
         declarants += [{
             "retraite" : bool((declarant["retraite_brute"] > 0) | ((declarant["salaire_de_base"] < 1) & (declarant["age"] >= 65))),
             "veuf" : declarant["statut_marital"] == 4,
-            "ancienCombattant" : False, #Rempli plus tard si True
+            "ancienCombattant" : False,  # Rempli plus tard si True
             "invalide": bool(declarant["invalidite"]),
-            "parentIsole": False #Rempli plus tard si True
+            "parentIsole": False  # Rempli plus tard si True
         }]
-    personnes_a_charge : List[Dict[str,bool]] = [] #Tableau des personnes à charge : un dict par personne à charge
+    personnes_a_charge : List[Dict[str, bool]] = []  # Tableau des personnes à charge : un dict par personne à charge
     for personne_a_charge in data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1)].to_dict(orient="records"):
         personnes_a_charge += [{"chargePartagee" : bool(personne_a_charge["garde_alternee"]),
                                 "invalide": bool(declarant["invalidite"])
                                 }]
-    #Variable parent isolé
+    # Variable parent isolé
     if len(declarant) == 1 and (
         (
             "caseL" in data
@@ -638,7 +638,7 @@ def foyertodictcastype(idfoy, data=None):
     ):
         declarants[0]["parentIsole"] = True
 
-    #statut d'anciens combattants de déclarants
+    # statut d'anciens combattants de déclarants
     nb_anciens_combattants = (
         1
         if ("caseW" in data and len(data[(data["idfoy"] == idfoy) & (data["caseW"])]))
@@ -646,8 +646,8 @@ def foyertodictcastype(idfoy, data=None):
     )
     if (nb_anciens_combattants):
         declarants[0]["ancienCombattant"] = True
-    
-    #Résidence du foyer fiscal 
+
+    # Résidence du foyer fiscal
     outremer1 = (
         len(data[(data["idfoy"] == idfoy) & (data["residence_fiscale_guadeloupe"])]) > 0
     )
@@ -790,16 +790,16 @@ def dataframe_from_cas_types_description(descriptions):
         dres[c] = []
     isretraite = (
         []
-    )  #Vecteur nous informant si le ff est "retraité", i.e. plus de 65 ans. On mettra aussi le revenu
+    )  # Vecteur nous informant si le ff est "retraité", i.e. plus de 65 ans. On mettra aussi le revenu
     # en "retraite brute"
 
-    indexfoyer = 0 #index du foyer dans le dataframe, incremental
-    indexpac = 2 # index auquel la numérotation des personnes à charge commence
+    indexfoyer = 0  # index du foyer dans le dataframe, incremental
+    indexpac = 2  # index auquel la numérotation des personnes à charge commence
     for ct in descriptions:
-        #Nombre de déclarants et de personnes à charge
-        nbd = len(ct["declarants"]) 
+        # Nombre de déclarants et de personnes à charge
+        nbd = len(ct["declarants"])
         nbc = len(ct["personnesACharge"])
-        #Colonnes de description de la structure du foyer au sens d'openfisca
+        # Colonnes de description de la structure du foyer au sens d'openfisca
         for colid in ["idfoy", "idmen", "idfam"]:
             dres[colid] += [indexfoyer] * (nbd + nbc)
         for colqui in ["quifoy", "quimen", "quifam"]:
