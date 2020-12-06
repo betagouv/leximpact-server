@@ -253,17 +253,27 @@ def nbptr_zero():
 def test_veuf_deux_enfants(reform_config_base_2020):
     # données
     veuf = {
-        "nb_anciens_combattants": 0,
-        "nb_decl_invalides": 0,
-        "nb_decl_parent_isole": 0,
-        "nb_decl_veuf": 1,
-        "nb_pac_charge_partagee": 0,
-        "nb_pac_invalides": 0,
-        "nombre_declarants": 1,
-        "nombre_declarants_retraites": 0,
-        "nombre_personnes_a_charge": 2,
-        "outre_mer": 0,
-        "revenu": 120000,
+        "declarants": [
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": True
+            }
+        ],
+        "personnesACharge": [
+            {
+                "chargePartagee": False,
+                "invalide": False
+            },
+            {
+                "chargePartagee": False,
+                "invalide": False
+            }
+        ],
+        "residence": "metropole",
+        "revenuImposable": 120000
     }
     data = dataframe_from_cas_types_description([veuf])
     period = "2020"
@@ -283,17 +293,34 @@ def test_veuf_deux_enfants(reform_config_base_2020):
 def test_deux_adultes_dont_invalide_deux_enfants(reform_config_base_2020):
     # données
     foyer = {
-        "nb_anciens_combattants": 0,
-        "nb_decl_invalides": 1,
-        "nb_decl_parent_isole": 0,
-        "nb_decl_veuf": 0,
-        "nb_pac_charge_partagee": 0,
-        "nb_pac_invalides": 0,
-        "nombre_declarants": 2,
-        "nombre_declarants_retraites": 0,
-        "nombre_personnes_a_charge": 2,
-        "outre_mer": 0,
-        "revenu": 120000,
+        "declarants": [
+            {
+                "ancienCombattant": False,
+                "invalide": True,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            },
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            }
+        ],
+        "personnesACharge": [
+            {
+                "chargePartagee": False,
+                "invalide": False
+            },
+            {
+                "chargePartagee": False,
+                "invalide": False
+            }
+        ],
+        "residence": "metropole",
+        "revenuImposable": 120000
     }
     data = dataframe_from_cas_types_description([foyer])
     period = "2020"
@@ -313,17 +340,34 @@ def test_deux_adultes_dont_invalide_deux_enfants(reform_config_base_2020):
 def test_deux_adultes_invalides_deux_enfants(reform_config_base_2020):
     # données
     foyer = {
-        "nb_anciens_combattants": 0,
-        "nb_decl_invalides": 2,
-        "nb_decl_parent_isole": 0,
-        "nb_decl_veuf": 0,
-        "nb_pac_charge_partagee": 0,
-        "nb_pac_invalides": 0,
-        "nombre_declarants": 2,
-        "nombre_declarants_retraites": 0,
-        "nombre_personnes_a_charge": 2,
-        "outre_mer": 0,
-        "revenu": 120000,
+        "declarants": [
+            {
+                "ancienCombattant": False,
+                "invalide": True,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            },
+            {
+                "ancienCombattant": False,
+                "invalide": True,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            }
+        ],
+        "personnesACharge": [
+            {
+                "chargePartagee": False,
+                "invalide": False
+            },
+            {
+                "chargePartagee": False,
+                "invalide": False
+            }
+        ],
+        "residence": "metropole",
+        "revenuImposable": 120000
     }
     data = dataframe_from_cas_types_description([foyer])
     period = "2020"
@@ -343,17 +387,34 @@ def test_deux_adultes_invalides_deux_enfants(reform_config_base_2020):
 def test_deux_adultes_deux_enfants_dont_invalide(reform_config_base_2020):
     # données
     foyer = {
-        "nb_anciens_combattants": 0,
-        "nb_decl_invalides": 0,
-        "nb_decl_parent_isole": 0,
-        "nb_decl_veuf": 0,
-        "nb_pac_charge_partagee": 0,
-        "nb_pac_invalides": 1,
-        "nombre_declarants": 2,
-        "nombre_declarants_retraites": 0,
-        "nombre_personnes_a_charge": 2,
-        "outre_mer": 0,
-        "revenu": 120000,
+        "declarants": [
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            },
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            }
+        ],
+        "personnesACharge": [
+            {
+                "chargePartagee": False,
+                "invalide": True
+            },
+            {
+                "chargePartagee": False,
+                "invalide": False
+            }
+        ],
+        "residence": "metropole",
+        "revenuImposable": 120000
     }
     data = dataframe_from_cas_types_description([foyer])
     period = "2020"
@@ -373,17 +434,34 @@ def test_deux_adultes_deux_enfants_dont_invalide(reform_config_base_2020):
 def test_deux_adultes_deux_enfants_charge_partagee(reform_config_base_2020):
     # données
     foyer = {
-        "nb_anciens_combattants": 0,
-        "nb_decl_invalides": 0,
-        "nb_decl_parent_isole": 0,
-        "nb_decl_veuf": 0,
-        "nb_pac_charge_partagee": 2,
-        "nb_pac_invalides": 0,
-        "nombre_declarants": 2,
-        "nombre_declarants_retraites": 0,
-        "nombre_personnes_a_charge": 2,
-        "outre_mer": 0,
-        "revenu": 120000,
+        "declarants": [
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            },
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            }
+        ],
+        "personnesACharge": [
+            {
+                "chargePartagee": True,
+                "invalide": False
+            },
+            {
+                "chargePartagee": True,
+                "invalide": False
+            }
+        ],
+        "residence": "metropole",
+        "revenuImposable": 120000
     }
     data = dataframe_from_cas_types_description([foyer])
     period = "2020"
@@ -403,17 +481,34 @@ def test_deux_adultes_deux_enfants_charge_partagee(reform_config_base_2020):
 def test_deux_adultes_ancien_combattants_deux_enfants(reform_config_base_2020):
     # données
     foyer = {
-        "nb_anciens_combattants": 2,
-        "nb_decl_invalides": 0,
-        "nb_decl_parent_isole": 0,
-        "nb_decl_veuf": 0,
-        "nb_pac_charge_partagee": 0,
-        "nb_pac_invalides": 0,
-        "nombre_declarants": 2,
-        "nombre_declarants_retraites": 0,
-        "nombre_personnes_a_charge": 2,
-        "outre_mer": 0,
-        "revenu": 120000,
+        "declarants": [
+            {
+                "ancienCombattant": True,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            },
+            {
+                "ancienCombattant": True,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            }
+        ],
+        "personnesACharge": [
+            {
+                "chargePartagee": False,
+                "invalide": False
+            },
+            {
+                "chargePartagee": False,
+                "invalide": False
+            }
+        ],
+        "residence": "metropole",
+        "revenuImposable": 120000
     }
     data = dataframe_from_cas_types_description([foyer])
     period = "2020"
