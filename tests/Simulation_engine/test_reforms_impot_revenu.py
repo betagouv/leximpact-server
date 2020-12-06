@@ -147,24 +147,27 @@ def various_cas_types():
             ):  # Dans notre paramétrisation des cas-types, le "parent"
                 # isolé de la caseT est le seul impacté, puisqu'on ne modifie que l'article 194
                 # et non le 195 qui décrit les parents isolés de la caseT (i.e. plus d'enfant à charge)
-                for charge_part in range(min(nbpac, 2) + 1):
+                for nb_pac_charge_partagee in range(min(nbpac, 2) + 1):
                     dicobase = {
-                        "nb_anciens_combattants": 0,
-                        "nb_decl_invalides": 0,
-                        "nb_decl_parent_isole": 0,
-                        "nb_decl_veuf": 0,
-                        "nb_pac_charge_partagee": 0,
-                        "nb_pac_invalides": 0,
-                        "nombre_declarants": 0,
-                        "nombre_declarants_retraites": 0,
-                        "nombre_personnes_a_charge": 0,
-                        "outre_mer": 0,
-                        "revenu": 120000,
+                        "declarants": [],
+                        "personnesACharge": [],
+                        "residence": "metropole",
+                        "revenuImposable": 120000
                     }
-                    dicobase["nombre_declarants"] = 1 if situf != "marie" else 2
-                    dicobase["nombre_personnes_a_charge"] = nbpac
-                    dicobase["nb_decl_parent_isole"] = parentisole
-                    dicobase["nb_pac_charge_partagee"] = charge_part
+                    nombre_declarants = 1 if situf != "marie" else 2
+                    for declarant in range(nombre_declarants):
+                        dicobase["declarants"] += [{
+                            "ancienCombattant": False,
+                            "invalide": False,
+                            "parentIsole": declarant < parentisole,
+                            "retraite": False,
+                            "veuf": False,
+                        }]
+                    for personne_a_charge in range(nbpac):
+                        dicobase["personnesACharge"] += [{
+                            "chargePartagee": personne_a_charge < nb_pac_charge_partagee,
+                            "invalide": False
+                        }]
                     all_cas_types_to_test += [dicobase]
     return all_cas_types_to_test
 
