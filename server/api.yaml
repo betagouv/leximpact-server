@@ -257,31 +257,67 @@ components:
           items:
             type: object
             properties:
-              nombre_declarants:
+              declarants:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ancienCombattant:
+                      type: boolean
+                    invalide:
+                      type: boolean
+                    parentIsole:
+                      type: boolean
+                    retraite:
+                      type: boolean
+                    veuf:
+                      type: boolean
+              personnesACharge:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    chargePartagee:
+                      type: boolean
+                    invalide:
+                      type: boolean
+              revenuImposable:
                 type: integer
-              nombre_personnes_a_charge:
-                type: integer
-              nombre_declarants_retraites:
-                type: integer
-              revenu:
-                type: integer
-              guadeloupe:
-                type: boolean
+              residence:
+                type: string
     description_cas_types:
       type: array
       items:
         type: object
         properties:
-          nombre_declarants:
+          declarants:
+            type: array
+            items:
+              type: object
+              properties:
+                ancienCombattant:
+                  type: boolean
+                invalide:
+                  type: boolean
+                parentIsole:
+                  type: boolean
+                retraite:
+                  type: boolean
+                veuf:
+                  type: boolean
+          personnesACharge:
+            type: array
+            items:
+              type: object
+              properties:
+                chargePartagee:
+                  type: boolean
+                invalide:
+                  type: boolean
+          revenuImposable:
             type: integer
-          nombre_personnes_a_charge:
-            type: integer
-          nombre_declarants_retraites:
-            type: integer
-          revenu:
-            type: integer
-          outre_mer:
-            type: integer
+          residence:
+            type: string
     login:
       type: object
       properties:
