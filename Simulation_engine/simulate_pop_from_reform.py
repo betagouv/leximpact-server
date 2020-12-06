@@ -730,8 +730,9 @@ def simulation_from_cas_types(descriptions):
 
 def dataframe_from_cas_types_description(descriptions):
     """
-    Transforme une description de cas types (au nouveau format)
-    en un dataframe parsable. Good luck!
+    Transforme une liste de description de cas types (au format spécifié dans le readme)
+    en un dataframe parsable au format openfisca qui inclut ces cas-types.
+    On organise le dataframe en une ligne par individu
     """
 
     cols = [
@@ -793,16 +794,16 @@ def dataframe_from_cas_types_description(descriptions):
         "statut_occupation_logement",
         "taxe_habitation",
     ]
-    othercolsfixes = {
+    othercolsfixes = {  # nom de colonne : valeur fixe
         "wprm": 1,
         "zone_apl": 2,
         "taux_csg_remplacement": "taux_plein",
-    }  # nom de colonne : valeur fixe
+    }
 
     for k in zerocols:
         othercolsfixes[k] = 0
 
-    colbinaires = {
+    colbinaires = {  # nom de colonne : valeur fixe
         "categorie_salarie": (0, 7, 7),
         "age": (60, 15, 78),
         "date_naissance": ("1958-05-10", "2005-03-10", "1940-06-18"),
@@ -816,14 +817,16 @@ def dataframe_from_cas_types_description(descriptions):
         dres[c] = []
     isretraite = (
         []
-    )  # vecteur nous informant si le ff est "retraité", i.e. plus de 65 ans. On mettra aussi le revenu
+    )  #Vecteur nous informant si le ff est "retraité", i.e. plus de 65 ans. On mettra aussi le revenu
     # en "retraite brute"
 
-    indexfoyer = 0
-    indexpac = 2
+    indexfoyer = 0 #index du foyer dans le dataframe, incremental
+    indexpac = 2 # index auquel la numérotation des personnes à charge commence
     for ct in descriptions:
-        nbd = len(ct["declarants"])
+        #Nombre de déclarants et de personnes à charge
+        nbd = len(ct["declarants"]) 
         nbc = len(ct["personnesACharge"])
+        #Colonnes de description de la structure du foyer au sens d'openfisca
         for colid in ["idfoy", "idmen", "idfam"]:
             dres[colid] += [indexfoyer] * (nbd + nbc)
         for colqui in ["quifoy", "quimen", "quifam"]:
