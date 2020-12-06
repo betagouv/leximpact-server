@@ -592,9 +592,11 @@ def foyertorevenu(idfoy, data=None):
 
 
 def foyertodictcastype(idfoy, data=None):
+    #Transforme les lignes d'un dataframe (aux champs format openfisca)
+    # associés à un foyer donné en un dictionnaire de cas type au format lisible par le client (spécifié dans la doc de l'API)
     if data is None:
         data = CAS_TYPE
-    revenu = sum(
+    revenu = sum( # Revenu du foyer : salaire de base et retraite brutes convertis en imposables
         [
             from_brut_to_net(
                 sb, conversion_variables["salaire_de_base_to_salaire_imposable"]
@@ -608,86 +610,57 @@ def foyertodictcastype(idfoy, data=None):
             for rb in data[data["idfoy"] == idfoy]["retraite_brute"].values
         ]
     )
-    nbpr = len(data[(data["idfoy"] == idfoy) & (data["quifoy"] <= 1)])
-    nbpac = len(data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1)])
-    nbret = len(data[(data["idfoy"] == idfoy) & (data["retraite_brute"] > 0)])
-    # Si un retraite et l'autre n'a pas de revenu, on compte les 2.
-    if nbret:
-        nbret = len(
-            data[
-                (data["idfoy"] == idfoy)
-                & (
-                    (data["retraite_brute"] > 0)
-                    | ((data["salaire_de_base"] < 1) & (data["age"] >= 65))
-                )
-            ]
-        )
 
+    declarants : List[Dict[str,bool]] = [] # Tableau des déclarants : un dictionnaire par déclarant
+    for declarant in data[(data["idfoy"] == idfoy) & (data["quifoy"] <= 1)].to_dict(orient="records"):
+        declarants += [{
+            "retraite" : bool((declarant["retraite_brute"] > 0) | ((declarant["salaire_de_base"] < 1) & (declarant["age"] >= 65))),
+            "veuf" : declarant["statut_marital"] == 4,
+            "ancienCombattant" : False, #Rempli plus tard si True
+            "invalide": bool(declarant["invalidite"]),
+            "parentIsole": False #Rempli plus tard si True
+        }]
+    personnes_a_charge : List[Dict[str,bool]] = [] #Tableau des personnes à charge : un dict par personne à charge
+    for personne_a_charge in data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1)].to_dict(orient="records"):
+        personnes_a_charge += [{"chargePartagee" : bool(personne_a_charge["garde_alternee"]),
+                                "invalide": bool(declarant["invalidite"])
+                                }]
+    #Variable parent isolé
+    if len(declarant) == 1 and (
+        (
+            "caseL" in data
+            and len(data[(data["idfoy"] == idfoy) & (data["caseL"])])
+        )
+        or (
+            "caseT" in data
+            and len(data[(data["idfoy"] == idfoy) & (data["caseT"])])
+        )
+    ):
+        declarants[0]["parentIsole"] = True
+
+    #statut d'anciens combattants de déclarants
+    nb_anciens_combattants = (
+        1
+        if ("caseW" in data and len(data[(data["idfoy"] == idfoy) & (data["caseW"])]))
+        else 0
+    )
+    if (nb_anciens_combattants):
+        declarants[0]["ancienCombattant"] = True
+    
+    #Résidence du foyer fiscal 
     outremer1 = (
         len(data[(data["idfoy"] == idfoy) & (data["residence_fiscale_guadeloupe"])]) > 0
     )
     outremer2 = (
         len(data[(data["idfoy"] == idfoy) & (data["residence_fiscale_guyane"])]) > 0
     )
-    assert not (outremer1 * outremer2)
-
-    nb_decl_parent_isole = (
-        1
-        if (
-            nbpr == 1
-            and (
-                (
-                    "caseL" in data
-                    and len(data[(data["idfoy"] == idfoy) & (data["caseL"])])
-                )
-                or (
-                    "caseT" in data
-                    and len(data[(data["idfoy"] == idfoy) & (data["caseT"])])
-                )
-            )
-        )
-        else 0
-    )
-    nbveuf = len(data[(data["idfoy"] == idfoy) & (data["statut_marital"] == 4)])
-    nb_decl_invalides = (
-        len(
-            data[
-                (data["idfoy"] == idfoy) & (data["quifoy"] <= 1) & (data["invalidite"])
-            ]
-        )
-        if "invalidite" in data
-        else 0
-    )
-    nb_pac_invalides = (
-        len(
-            data[(data["idfoy"] == idfoy) & (data["quifoy"] > 1) & (data["invalidite"])]
-        )
-        if "invalidite" in data
-        else 0
-    )
-    nb_anciens_combattants = (
-        1
-        if ("caseW" in data and len(data[(data["idfoy"] == idfoy) & (data["caseW"])]))
-        else 0
-    )
-    nb_pac_charge_partagee = (
-        len(data[(data["idfoy"] == idfoy) & (data["charge_alternee"])])
-        if "charge_alternee" in data
-        else 0
-    )
+    residence = "GuyMay" if outremer2 else "GuadMarReu" if outremer1 else "metropole"
 
     dicres = {
-        "revenu": int(round(revenu)),
-        "nombre_declarants": int(nbpr),
-        "nombre_personnes_a_charge": int(nbpac),
-        "nombre_declarants_retraites": int(nbret),
-        "outre_mer": 1 * outremer1 + 2 * outremer2,
-        "nb_decl_veuf": nbveuf,
-        "nb_decl_parent_isole": nb_decl_parent_isole,
-        "nb_decl_invalides": nb_decl_invalides,
-        "nb_pac_invalides": nb_pac_invalides,
-        "nb_anciens_combattants": nb_anciens_combattants,
-        "nb_pac_charge_partagee": nb_pac_charge_partagee,
+        "revenuImposable": int(round(revenu)),
+        "residence": residence,
+        "declarants" : declarants,
+        "personnesACharge" : personnes_a_charge
     }
     return dicres
 
