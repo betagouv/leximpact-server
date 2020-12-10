@@ -215,17 +215,18 @@ dictreform = {
 
 def dict_cas_type_unipersonne_from_revenu(revenu_imposable):
     return {
-        "nombre_declarants": 1,
-        "nombre_declarants_retraites": 0,
-        "nombre_personnes_a_charge": 0,
-        "outre_mer": 0,
-        "revenu": revenu_imposable,
-        "nb_decl_parent_isole": 0,
-        "nb_decl_veuf": 0,
-        "nb_decl_invalides": 0,
-        "nb_pac_invalides": 0,
-        "nb_anciens_combattants": 0,
-        "nb_pac_charge_partagee": 0,
+        "declarants": [
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            }
+        ],
+        "personnesACharge": [],
+        "residence": "metropole",
+        "revenuImposable": revenu_imposable
     }
 
 
@@ -301,33 +302,55 @@ def test_sim_base_cas_types_dict_content_ok(reform, requested_simulations):
 
 
 def test_sim_custom_cas_types_dict_content_ok(requested_simulations):
-    dict_cas = [
+    dict_cas = [{
+        "declarants": [
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            }
+        ],
+        "personnesACharge": [
+            {
+                "chargePartagee": False,
+                "invalide": False
+            }
+        ],
+        "residence": "metropole",
+        "revenuImposable": 31200
+    },
         {
-            "nombre_declarants": 1,
-            "nombre_declarants_retraites": 0,
-            "nombre_personnes_a_charge": 1,
-            "outre_mer": 0,
-            "revenu": 31200,
-            "nb_decl_parent_isole": 0,
-            "nb_decl_veuf": 0,
-            "nb_decl_invalides": 0,
-            "nb_pac_invalides": 0,
-            "nb_anciens_combattants": 0,
-            "nb_pac_charge_partagee": 0,
-        },
-        {
-            "nombre_declarants": 2,
-            "nombre_declarants_retraites": 0,
-            "nombre_personnes_a_charge": 2,
-            "outre_mer": 0,
-            "revenu": 31200,
-            "nb_decl_parent_isole": 0,
-            "nb_decl_veuf": 0,
-            "nb_decl_invalides": 0,
-            "nb_pac_invalides": 0,
-            "nb_anciens_combattants": 1,
-            "nb_pac_charge_partagee": 0,
-        },
+        "declarants": [
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            },
+            {
+                "ancienCombattant": False,
+                "invalide": False,
+                "parentIsole": False,
+                "retraite": False,
+                "veuf": False
+            }
+        ],
+        "personnesACharge": [
+            {
+                "chargePartagee": False,
+                "invalide": False
+            },
+            {
+                "chargePartagee": False,
+                "invalide": False
+            }
+        ],
+        "residence": "metropole",
+        "revenuImposable": 31200
+    }
     ]
     comp_result = CompareOldNew(
         isdecile=False, dictreform=dictreform, castypedesc=dict_cas

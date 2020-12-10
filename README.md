@@ -221,18 +221,24 @@ Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'
 - Réponse - contenu du body : `Array of objects`. Chaque objet décrit un foyer fiscal sous forme de nombre entier à travers le schéma suivant :
 
     ```
-    { 
-        "nb_anciens_combattants": 0, //nombre d'anciens combattants parmi les déclarants 
-        "nb_decl_invalides": 0, //nombre d'invalides parmi les déclarants
-        "nb_decl_parent_isole": 0, //nombre de parents isolés parmi les déclarants
-        "nb_decl_veuf":  0, //nombre de veufs parmi les déclarants
-        "nb_pac_charge_partagee":  0, //nombre de personnes à charge en charge partagée
-        "nb_pac_invalides":  0, //nombre de personnes à charge invalides
-        "nombre_declarants":  1, //nombre de déclarants (1 ou 2)
-        "nombre_declarants_retraites":  0, //nombre de déclarants ayant plus de 65 ans
-        "nombre_personnes_a_charge":  0, //nombre de personnes à charge
-        "outre_mer":  0, //0 si métropole, 1 pour Guadeloupe/Martinique/Réunion, 2 pour Mayotte/Guyane
-        "revenu":  15000, //en euros imposable pour l'ensemble du foyer fiscal
+    {
+        "declarants": [ // tableau contenant un élément par déclarant du foyer fiscal
+            {
+                "ancienCombattant": false,  // décrit si le déclarant est ancien combattant
+                "invalide": false, // décrit si le déclarant est en situation d'invalidité
+                "parentIsole": false, // décrit si le déclarant est parent isolé
+                "retraite": false, // décrit si le déclarant est retraité
+                "veuf": false // décrit si le déclarant est veuf
+            }
+        ],
+        "personnesACharge": [ // tableau contenant un élément par personne à charge du foyer fiscal
+            {
+                "chargePartagee": false,  // décrit si la personne à charge est en charge partagée
+                "invalide": false  // décrit si la personne à charge est en situation d'invalidité
+            }
+        ],
+        "residence": "metropole",   // décrit les différentes situations de résidence :"GuadMarReu" pour Guadeloupe/Martinique/Réunion, ou "GuyMay"  pour Mayotte/Guyane, "metropole" pour le reste du territoire français
+        "revenuImposable": 54003 //en euros imposable pour l'ensemble du foyer fiscal
     }
     ```
 
