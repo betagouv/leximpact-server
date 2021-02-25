@@ -201,6 +201,7 @@ Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'
 
 * `/auth/login` : vérifie que l'email mentionné dans le corps est dans la base de données (si oui, lui envoie par mail un lien comportant un token)
 * `/calculate/simpop` : vérifie que le token présent dans le corps de la requête est valide, non expiré, et n'appartient pas à un utilisateur suspendu
+* `/search?commune=substring` : Renvoie une liste de communes contenant la chaine de caractères spécifiée
 
 ###  Itinéraire par défaut ou /
 
@@ -459,6 +460,7 @@ Où `PAC` désigne `personne à charge`.
 
 L'API Web traite également d'une thématique isolée de l'impôt sur le revenu : les dotations
 de l'État aux collectivités locales.
+
 
 ### /dotations
 
