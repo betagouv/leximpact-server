@@ -1,6 +1,6 @@
 from functools import partial
 import json
-from pytest import fixture
+from pytest import fixture  # type: ignore
 
 from dotations.impact import BORNES_STRATES_DEFAULT, get_cas_types_codes_insee  # type: ignore
 from Simulation_engine.simulate_dotations import ACTIVATE_PLF  # type: ignore
