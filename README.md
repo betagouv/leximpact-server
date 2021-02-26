@@ -462,7 +462,6 @@ Où `PAC` désigne `personne à charge`.
 L'API Web traite également d'une thématique isolée de l'impôt sur le revenu : les dotations
 de l'État aux collectivités locales.
 
-
 ### /dotations
 
 - Type : POST
