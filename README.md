@@ -82,7 +82,8 @@ pip install --editable .[dev]
 
 Pour lancer LexImpact-Server, vous devez tout d'abord créer un fichier de configuration `.env`. Le fichier `.env.example` contient un exemple de fichier de configuration `.env`, les champs y apparaissant sont :
 
-- `DATABASE_*` : décrit la configuration de la base de données, leximpact-server doit avoit un accès à une base de données postgres lui permettant de se comporter correctement 
+- `DATABASE_*` : décrit la configuration de la base de données, leximpact-server doit avoit un accès à une base de données postgres lui permettant de se comporter correctement. Ces variables ne sont pas nécessaires dans Scalingo car elles sont remplacées par une descriptions de la base de données automatiquement insérée par Scalingo dans les variables 
+DATABASE_URL et SCALINGO_POSTGRESQL_URL. 
 - `JWT_*` : Décrit les caractéristique du [JSON Web Token](https://jwt.io/). `JWT_SECRET` est une clef privée, `JWT_AUDIENCE` et `JWT_ISSUER` sont vérifiés quand le token est vérifié, mais peut être lu par quiconque a un token (car ces derniers ne sont pas chiffrés, mais juste signés par une clef privée) 
 - `MAILJET_*` : données d'authentification pour Mailjet, qui est utilisé pour envoyer les emails contenant les liens de connexion.
 - `POPULATION_TABLE_PATH` :  Les données de population prises en compte dans la simulation du budget de l'État. Peut contenir un nom de fichier (.csv ou .h5) ou un nom de table dans la base SQL. Cette source de données sera importée. Un exemple de fichier fonctionnnant comme source de données situé dans le dépôt est `DCT.csv`. Des fonctions pour calibrer une source de données en fonction des données existantes de la population française sont disponibles dans le fichier sous `./scripts` (utilisés notamment dans le script `TransformData.py`) 
@@ -201,6 +202,7 @@ Parmi ces itinéraires, deux nécessitent une vérification de l'identité de l'
 
 * `/auth/login` : vérifie que l'email mentionné dans le corps est dans la base de données (si oui, lui envoie par mail un lien comportant un token)
 * `/calculate/simpop` : vérifie que le token présent dans le corps de la requête est valide, non expiré, et n'appartient pas à un utilisateur suspendu
+* `/search?commune=substring` : Renvoie une liste de communes contenant la chaine de caractères spécifiée
 
 ###  Itinéraire par défaut ou /
 
