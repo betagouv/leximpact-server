@@ -11,7 +11,10 @@ cd leximpact-server
 
 Préparer la configuration :
 ```sh
-cp docker/.env.docker .env
+cd leximpact-client
+cp docker/docker-local.env .env
+cd ../leximpact-server
+cp docker/docker.env .env
 ```
 Les paramètres par défaut fonctionnent, voir le README principale pour l'explication des paramètres.
 

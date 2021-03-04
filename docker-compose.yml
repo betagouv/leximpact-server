@@ -20,7 +20,9 @@ services:
       - postgres
 
   leximpact_client:
-    build: ../leximpact-client/
+    build:
+      context: ../leximpact-client/
+      dockerfile: ./docker/Dockerfile
     networks:
       - leximpact_net
     ports:
