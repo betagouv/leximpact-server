@@ -28,7 +28,8 @@ services:
     ports:
     - 9079:9001
     volumes:
-      - ../leximpact-client/:/opt/leximpact-client
+      - ../leximpact-client:/opt/leximpact-client
+      - /opt/leximpact-client/node_modules
     depends_on:
       - leximpact_server
 

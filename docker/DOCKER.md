@@ -6,7 +6,6 @@ Cloner le projet server et le client dans un dossier et se rendre dans leximpact
 ```sh
 git clone https://github.com/leximpact/leximpact-client.git
 git clone https://github.com/leximpact/leximpact-server.git
-cd leximpact-server
 ```
 
 Préparer la configuration :
