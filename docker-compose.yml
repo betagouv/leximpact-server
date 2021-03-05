@@ -1,0 +1,74 @@
+version: '3.7'
+services:
+  leximpact_server:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    networks:
+      - leximpact_net
+    ports:
+    - 5079:5000
+    environment:
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASS: ${DATABASE_PASS}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_HOST: ${DATABASE_HOST:-postgres_leximpact}
+    volumes:
+      - .:/opt/leximpact-server
+    depends_on:
+      - postgres
+
+  leximpact_client:
+    build:
+      context: ../leximpact-client/
+      dockerfile: ./docker/Dockerfile
+    networks:
+      - leximpact_net
+    ports:
+    - 9079:9001
+    volumes:
+      - ../leximpact-client:/opt/leximpact-client
+      - /opt/leximpact-client/node_modules
+    depends_on:
+      - leximpact_server
+
+  postgres:
+    container_name: ${DATABASE_HOST:-postgres_leximpact}
+    environment:
+      HOSTNAME: ${DATABASE_HOST:-postgres_leximpact}
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_USER: ${DATABASE_USER}
+    image: postgres:latest
+    networks:
+      - leximpact_net
+    ports:
+    - 5479:5432
+    restart: unless-stopped
+    volumes:
+    - postgres_data:/var/lib/postgresql/data:rw
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-test@test.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-test}
+    volumes:
+       - pgadmin:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - leximpact_net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    name: postgres_leximpact_data
+  pgadmin:
+    name: pgadmin_leximpact_data
+
+networks:
+  leximpact_net:
+    name: leximpact_network
