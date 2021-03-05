@@ -18,7 +18,7 @@ Leximpact est constitué de deux parties :
 
 ## Installation
 
-Pour Docker voir [docker/DOCKER.md](docker/DOCKER.md).
+Pour Docker voir [docker/README.md](docker/README.md).
 
 Cette application requiert [Python 3.7](https://www.python.org/downloads/release/python-370/) et [pip](https://pip.pypa.io/en/stable/installing/).
 
