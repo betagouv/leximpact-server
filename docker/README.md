@@ -20,7 +20,7 @@ Les paramètres par défaut fonctionnent, voir le README principale pour l'expli
 ## Lancement
 
 ```sh
-docker-compose up
+docker-compose up -d
 ```
 Ceci va exécuter :
  - Postgresql sur le port 5479
@@ -28,11 +28,27 @@ Ceci va exécuter :
  - leximpact-server [http://localhost:5079](http://localhost:5079)
  - leximpact-client [http://localhost:9079](http://localhost:9079)
 
-Arrêter avec ctrl+c
 
-La base Postgres et la configuration PGAdmin sont stockées dans des volumes séparés, elles sont donc conservée après la destruction des container par :
+## Arrêt
+
+Pour arrêter :
 ```sh
 docker-compose down
+```
+
+La base Postgres et la configuration PGAdmin sont stockées dans des volumes séparés, elles sont donc conservées après la destruction des containeurs.
+
+## Voir les logs
+
+```sh
+docker logs leximpact-server_leximpact_server_1
+docker logs leximpact-server_leximpact_client_1
+```
+Ajouter '-f' à la fin de la ligne pour voir les mises à jour s'afficher. Ctrl+c pour arrêter le défillement.
+
+## Executer les tests
+```sh
+docker exec leximpact-server_leximpact_server_1 pytest
 ```
 
 ## Forcer le build
