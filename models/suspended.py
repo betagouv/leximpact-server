@@ -12,6 +12,7 @@ class Suspended(Base):
     email = Column(String())
     end_suspension = Column(DateTime())
 
+
 def create_suspension(session, email, delay_hours=1):
     suspended = Suspended(
         email=email,
@@ -20,6 +21,7 @@ def create_suspension(session, email, delay_hours=1):
     session.add(suspended)
     session.commit()
     return True
+
 
 def count_active_suspensions(session, email):
     return (
