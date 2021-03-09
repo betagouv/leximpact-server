@@ -57,6 +57,8 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-test}
     volumes:
        - pgadmin:/root/.pgadmin
+       - ./docker/pgpassfile:/pgadmin4/pgpassfile
+       - ./docker/pgadmin-servers.json:/pgadmin4/servers.json
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
