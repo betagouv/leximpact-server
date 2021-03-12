@@ -76,11 +76,12 @@ def login_user(session, email: str) -> Optional[JWT]:  # Optional[User]:
             return None
     return encode_jwt(JWT(), email)
 
+
 # Send an email when an account is suspended
 def alert_suspension(email, delay_hours, session):
     email_team = getenv("MAILJET_SENDER")
     content_team = f"Bonjour<br/>\n<p>L'utilisateur {email} vient d'être suspendu pour {delay_hours} heure(s).<br/> Il a fait plus de {limite_requetes} requêtes en {time_period_request.total_seconds()/-60} minutes.</p><br/>\nVotre dévoué serveur LexImpact"
-    logging.error(f"BRUTE FORCE STOPPED : {content_team}")
+    logging.info(f"BRUTE FORCE STOPPED : {content_team}")
     send_mail(
         recipient=email_team,
         subject="Nouvelle suspension",
