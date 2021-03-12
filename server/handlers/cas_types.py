@@ -3,7 +3,8 @@ from Simulation_engine.simulate_pop_from_reform import (
     CompareOldNew,
     revenus_cas_types,
 )
-from server.services import check_user, with_session
+from server.services.database_services import with_session
+from server.services.auth_services import check_user
 import json
 from flask import Response
 

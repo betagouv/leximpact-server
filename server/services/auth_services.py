@@ -9,7 +9,7 @@ from jwt.exceptions import (  # type: ignore
     DecodeError,
 )
 from datetime import datetime, timedelta
-from .mail_services import send_mail  # noqa
+from server.services.mail_services import send_mail
 import logging
 from os import getenv
 
@@ -92,4 +92,3 @@ def alert_suspension(email, delay_hours, session):
         subject="Compte LexImpact suspendu",
         content=f"Bonjour<br/>\r\n<p>Votre compte LexImpact vient d'être suspendu pour {delay_hours} heure(s) en raison d'une utilisation trop importante.<br/>Ceci est requis pour la protection des données d’enquête vous permettant le calcul par déciles de population.</p>\nMerci de votre compréhension,<br/>\nL'équipe LexImpact"
     )
-    return True

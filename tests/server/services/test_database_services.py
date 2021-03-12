@@ -2,7 +2,7 @@ from typing import Any
 
 from sqlalchemy import Column, String  # type: ignore
 from sqlalchemy.ext.declarative import declarative_base  # type: ignore
-from server.services import with_session  # type: ignore
+from server.services.database_services import with_session  # type: ignore
 
 SETUP = "server.services.database_services.setup"
 

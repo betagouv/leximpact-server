@@ -1,5 +1,7 @@
 from typing import Dict, Tuple
-from server.services import login_user, with_session, send_mail
+from server.services.database_services import with_session
+from server.services.auth_services import login_user
+from server.services.mail_services import send_mail
 
 from utils.folder_finder import path_folder_assets  # type: ignore
 import logging
