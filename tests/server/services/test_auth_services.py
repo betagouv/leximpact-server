@@ -51,8 +51,8 @@ def test_too_much_request(session, user, email, clean_history):
         # Check we send 2 mails
         assert mocker.call_count == 2
         # Check mail content
-        mocker.assert_any_call(content="Bonjour<br/>\n<p>L'utilisateur richard@leximpact.pop vient d'être suspendu pour 1 heure(s).<br/> Il a fait plus de 20 requêtes en 2.0 minutes.</p><br/>\nVotre dévoué serveur LexImpact", recipient='leximpact@an.fr', subject='Nouvelle suspension')
         mocker.assert_any_call(content="Bonjour<br/>\r\n<p>Votre compte LexImpact vient d'être suspendu pour 1 heure(s) en raison d'une utilisation trop importante.<br/>Ceci est requis pour la protection des données d’enquête vous permettant le calcul par déciles de population.</p>\nMerci de votre compréhension,<br/>\nL'équipe LexImpact", recipient='richard@leximpact.pop', subject='Compte LexImpact suspendu')
+        mocker.assert_any_call(content="Bonjour<br/>\n<p>L'utilisateur richard@leximpact.pop vient d'être suspendu pour 1 heure(s).<br/> Il a fait plus de 20 requêtes en 2.0 minutes.</p><br/>\nVotre dévoué serveur LexImpact", recipient='leximpact@an.fr', subject='Nouvelle suspension')
         # assert_has_calls fail on CI :(
         # Tip : Just cut and past the result of mocker.call_args_list
         # expected = [call(content="Bonjour<br/>\n<p>L'utilisateur richard@leximpact.pop vient d'être suspendu pour 1 heure(s).<br/> Il a fait plus de 20 requêtes en 2.0 minutes.</p><br/>\nVotre dévoué serveur LexImpact", recipient='leximpact@an.fr', subject='Nouvelle suspension'), call(content="Bonjour<br/>\r\n<p>Votre compte LexImpact vient d'être suspendu pour 1 heure(s) en raison d'une utilisation trop importante.<br/>Ceci est requis pour la protection des données d’enquête vous permettant le calcul par déciles de population.</p>\nMerci de votre compréhension,<br/>\nL'équipe LexImpact", recipient='richard@leximpact.pop', subject='Compte LexImpact suspendu')]
