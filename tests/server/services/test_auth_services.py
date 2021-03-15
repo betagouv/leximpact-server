@@ -3,6 +3,7 @@ from server.services.auth_services import login_user, check_user  # type: ignore
 from models import create_user, find_user, count_requests, User, Request, Suspended, create_token, create_payload, create_nonce  # type: ignore
 from datetime import timedelta
 import mock
+from models import JWT
 # from unittest.mock import call  # Fail on Circle CI
 
 
@@ -32,9 +33,10 @@ def clean_history(session):
 def test_too_much_request(session, user, email, clean_history):
     # Create token
     jti = create_nonce()
-    iss, aud = "Moi", "Toi"
+    jwt_instance = JWT()
+    iss, aud = jwt_instance.iss, jwt_instance.aud
     payload = create_payload(email, jti, iss, aud)
-    secret, algo = "asdf1234", "HS256"
+    secret, algo = jwt_instance.secret, "HS256"
     tokenencoded = create_token(payload, secret, algo)
     # Do 19 requests
     for i in range(0, 20):
